@@ -8,7 +8,38 @@
 <style>
 :root{--navy:#10345d;--blue:#1684cf;--teal:#12aaa4;--green:#10a86b;--red:#ef4052;--line:#d9e5f3;--muted:#7890b1}*{box-sizing:border-box}body{margin:0;background:#f2f6fb;color:#18385f;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px}.btn{border:1px solid var(--line);background:#fff;border-radius:11px;padding:9px 13px;font-weight:600;white-space:nowrap}.btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}.btn.blue{background:#eaf5ff;color:#0874bd;border-color:#cde6fb}.btn.danger{color:#d92d43;border-color:#ffd1d7}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 1px 1px #0d315808}.field{width:100%;border:1px solid #cfdaea;border-radius:10px;padding:10px 11px;background:#fff;color:#18385f;outline:none}.field:focus{border-color:#1684cf;box-shadow:0 0 0 3px #1684cf18}label{font-size:12px;color:#607b9f;display:block;margin:0 0 5px}.muted{color:var(--muted)}.slot{min-height:34px;height:34px;border:1px solid #dbe5f0;border-radius:7px;padding:5px 3px;background:#f8fbff;text-align:center;overflow:hidden;display:flex;align-items:center;justify-content:center}.slot.old{background:#eaf5ff;border-color:#abd8f8}.slot.new{background:#e9fbf3;border-color:#9de2c3}.slot small{display:block;color:#47627f;font-size:10px;font-weight:700;white-space:nowrap}.slot strong{display:none;font-size:10px;line-height:1.1;white-space:nowrap;color:#16436b}.slot.occupied strong{display:block}.slot.occupied small{display:none}.slot.empty small{display:block}.row-scroll{overflow-x:auto}.modal{position:fixed;inset:0;background:#102b4c88;display:none;align-items:center;justify-content:center;padding:14px;z-index:50}.modal.show{display:flex}.modal-card{background:#fff;border-radius:18px;width:min(760px,100%);max-height:92dvh;overflow:auto;padding:18px;box-shadow:0 20px 60px #102b4c40}.suggestions{position:absolute;top:calc(100% + 5px);left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px #18385f22;z-index:20;max-height:310px;overflow:auto}.suggestion{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid #edf2f8;text-align:left;width:100%}.suggestion:last-child{border:0}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#15395f;color:#fff;padding:10px 16px;border-radius:20px;z-index:90;box-shadow:0 5px 20px #0002;display:none}.toast.show{display:block}.pill{border-radius:20px;padding:3px 8px;font-size:11px;background:#edf4fc}.tab{padding:8px 12px;border-radius:9px}.tab.active{background:#eaf5ff;color:#0874bd;font-weight:700}.wait-details>summary{cursor:pointer;list-style:none}.wait-details>summary::-webkit-details-marker{display:none}.slot.old{background:#eaf5ff;border-color:#75bdf0}.slot.new{background:#e9fbf3;border-color:#70d4a7}.toolbar-row{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}.brand{white-space:nowrap}.search-box{flex:1;min-width:100px}.toolbar-row .btn{flex-shrink:0}@media(max-width:600px){.toolbar-row{gap:5px;padding-left:8px;padding-right:8px}.brand{font-size:12px}.toolbar-row .btn{font-size:11px;padding:9px 7px}.search-box{min-width:80px}.search-box .field{font-size:12px;padding:10px 7px}}
 @media(max-width:760px){body{font-size:13px}.panel{padding:12px;border-radius:13px}.slot{min-height:32px;height:32px;padding:4px 2px}.btn{padding:9px 10px}.mobile-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.modal{padding:7px}.modal-card{padding:14px;max-height:96dvh}}
-.report-dialog-new{width:min(980px,100%);max-height:96dvh;overflow-y:auto;padding:12px;background:#fff}.report-actions{position:sticky;top:-12px;z-index:3;display:flex;gap:10px;padding:10px 0;background:#fff}.report-action-btn{flex:1;min-height:48px;font-size:15px}.report-message{font-size:12px;color:#607b9f;margin:2px 0 10px}.report-image-hint{font-size:13px;font-weight:700;color:#0874bd;padding:10px;background:#eaf5ff;border-radius:10px;margin:10px 0}.report-result-image{display:block;width:100%;height:auto;border:1px solid #d9e5f3;border-radius:10px;margin:8px 0 14px}.report-content{width:100%;background:#fff;color:#18385f;font-family:Arial,Helvetica,sans-serif;padding:18px}.report-content .rpt-header{background:#10345d;color:#fff;padding:22px;border-radius:12px;margin-bottom:14px}.report-content .rpt-title{font-size:24px;font-weight:800;line-height:1.3}.report-content .rpt-time{font-size:12px;color:#dbeafe;margin-top:8px}.report-content .rpt-summary{width:100%;border-collapse:collapse;margin:12px 0 18px;font-size:13px}.report-content th,.report-content td{border:1px solid #d9e5f3;padding:9px 8px;text-align:left;overflow-wrap:anywhere}.report-content th{background:#edf5fc;color:#315475}.report-content .rpt-section{margin:16px 0;border:1px solid #d9e5f3;border-radius:10px;overflow:hidden}.report-content .rpt-section-title{background:#edf5fc;padding:12px;font-size:15px;font-weight:800}.report-content table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px}.report-content .rpt-empty{padding:12px;color:#7890b1;font-size:12px}.report-content .rpt-footer{font-size:10px;color:#7890b1;margin-top:16px;padding-top:10px;border-top:1px solid #d9e5f3}@media(max-width:600px){.report-dialog-new{padding:9px}.report-content{padding:10px}.report-content .rpt-title{font-size:20px}.report-content th,.report-content td{padding:7px 5px;font-size:10px}}</style></head>
+
+.report-dialog-new{width:min(1320px,100%);max-height:97dvh;overflow:auto;padding:14px;background:#fff}
+.report-config{position:relative;z-index:4;background:#fff;border-bottom:1px solid #e2e8f0;padding-bottom:12px}
+.report-config-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.report-config-head h2{font-size:18px;font-weight:800;color:#0b3b60}.report-config-head p{font-size:12px;color:#64748b;margin-top:2px}
+.report-config-grid{display:grid;grid-template-columns:minmax(160px,220px) minmax(250px,1fr);gap:10px;align-items:start}
+.report-custom-dates{display:flex;gap:8px}.report-custom-dates>div{flex:1;min-width:0}.report-custom-dates[hidden]{display:none}
+.report-note-field{grid-column:1/-1}.report-note-field textarea{resize:vertical;min-height:56px}
+.report-actions{display:flex;gap:10px;padding:10px 0;background:#fff}.report-action-btn{width:100%;min-height:46px;font-size:15px}
+.report-message{font-size:12px;color:#607b9f;margin:2px 0 8px}
+.report-image-hint{font-size:13px;font-weight:700;color:#0874bd;padding:10px;background:#eaf5ff;border-radius:10px;margin:10px 0}
+.report-result-image{display:block;width:100%;height:auto;border:1px solid #d9e5f3;border-radius:10px;margin:8px 0 14px}
+.report-content{width:1280px;height:900px;min-width:1280px;max-width:none;overflow:hidden;box-sizing:border-box;background:#F1F5F9;color:#0f172a;font-family:Arial,Helvetica,sans-serif;padding:24px;display:flex;flex-direction:column;gap:12px}
+.report-content *{box-sizing:border-box}.rpt-header{height:82px;flex:0 0 82px;background:#0B3B60;color:#fff;border-radius:12px;padding:16px 22px;display:flex;flex-direction:column;justify-content:center}
+.rpt-title{font-size:22px;font-weight:800;letter-spacing:.25px;line-height:1.2}.rpt-period{font-size:13px;color:#CBD5E1;margin-top:6px}
+.rpt-kpis{height:104px;flex:0 0 104px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.rpt-kpi{background:#fff;border-radius:10px;border-top:4px solid var(--kpi-color);padding:13px 16px;box-shadow:0 1px 3px #0f172a0d;display:flex;flex-direction:column;justify-content:center}
+.rpt-kpi-label{font-size:12px;font-weight:800;color:#475569;letter-spacing:.25px}.rpt-kpi-value{font-size:31px;line-height:1.15;font-weight:800;color:var(--kpi-color);margin-top:8px}
+.rpt-mid{height:286px;flex:0 0 286px;display:grid;grid-template-columns:66fr 34fr;gap:12px;min-height:0}
+.rpt-card{background:#fff;border-radius:10px;padding:15px 17px;box-shadow:0 1px 3px #0f172a0d;min-width:0;overflow:hidden}
+.rpt-card-title{font-size:14px;font-weight:800;color:#0f2942;letter-spacing:.15px}.rpt-card-sub{font-size:10px;color:#64748b;margin-top:4px}
+.rpt-chart-wrap{height:194px;margin-top:8px}.rpt-chart{width:100%;height:100%;display:block}.rpt-legend{display:flex;gap:18px;align-items:center;font-size:10px;color:#475569;margin-top:3px}
+.rpt-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.rpt-metrics{margin-top:12px}.rpt-metric{display:flex;justify-content:space-between;gap:8px;padding:17px 1px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#475569}
+.rpt-metric:last-child{border-bottom:0}.rpt-metric strong{font-size:19px;color:#0f2942}
+.rpt-age{height:178px;flex:0 0 178px}.rpt-age-sub{font-size:10px;color:#64748b;margin-top:4px}
+.rpt-age-list{display:grid;gap:9px;margin-top:11px}.rpt-age-row{display:grid;grid-template-columns:180px 1fr 48px;gap:12px;align-items:center;font-size:11px;color:#334155}
+.rpt-track{height:12px;border-radius:10px;background:#E2E8F0;overflow:hidden}.rpt-fill{height:100%;border-radius:10px}.rpt-age-count{text-align:right;font-size:13px;font-weight:800;color:#0f172a}
+.rpt-special{height:126px;flex:0 0 126px}.rpt-special-box{height:63px;margin-top:9px;border:1px solid #CBD5E1;border-radius:7px;padding:10px 12px;font-size:12px;line-height:1.45;color:#334155;white-space:pre-wrap;overflow:hidden}
+.rpt-special-box.empty{color:#94A3B8;font-style:italic}.rpt-footer{height:36px;flex:0 0 36px;display:flex;align-items:center;padding:0 2px;font-size:9.5px;line-height:1.35;color:#94A3B8}
+@media(max-width:760px){.report-config-grid{grid-template-columns:1fr}.report-custom-dates{grid-column:1/-1}.report-note-field{grid-column:1/-1}.report-dialog-new{padding:10px}}
+</style></head>
 <body>
 <header class="bg-white border-b border-slate-200 sticky top-0 z-30"><div class="max-w-[1600px] mx-auto p-3 toolbar-row"><div class="font-bold text-base text-[#10345d] brand">QLBX <span class="text-sky-600">BÃI XE 34</span></div><div class="relative search-box" id="searchWrap"><input id="search" class="field" placeholder="Tìm biển số hoặc 6 số VIN…" autocomplete="off"><div id="searchResults" class="suggestions hidden"></div></div><button class="btn primary" id="addBtn">＋ Nhập xe</button><button class="btn blue" id="exportBtn">Xuất Excel Xe Tồn</button></div></header>
 <main class="max-w-[1600px] mx-auto p-3 space-y-4">
@@ -30,7 +61,7 @@
   "appId": "1:810747632401:web:53951e1b5579189f2b4ab0",
   "measurementId": "G-YE2DVXP896"
 }</textarea><div class="flex flex-wrap gap-2"><button class="btn primary" id="connectFirebase">Lưu cấu hình & kết nối</button><button class="btn" id="disconnectFirebase">Ngắt kết nối</button></div><div class="border rounded-xl p-3 space-y-2"><b>Đăng nhập Firebase Authentication</b><p class="text-xs muted">Dùng tài khoản Email/Password đã tạo trong Firebase Authentication.</p><div><label>Email</label><input id="authEmail" type="email" class="field" autocomplete="username" placeholder="admin@example.com"></div><div><label>Mật khẩu</label><input id="authPassword" type="password" class="field" autocomplete="current-password" placeholder="Mật khẩu"></div><div class="flex flex-wrap gap-2"><button class="btn primary" id="loginFirebase">Đăng nhập</button><button class="btn" id="logoutFirebase">Đăng xuất</button></div><div class="text-xs muted" id="authStatus">Chưa đăng nhập.</div></div><hr><div><label class="font-semibold">Nạp dữ liệu JSON lên Firebase / bộ nhớ ứng dụng</label><p class="text-xs muted mb-2">Chọn file export schemaVersion 2. Thao tác ghi đè toàn bộ dữ liệu hiện tại tại nhánh dữ liệu của ứng dụng.</p><input id="jsonFile" type="file" accept=".json,application/json" class="field"><button class="btn danger mt-2" id="uploadJson">Nạp dữ liệu JSON lên Firebase</button></div><div class="text-xs muted" id="firebaseStatus">Chưa kết nối.</div></div></div></div>
-<div class="modal" id="reportModal" aria-hidden="true"><div class="modal-card report-dialog-new"><div class="report-actions"><button class="btn primary report-action-btn" id="reportDownloadBtn" type="button">Tải ảnh PNG</button><button class="btn report-action-btn" id="reportCloseBtn" type="button">Đóng</button></div><p id="reportMessage" class="report-message" role="status" aria-live="polite">Báo cáo được tổng hợp từ dữ liệu xe hiện tại trên thiết bị.</p><div id="reportImageHint" class="report-image-hint" hidden>Nếu máy không tự tải xuống, hãy nhấn giữ vào ảnh bên dưới để Lưu ảnh.</div><img id="reportResultImage" class="report-result-image" alt="Ảnh báo cáo tồn bãi Bãi xe 34" hidden/><div id="reportContent" class="report-content"></div></div></div>
+<div class="modal" id="reportModal" aria-hidden="true"><div class="modal-card report-dialog-new"><div class="report-config"><div class="report-config-head"><div><h2>Báo cáo tổng quan bãi xe</h2><p>Chọn kỳ báo cáo và ghi chú trước khi xuất ảnh</p></div><button class="btn" id="reportCloseBtn" type="button">Đóng</button></div><div class="report-config-grid"><div><label for="reportPeriod">Kỳ báo cáo</label><select id="reportPeriod" class="field"><option value="week">Tuần này</option><option value="month">Tháng này</option><option value="custom">Tùy chọn Từ ngày - Đến ngày</option></select></div><div class="report-custom-dates" id="reportCustomDates" hidden><div><label for="reportFrom">Từ ngày</label><input id="reportFrom" class="field" type="date"></div><div><label for="reportTo">Đến ngày</label><input id="reportTo" class="field" type="date"></div></div><div class="report-note-field"><label for="reportSpecialNote">Diễn biến đặc biệt</label><textarea id="reportSpecialNote" class="field" rows="2" placeholder="Nhập diễn biến cần lưu ý trong kỳ báo cáo…"></textarea></div></div><div class="report-actions"><button class="btn primary report-action-btn" id="reportDownloadBtn" type="button">Tải ảnh PNG</button></div><p id="reportMessage" class="report-message" role="status" aria-live="polite">Đang tổng hợp dữ liệu báo cáo…</p><div id="reportImageHint" class="report-image-hint" hidden>Nếu máy không tự tải xuống, hãy nhấn giữ ảnh bên dưới để lưu trực tiếp.</div><img id="reportResultImage" class="report-result-image" alt="Ảnh báo cáo tổng quan bãi xe" hidden><div id="reportContent" class="report-content" aria-label="Bản dựng báo cáo PNG"></div></div></div>
 
 <div class="toast" id="toast"></div>
 <script type="module">
@@ -221,103 +252,50 @@ if($('dbMode').value!=='local'){
 </script><script>
 (function(){
 'use strict';
-const byId=id=>document.getElementById(id);
-let reportBlob=null,reportObjectUrl=null,reportFileName='';
-const escReport=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const normReport=value=>String(value??'').toUpperCase().replace(/[\s.\-]/g,'');
-const todayReport=()=>{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).reduce((a,x)=>(a[x.type]=x.value,a),{});return p.year+'-'+p.month+'-'+p.day};
-function loadReportVehicles(){
- const raw=localStorage.getItem('qlbx34_data_v2');
- if(!raw)throw Error('Chưa tìm thấy dữ liệu xe đã lưu trên thiết bị. Hãy chờ ứng dụng tải dữ liệu xong rồi thử lại.');
- const parsed=JSON.parse(raw),root=parsed?.data||parsed;
- if(parsed?.schemaVersion!==2||!Array.isArray(root?.vehicles))throw Error('Dữ liệu lưu cục bộ không đúng cấu trúc QLBX34 schemaVersion 2.');
- return {vehicles:root.vehicles,meta:root.meta||{}};
+const $=id=>document.getElementById(id),COLORS={old:'#2563EB',fresh:'#16A34A'};
+let reportObjectUrl=null;
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dateOnly=v=>{if(!v)return '';const m=String(v).match(/^(\d{4}-\d{2}-\d{2})/);return m?m[1]:''};
+const today=()=>{const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).reduce((a,x)=>(a[x.type]=x.value,a),{});return p.year+'-'+p.month+'-'+p.day};
+const date=s=>{if(!s)return null;const a=s.split('-').map(Number),d=new Date(Date.UTC(a[0],a[1]-1,a[2]));return isNaN(d)?null:d};
+const iso=d=>d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+const add=(s,n)=>{const d=date(s);if(!d)return s;d.setUTCDate(d.getUTCDate()+n);return iso(d)};
+const fmt=s=>{const d=date(s);return d?String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0')+'/'+d.getUTCFullYear():'Không rõ'};
+function data(){const raw=localStorage.getItem('qlbx34_data_v2');if(!raw)throw Error('Không tìm thấy dữ liệu QLBX34 trên thiết bị. Hãy chờ Firebase đồng bộ xong rồi mở lại báo cáo.');const o=JSON.parse(raw),r=o?.data||o;if(o?.schemaVersion!==2||!Array.isArray(r?.vehicles))throw Error('Dữ liệu localStorage không đúng schemaVersion 2.');return {vehicles:r.vehicles,meta:r.meta||{}}}
+const sessions=v=>Array.isArray(v?.sessions)?v.sessions:[];
+const enDate=s=>dateOnly(s?.entry?.entryDate)||dateOnly(s?.entry?.time);
+const exDate=s=>dateOnly(s?.exit?.time)||dateOnly(s?.exit?.exitDate)||dateOnly(s?.exit?.date);
+function sessionAt(v,day,meta){let active=null;const cutoff=dateOnly(meta?.migrationSource?.exportedAt)||'2026-11-21';for(const s of sessions(v)){const en=enDate(s),ex=exDate(s);if(en&&en<=day&&(!ex||ex>day))active=s;else if(!en&&!s?.exit&&day>=cutoff)active=s;}return active}
+function range(){const mode=$('reportPeriod').value,n=today();if(mode==='month')return {from:n.slice(0,8)+'01',to:n,type:'Tháng'};if(mode==='custom'){const a=$('reportFrom').value,b=$('reportTo').value;if(!a||!b)throw Error('Vui lòng chọn đầy đủ Từ ngày và Đến ngày.');if(a>b)throw Error('Ngày bắt đầu không được sau ngày kết thúc.');return {from:a,to:b,type:'Tùy chọn'};}const d=date(n),offset=(d.getUTCDay()+6)%7,a=add(n,-offset);return {from:a,to:add(a,6),type:'Tuần'};}
+function chart(days,olds,news){const W=790,H=194,L=32,R=8,T=18,B=28,PH=H-T-B,PW=W-L-R,max=Math.max(1,...olds,...news),step=PW/Math.max(1,days.length),bw=Math.max(2,Math.min(9,step*.29));let s='<svg class="rpt-chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Biểu đồ xe tồn từng ngày">';for(let i=0;i<=3;i++){const y=T+PH*i/3;s+='<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="#E2E8F0"/><text x="'+(L-7)+'" y="'+(y+3)+'" text-anchor="end" font-size="9" fill="#94A3B8">'+Math.round(max*(1-i/3))+'</text>';}days.forEach((d,i)=>{const x=L+step*(i+.5),a=olds[i],b=news[i],ha=a/max*PH,hb=b/max*PH,xa=x-bw-1,xb=x+1;if(a){s+='<rect x="'+xa+'" y="'+(T+PH-ha)+'" width="'+bw+'" height="'+Math.max(1,ha)+'" rx="2" fill="'+COLORS.old+'"/>';if(step>=19)s+='<text x="'+(xa+bw/2)+'" y="'+Math.max(10,T+PH-ha-3)+'" text-anchor="middle" font-size="8" font-weight="700" fill="#1D4ED8">'+a+'</text>';}if(b){s+='<rect x="'+xb+'" y="'+(T+PH-hb)+'" width="'+bw+'" height="'+Math.max(1,hb)+'" rx="2" fill="'+COLORS.fresh+'"/>';if(step>=19)s+='<text x="'+(xb+bw/2)+'" y="'+Math.max(10,T+PH-hb-3)+'" text-anchor="middle" font-size="8" font-weight="700" fill="#15803D">'+b+'</text>';}if(days.length<=31||i%Math.ceil(days.length/31)===0||i===days.length-1)s+='<text x="'+x+'" y="'+(H-8)+'" text-anchor="middle" font-size="9" fill="#64748B">'+Number(d.slice(8,10))+'</text>';});return s+'</svg>'}
+function create(){
+ const {vehicles,meta}=data(),r=range(),note=$('reportSpecialNote').value.trim(),days=[];for(let d=r.from;d<=r.to&&days.length<370;d=add(d,1))days.push(d);if(!days.length)throw Error('Khoảng ngày không hợp lệ.');
+ const active=vehicles.map(v=>({v,s:sessionAt(v,r.to,meta)})).filter(x=>x.s),old=active.filter(x=>x.v.type==='old'),fresh=active.filter(x=>x.v.type==='new');
+ let missingEntry=0,buckets=[0,0,0,0];active.forEach(({s})=>{const d=enDate(s);if(!d){missingEntry++;buckets[3]++;return;}const age=Math.max(0,Math.floor((date(r.to)-date(d))/86400000));if(age<=10)buckets[0]++;else if(age<=20)buckets[1]++;else if(age<=31)buckets[2]++;else buckets[3]++;});
+ const olds=[],news=[];days.forEach(day=>{let a=0,b=0;vehicles.forEach(v=>{if(sessionAt(v,day,meta)){if(v.type==='new')b++;else a++;}});olds.push(a);news.push(b);});
+ let entries=0,exits=0,newExits=0,missingExit=0;vehicles.forEach(v=>sessions(v).forEach(s=>{const a=enDate(s),b=exDate(s);if(a&&a>=r.from&&a<=r.to)entries++;if(s?.exit){if(b&&b>=r.from&&b<=r.to){exits++;if(v.type==='new')newExits++;}else if(!b)missingExit++;}}));
+ const total=active.length,older=buckets[1]+buckets[2]+buckets[3],period=r.type+' · '+fmt(r.from)+' - '+fmt(r.to),noteText=note||'Không có diễn biến đặc biệt được chọn cho kỳ này.';
+ const kpi=(label,val,color)=>'<div class="rpt-kpi" style="--kpi-color:'+color+'"><div class="rpt-kpi-label">'+label+'</div><div class="rpt-kpi-value">'+val+'</div></div>';
+ const bar=(label,n,color)=>'<div class="rpt-age-row"><span>'+label+'</span><div class="rpt-track"><div class="rpt-fill" style="width:'+(n/Math.max(1,total)*100)+'%;background:'+color+'"></div></div><strong class="rpt-age-count">'+n+'</strong></div>';
+ const footer='Mốc tồn đã kiểm: '+fmt(r.to)+' ('+total+' xe đang ở bãi). Hồ sơ thiếu ngày vào được tính tồn trên 31 ngày, không tự gán ngày. Xe thiếu ngày vào: '+missingEntry+', lượt xuất thiếu ngày: '+missingExit+'.';
+ const el=$('reportContent');el.innerHTML=
+ '<div class="rpt-header"><div class="rpt-title">BÁO CÁO TỔNG QUAN BÃI XE</div><div class="rpt-period">'+esc(period)+'</div></div>'+
+ '<div class="rpt-kpis">'+kpi('TỔNG XE TỒN BÃI',total,'#2563EB')+kpi('XE CŨ CÓ BIỂN',old.length,'#0D9488')+kpi('XE MỚI CHƯA BIỂN',fresh.length,'#16A34A')+kpi('XE TỒN TỪ 11 NGÀY',older,'#DC2626')+'</div>'+
+ '<div class="rpt-mid"><section class="rpt-card"><div class="rpt-card-title">DIỄN BIẾN XE TỒN BÃI TRONG KỲ</div><div class="rpt-card-sub">Số xe còn tại bãi cuối mỗi ngày · So sánh xe cũ và xe mới</div><div class="rpt-chart-wrap">'+chart(days,olds,news)+'</div><div class="rpt-legend"><span><i class="rpt-dot" style="background:#2563EB"></i>Xe cũ</span><span><i class="rpt-dot" style="background:#16A34A"></i>Xe mới</span></div></section>'+
+ '<section class="rpt-card"><div class="rpt-card-title">CHỈ TIÊU TRONG KỲ</div><div class="rpt-metrics"><div class="rpt-metric"><span>Lượt xe vào</span><strong>'+entries+'</strong></div><div class="rpt-metric"><span>Lượt xe ra</span><strong>'+exits+'</strong></div><div class="rpt-metric"><span>Xe mới xuất bãi</span><strong>'+newExits+'</strong></div></div></section></div>'+
+ '<section class="rpt-card rpt-age"><div class="rpt-card-title">CẢNH BÁO XE TỒN BÃI THEO THỜI GIAN NHẬP</div><div class="rpt-age-sub">Nhóm 0–10 ngày: '+buckets[0]+' xe</div><div class="rpt-age-list">'+bar('0–10 ngày',buckets[0],'#16A34A')+bar('11–20 ngày',buckets[1],'#F59E0B')+bar('21–31 ngày',buckets[2],'#EA580C')+bar('&gt;31 ngày (kể cả thiếu ngày)',buckets[3],'#DC2626')+'</div></section>'+
+ '<section class="rpt-card rpt-special"><div class="rpt-card-title">DIỄN BIẾN ĐẶC BIỆT</div><div class="rpt-special-box '+(note?'':'empty')+'">'+esc(noteText)+'</div></section><div class="rpt-footer">'+esc(footer)+'</div>';
+ $('reportMessage').textContent='Kỳ '+period+' · '+total+' xe tồn tại cuối kỳ · '+entries+' lượt vào · '+exits+' lượt ra.';
+ $('reportResultImage').hidden=true;$('reportImageHint').hidden=true;$('reportResultImage').removeAttribute('src');return {content:el};
 }
-function buildReport(){
- const {vehicles,meta}=loadReportVehicles();
- const active=vehicles.filter(v=>v.currentStatus==='in');
- const capacity=400,assigned=active.filter(v=>!!v.currentSlot),waiting=active.filter(v=>!v.currentSlot);
- const rows=[1,2,3,4,5],perRow=80;
- const stamp=new Date().toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour12:false});
- const fmtDate=value=>value?new Date(value+'T12:00:00').toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):'Không rõ';
- const rowOf=slot=>{const m=String(slot||'').match(/^(\d+)(?:TLD|PLD|T|P)-(\d+)$/i);return m?Number(m[1]):null};
- const colOf=slot=>{const m=String(slot||'').match(/^\d+(TLD|PLD|T|P)-(\d+)$/i);return m?({'T':'Cột 1','TLD':'Cột 2','PLD':'Cột 3','P':'Cột 4'}[m[1].toUpperCase()]+' · Ô '+m[2]):'Chờ gán'};
- const detailRows=list=>list.map(v=>{
-  const session=(v.sessions||[]).slice().reverse().find(x=>!x.exit)||((v.sessions||[]).slice(-1)[0])||{};
-  const entry=session.entry||{};
-  const slot=v.currentSlot||session.slot||'';
-  const position=slot?(rowOf(slot)?'Dãy '+rowOf(slot)+' · '+colOf(slot):slot):'Chờ gán vị trí';
-  const entryDate=entry.entryDate||(entry.time?entry.time.slice(0,10):'');
-  return '<tr><td>'+escReport(normReport(v.ident)||'—')+'</td><td>'+escReport(v.model||'Chưa rõ')+'</td><td>'+escReport(entry.person||'—')+'</td><td>'+escReport(position)+'</td><td>'+escReport(fmtDate(entryDate))+'</td></tr>';
- }).join('');
- const rowStats=rows.map(r=>{
-  const list=assigned.filter(v=>rowOf(v.currentSlot)===r),free=Math.max(0,perRow-list.length),rate=Math.min(100,list.length/perRow*100);
-  return '<tr><td>Dãy '+r+'</td><td>'+list.length+'</td><td>'+free+'</td><td>'+rate.toFixed(1)+'%</td></tr>';
- }).join('');
- const table=(list)=>'<table><thead><tr><th style="width:18%">Biển số / VIN</th><th style="width:18%">Dòng xe</th><th style="width:20%">Tên / Bộ phận</th><th style="width:26%">Vị trí</th><th style="width:18%">Ngày vào</th></tr></thead><tbody>'+(list.length?detailRows(list):'<tr><td colspan="5" class="rpt-empty">Không có xe trong danh sách.</td></tr>')+'</tbody></table>';
- const rowSections=rows.map(r=>{
-  const list=assigned.filter(v=>rowOf(v.currentSlot)===r).sort((a,b)=>String(a.currentSlot).localeCompare(String(b.currentSlot)));
-  return '<section class="rpt-section"><div class="rpt-section-title">DÃY '+r+' · '+list.length+' XE</div>'+table(list)+'</section>';
- }).join('');
- const outside=assigned.filter(v=>!rows.includes(rowOf(v.currentSlot)));
- const outsideSection=outside.length?'<section class="rpt-section"><div class="rpt-section-title">VỊ TRÍ KHÔNG THUỘC DÃY 1–5 · '+outside.length+' XE</div>'+table(outside)+'</section>':'';
- const waitingSection='<section class="rpt-section"><div class="rpt-section-title">XE CHỜ GÁN VỊ TRÍ · '+waiting.length+' XE</div>'+table(waiting)+'</section>';
- const remaining=Math.max(0,capacity-assigned.length);
- const html='<div class="rpt-header"><div class="rpt-title">BÁO CÁO TỒN BÃI - BÃI XE 34</div><div class="rpt-time">Ngày giờ xuất báo cáo: '+escReport(stamp)+'</div></div>'+
- '<section class="rpt-section"><div class="rpt-section-title">TỔNG HỢP TỒN BÃI</div><table class="rpt-summary"><tbody>'+
- '<tr><th>Tổng xe tồn bãi (đã gán + chờ gán)</th><td>'+active.length+'</td></tr>'+
- '<tr><th>Số xe đã gán vị trí</th><td>'+assigned.length+'</td></tr>'+
- '<tr><th>Số xe chờ gán vị trí</th><td>'+waiting.length+'</td></tr>'+
- '<tr><th>Tổng số ô trống còn lại (trên 400 chỗ)</th><td>'+remaining+' / 400</td></tr>'+
- '</tbody></table></section>'+
- '<section class="rpt-section"><div class="rpt-section-title">THỐNG KÊ SỨC CHỨA THEO DÃY</div><table><thead><tr><th>Dãy</th><th>Xe đang đỗ</th><th>Chỗ trống</th><th>Lấp đầy</th></tr></thead><tbody>'+rowStats+'</tbody></table></section>'+
- '<div class="rpt-section-title">DANH SÁCH CHI TIẾT XE TỒN BÃI</div>'+rowSections+waitingSection+outsideSection+
- '<div class="rpt-footer">Nguồn: dữ liệu QLBX34 lưu tại thiết bị sau đồng bộ Firebase/local. Sức chứa theo yêu cầu: 5 dãy × 80 vị trí = 400 chỗ. Biển số/VIN đã loại bỏ dấu chấm, dấu gạch ngang và khoảng trắng.</div>';
- byId('reportContent').innerHTML=html;
- byId('reportMessage').textContent='Đã tạo báo cáo từ '+active.length+' xe đang tồn bãi · '+stamp;
- byId('reportResultImage').hidden=true;byId('reportImageHint').hidden=true;
- byId('reportResultImage').removeAttribute('src');
- return byId('reportContent');
-}
-function openReport(){
- try{
-  const content=buildReport();
-  byId('reportModal').classList.add('show');byId('reportModal').setAttribute('aria-hidden','false');
-  byId('reportModal').scrollTop=0;
-  byId('reportDownloadBtn').disabled=false;
- }catch(err){console.error('Open report failed:',err);alert('Lỗi xuất báo cáo: '+(err?.message||String(err)));}
-}
-function blobFromCanvas(canvas){return new Promise((resolve,reject)=>{try{if(!canvas||typeof canvas.toBlob!=='function')throw Error('Trình duyệt không hỗ trợ canvas.toBlob().');canvas.toBlob(blob=>blob&&blob.size?resolve(blob):reject(Error('Không tạo được dữ liệu ảnh PNG (blob rỗng).')),'image/png');}catch(err){reject(err);}});}
-async function exportReport(){
- const button=byId('reportDownloadBtn'),old=button.textContent;button.disabled=true;button.textContent='Đang tạo PNG…';
- try{
-  if(!window.html2canvas)throw Error('Thư viện html2canvas chưa tải xong hoặc CDN bị chặn. Kiểm tra kết nối Internet và thử lại.');
-  const content=byId('reportContent');if(!content||!content.children.length)buildReport();
-  const target=byId('reportContent');
-  if(document.fonts?.ready)await document.fonts.ready;
-  const canvas=await window.html2canvas(target,{scale:2,backgroundColor:'#ffffff',useCORS:true,allowTaint:false,logging:false,scrollX:0,scrollY:0,width:target.scrollWidth,height:target.scrollHeight,windowWidth:target.scrollWidth,windowHeight:Math.max(window.innerHeight,target.scrollHeight)});
-  const blob=await blobFromCanvas(canvas);
-  const filename='Bao_Cao_Bai_Xe_34_'+todayReport()+'.png';
-  const url=URL.createObjectURL(blob);
-  if(reportObjectUrl)URL.revokeObjectURL(reportObjectUrl);
-  reportBlob=blob;reportObjectUrl=url;reportFileName=filename;
-  const image=byId('reportResultImage');image.src=url;image.hidden=false;
-  byId('reportImageHint').hidden=false;
-  byId('reportMessage').textContent='Đã dựng ảnh PNG: '+filename;
-  const link=document.createElement('a');link.href=url;link.download=filename;link.style.display='none';document.body.appendChild(link);link.click();link.remove();
- }catch(err){console.error('Report PNG error:',err);alert('Lỗi xuất báo cáo: '+(err?.message||String(err)));byId('reportMessage').textContent='Xuất PNG thất bại: '+(err?.message||String(err));}
- finally{button.disabled=false;button.textContent=old;}
-}
-// This classic script is placed after the report DOM, so bind immediately. Do not wait
-// for DOMContentLoaded: a slow Firebase ES-module import must not disable this button.
-const trigger=byId('reportBtn');
-if(!trigger){console.error('Không tìm thấy nút reportBtn');}
-else{
- trigger.disabled=false;
- trigger.addEventListener('click',function(event){event.preventDefault();openReport();});
-}
-byId('reportDownloadBtn').addEventListener('click',exportReport);
-byId('reportCloseBtn').addEventListener('click',()=>{byId('reportModal').classList.remove('show');byId('reportModal').setAttribute('aria-hidden','true');});
-byId('reportModal').addEventListener('click',event=>{if(event.target===byId('reportModal')){byId('reportModal').classList.remove('show');byId('reportModal').setAttribute('aria-hidden','true');}});
+function refresh(){try{create();}catch(e){$('reportMessage').textContent=e.message;}}
+function open(){const n=today(),d=date(n),a=add(n,-((d.getUTCDay()+6)%7));$('reportPeriod').value='week';$('reportFrom').value=a;$('reportTo').value=add(a,6);$('reportCustomDates').hidden=true;$('reportSpecialNote').value='';$('reportModal').classList.add('show');$('reportModal').setAttribute('aria-hidden','false');refresh();}
+function close(){$('reportModal').classList.remove('show');$('reportModal').setAttribute('aria-hidden','true');}
+const toBlob=c=>new Promise((resolve,reject)=>{try{c.toBlob(b=>b&&b.size?resolve(b):reject(Error('PNG blob rỗng.')),'image/png');}catch(e){reject(e);}});
+async function exportPng(){const b=$('reportDownloadBtn'),label=b.textContent;b.disabled=true;b.textContent='Đang tạo PNG…';try{const result=create();if(!window.html2canvas)throw Error('html2canvas chưa tải xong. Kiểm tra kết nối Internet rồi thử lại.');if(document.fonts?.ready)await document.fonts.ready;const canvas=await window.html2canvas(result.content,{scale:2,width:1280,height:900,windowWidth:1280,windowHeight:900,backgroundColor:'#F1F5F9',useCORS:true,allowTaint:false,logging:false,scrollX:0,scrollY:0});const blob=await toBlob(canvas),url=URL.createObjectURL(blob);if(reportObjectUrl)URL.revokeObjectURL(reportObjectUrl);reportObjectUrl=url;const name='Bao_Cao_Tong_Quan_Bai_Xe_'+today()+'.png',img=$('reportResultImage');img.src=url;img.hidden=false;$('reportImageHint').hidden=false;$('reportMessage').textContent='Đã tạo '+name+' · khung 1280 × 900, xuất ảnh scale 2.';const a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();}catch(e){console.error(e);$('reportMessage').textContent='Xuất PNG thất bại: '+e.message;alert('Không thể xuất PNG: '+e.message);}finally{b.disabled=false;b.textContent=label;}}
+const trigger=$('reportBtn');if(trigger){trigger.disabled=false;trigger.addEventListener('click',e=>{e.preventDefault();open();});}
+$('reportCloseBtn').addEventListener('click',close);$('reportModal').addEventListener('click',e=>{if(e.target===$('reportModal'))close();});$('reportDownloadBtn').addEventListener('click',exportPng);
+$('reportPeriod').addEventListener('change',()=>{const m=$('reportPeriod').value;$('reportCustomDates').hidden=m!=='custom';if(m==='month'){const n=today();$('reportFrom').value=n.slice(0,8)+'01';$('reportTo').value=n;}refresh();});
+$('reportFrom').addEventListener('change',refresh);$('reportTo').addEventListener('change',refresh);$('reportSpecialNote').addEventListener('input',refresh);
 })();
 </script></body></html>
