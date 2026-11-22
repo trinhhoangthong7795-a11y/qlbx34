@@ -204,9 +204,9 @@ persist=function(){
 };
 $('uploadJson').onclick=async()=>{const f=$('jsonFile').files[0];if(!f)return toast('Vui lòng chọn file JSON.');try{const obj=JSON.parse(await f.text());if(obj.schemaVersion!==2||!obj.data||!Array.isArray(obj.data.vehicles))throw Error('File không đúng cấu trúc schemaVersion 2.');if(!confirm(`Nạp ${obj.data.vehicles.length} hồ sơ xe và ghi đè toàn bộ dữ liệu hiện tại?`))return;loadData(obj);if(fbSetHandler)await pushFirebase();else if(dbMode!=='local')throw Error('Chưa kết nối Firebase.');toast('Đã nạp dữ liệu JSON thành công.');$('firebaseStatus').textContent=`Đã nạp ${obj.data.vehicles.length} hồ sơ · ${new Date().toLocaleString('vi-VN')}`;}catch(e){toast('Nạp JSON thất bại: '+e.message)}};
 // Báo cáo tồn bãi & xuất PNG: dùng trực tiếp state hiện hành, không thay đổi dữ liệu xe.
-function dateAdd(s,n){const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return d.toLocaleDateString('en-CA',{timeZone:'Asia/Ho_Chi_Minh'});}
+function dateAdd(s,n){const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
 function monday(s){const d=new Date(s+'T12:00:00'),day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return d.toLocaleDateString('en-CA',{timeZone:'Asia/Ho_Chi_Minh'});}
-function periodSet(){const t=today(),type=$('periodType').value;if(type==='week'){$('periodFrom').value=monday(t);$('periodTo').value=dateAdd(monday(t),6)}else if(type==='month'){$('periodFrom').value=t.slice(0,7)+'-01';const d=new Date(Number(t.slice(0,4)),Number(t.slice(5,7)),0);$('periodTo').value=d.toLocaleDateString('en-CA',{timeZone:'Asia/Ho_Chi_Minh'})}}
+function periodSet(){const t=today(),type=$('periodType').value;if(type==='week'){$('periodFrom').value=monday(t);$('periodTo').value=dateAdd(monday(t),6)}else if(type==='month'){$('periodFrom').value=t.slice(0,7)+'-01';const d=new Date(Number(t.slice(0,4)),Number(t.slice(5,7)),0);$('periodTo').value=d.toISOString().slice(0,10)}}
 function reportDate(v,s){return s?.entry?.entryDate||(s?.entry?.time?s.entry.time.slice(0,10):'');}
 function report(){try{
  const from=$('periodFrom').value,to=$('periodTo').value;
@@ -238,7 +238,7 @@ $('pngBtn').addEventListener('click',async()=>{const button=$('pngBtn'),label=bu
  if(!report())throw Error('Không thể tạo dữ liệu báo cáo. Vui lòng kiểm tra khoảng ngày.');
  const source=$('reportCanvas');if(!source||!source.children.length)throw Error('Không tìm thấy vùng nội dung báo cáo.');
  if(document.fonts?.ready)await document.fonts.ready;
- const canvas=await html2canvas(source,{backgroundColor:'#ffffff',scale:2,useCORS:true,allowTaint:false,logging:false,scrollX:0,scrollY:0,width:760,windowWidth:760});
+ const scrollWrap=source.parentElement,dialog=source.closest('.modal-card');const restore={wrapOverflow:scrollWrap?.style.overflow,wrapMax:scrollWrap?.style.maxHeight,dialogOverflow:dialog?.style.overflow,dialogMax:dialog?.style.maxHeight};if(scrollWrap){scrollWrap.style.overflow='visible';scrollWrap.style.maxHeight='none';}if(dialog){dialog.style.overflow='visible';dialog.style.maxHeight='none';}let canvas;try{canvas=await html2canvas(source,{backgroundColor:'#ffffff',scale:2,useCORS:true,allowTaint:false,logging:false,scrollX:0,scrollY:0,width:760,height:source.scrollHeight,windowWidth:760,windowHeight:Math.max(window.innerHeight,source.scrollHeight)});}finally{if(scrollWrap){scrollWrap.style.overflow=restore.wrapOverflow;scrollWrap.style.maxHeight=restore.wrapMax;}if(dialog){dialog.style.overflow=restore.dialogOverflow;dialog.style.maxHeight=restore.dialogMax;}}
  const blob=await canvasBlob(canvas),name='Bao_Cao_Bai_Xe_34_'+today()+'.png',url=URL.createObjectURL(blob);
  if(lastPngUrl)URL.revokeObjectURL(lastPngUrl);lastPngBlob=blob;lastPngUrl=url;lastPngName=name;
  $('pngPreviewImage').src=url;$('pngFilename').textContent=name;showModal('pngPreviewModal');
