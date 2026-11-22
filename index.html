@@ -308,14 +308,16 @@ async function exportReport(){
  }catch(err){console.error('Report PNG error:',err);alert('Lỗi xuất báo cáo: '+(err?.message||String(err)));byId('reportMessage').textContent='Xuất PNG thất bại: '+(err?.message||String(err));}
  finally{button.disabled=false;button.textContent=old;}
 }
-document.addEventListener('DOMContentLoaded',function(){
- const trigger=byId('reportBtn');
- if(!trigger){console.error('Không tìm thấy nút reportBtn');return;}
+// This classic script is placed after the report DOM, so bind immediately. Do not wait
+// for DOMContentLoaded: a slow Firebase ES-module import must not disable this button.
+const trigger=byId('reportBtn');
+if(!trigger){console.error('Không tìm thấy nút reportBtn');}
+else{
  trigger.disabled=false;
  trigger.addEventListener('click',function(event){event.preventDefault();openReport();});
- byId('reportDownloadBtn').addEventListener('click',exportReport);
- byId('reportCloseBtn').addEventListener('click',()=>{byId('reportModal').classList.remove('show');byId('reportModal').setAttribute('aria-hidden','true');});
- byId('reportModal').addEventListener('click',event=>{if(event.target===byId('reportModal')){byId('reportModal').classList.remove('show');byId('reportModal').setAttribute('aria-hidden','true');}});
-});
+}
+byId('reportDownloadBtn').addEventListener('click',exportReport);
+byId('reportCloseBtn').addEventListener('click',()=>{byId('reportModal').classList.remove('show');byId('reportModal').setAttribute('aria-hidden','true');});
+byId('reportModal').addEventListener('click',event=>{if(event.target===byId('reportModal')){byId('reportModal').classList.remove('show');byId('reportModal').setAttribute('aria-hidden','true');}});
 })();
 </script></body></html>
