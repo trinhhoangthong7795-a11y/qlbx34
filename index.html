@@ -64,11 +64,11 @@ const DEFAULT_CATALOGS={
  staffDepts:['Thông/Kho','Điều phối','Kỹ thuật','PKD'],
  reasons:['Giao khách','Về xưởng','Giao GSM','Điều chuyển','Khác']
 };
-let state=loadState(), activeVehicleId=null, toastTimer=null, syncing=false, syncTimer=null;
+let state=loadState(), activeVehicleId=null, toastTimer=null, syncing=false, syncTimer=null, pollTimer=null, serverRevision=localStorage.getItem('BX34_SERVER_REVISION')||'', syncReady=false, localDirty=false;
 let openRows=new Set();
 function loadState(){try{const x=JSON.parse(localStorage.getItem(DB_KEY)||'{}');return {vehicles:Array.isArray(x.vehicles)?x.vehicles:[],catalogs:{...DEFAULT_CATALOGS,...(x.catalogs||{})}}}catch(e){return {vehicles:[],catalogs:structuredCloneSafe(DEFAULT_CATALOGS)}}}
 function structuredCloneSafe(x){return JSON.parse(JSON.stringify(x))}
-function saveState(){localStorage.setItem(DB_KEY,JSON.stringify(state));scheduleSync()}
+function saveState(){localStorage.setItem(DB_KEY,JSON.stringify(state));localDirty=true;scheduleSync()}
 function todayISO(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
 function fmtDate(x){if(!x)return 'Chưa có ngày nhập';let d;if(/^\d{4}-\d\d-\d\d$/.test(String(x)))d=new Date(x+'T00:00:00');else{const m=String(x).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);d=m?new Date(+m[3],+m[2]-1,+m[1]):new Date(x)}return isNaN(d)?'Chưa có ngày nhập':new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}).format(d)}
 function ageDays(x){if(!x)return null;let d;if(/^\d{4}-\d\d-\d\d$/.test(String(x)))d=new Date(x+'T00:00:00');else{const m=String(x).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);d=m?new Date(+m[3],+m[2]-1,+m[1]):new Date(x)}if(isNaN(d))return null;const now=new Date(todayISO()+'T00:00:00');return Math.max(0,Math.floor((now-d)/86400000))}
@@ -163,7 +163,7 @@ function importExcel(file){const reader=new FileReader();reader.onload=()=>{try{
 function openSettings(){openModal(`<h3>⚙️ Cài đặt hệ thống</h3><div class="field"><label>URL Google Apps Script Web App</label><input id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec" value="${esc(localStorage.getItem(URL_KEY)||'')}"></div><div class="actions"><button class="btn primary" id="saveTest">Lưu & kiểm tra kết nối</button><button class="btn green" id="pushAll">Đẩy toàn bộ lên Sheet</button><button class="btn" id="pullAll">Tải dữ liệu từ Sheet</button></div><hr class="my-4"><h3 class="text-base">Sao lưu & phục hồi</h3><div class="actions"><button class="btn" id="backupJson">Xuất backup JSON</button><button class="btn" id="backupXlsx">Xuất Excel tổng hợp</button></div><div class="field mt-3"><label>Nhập file JSON hoặc Excel</label><input type="file" id="restoreFile" accept=".json,.xlsx,.xls"></div><hr class="my-4"><h3 class="text-base text-red-700">Khôi phục cài đặt gốc</h3><p class="text-xs muted">Xóa dữ liệu ứng dụng trên trình duyệt hiện tại. Không xóa dữ liệu đã lưu trên Google Sheets.</p><div class="actions"><button class="btn red" id="resetLocal">Xóa dữ liệu trên máy</button><button class="btn gray" onclick="closeModal()">Đóng</button></div>`,false);
  document.getElementById('saveTest').onclick=async()=>{const u=document.getElementById('gasUrl').value.trim();localStorage.setItem(URL_KEY,u);try{const r=await gasGet('ping');if(r.status!=='ok')throw Error(r.message||'Không phản hồi');setSync('ok','Đã kết nối');showToast(r.message||'Kết nối thành công')}catch(e){setSync('err','Lỗi kết nối');showToast('Kết nối thất bại: '+e.message,'error')}};
  document.getElementById('pushAll').onclick=async()=>{await pushToGoogleSheet();};
- document.getElementById('pullAll').onclick=async()=>{try{await pullFromGoogleSheet();closeModal();render();showToast('Đã tải dữ liệu từ Sheet')}catch(e){showToast(e.message,'error')}};
+ document.getElementById('pullAll').onclick=async()=>{try{await pullFromGoogleSheet();closeModal();render()}catch(e){showToast(e.message,'error')}};
  document.getElementById('backupJson').onclick=exportBackup;document.getElementById('backupXlsx').onclick=()=>{const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(state.vehicles),'HoSoXe');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(state.catalogs.models.map(x=>({DongXe:x}))), 'DongXe');XLSX.writeFile(wb,'BAI_XE_34_BACKUP.xlsx')};
  document.getElementById('restoreFile').onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.name.toLowerCase().endsWith('.json'))importBackup(f);else importExcel(f)};
  document.getElementById('resetLocal').onclick=()=>{openModal(`<h3>Xác nhận xóa dữ liệu?</h3><p>Toàn bộ dữ liệu trên trình duyệt này sẽ bị xóa vĩnh viễn.</p><div class="actions"><button class="btn red" id="resetYes">Xóa toàn bộ</button><button class="btn gray" onclick="closeModal()">Hủy</button></div>`);document.getElementById('resetYes').onclick=()=>{state={vehicles:[],catalogs:structuredCloneSafe(DEFAULT_CATALOGS)};saveState();closeModal();closeModal();render();showToast('Đã xóa dữ liệu trên thiết bị','warn')}}}
@@ -172,40 +172,90 @@ function scheduleSync(){if(!localStorage.getItem(URL_KEY))return;clearTimeout(sy
 function gasGet(action){const url=localStorage.getItem(URL_KEY);if(!url)return Promise.reject(Error('Chưa cấu hình URL Web App'));return new Promise((resolve,reject)=>{const cb='__bxcb'+Date.now()+Math.floor(Math.random()*10000),s=document.createElement('script'),t=setTimeout(()=>finish(Error('Hết thời gian chờ')),20000);function finish(err,data){clearTimeout(t);delete window[cb];s.remove();err?reject(err):resolve(data)}window[cb]=d=>finish(null,d);s.onerror=()=>finish(Error('Không truy cập được Apps Script. Kiểm tra URL/Anyone.'));const u=new URL(url);u.searchParams.set('action',action);u.searchParams.set('callback',cb);u.searchParams.set('_',Date.now());s.src=u.toString();document.head.appendChild(s)})}
 function verifyRemoteState(remote,local){
  const rv=remote.vehicles||remote.records||[],lv=local.vehicles||[];
- if(rv.length!==lv.length)throw Error(`Đồng bộ chưa đủ hồ sơ: máy ${lv.length}, Sheet ${rv.length}`);
+ if(rv.length!==lv.length)return false;
  const key=x=>normId(x.id||x.vehicleId||x.MaXe_ID||'');
  const remoteMap=new Map(rv.map(v=>[key(v),v]));
- for(const v of lv){const r=remoteMap.get(key(v));if(!r)throw Error('Google Sheets thiếu hồ sơ '+(v.id||''));
+ for(const v of lv){const r=remoteMap.get(key(v));if(!r)return false;
   if((v.cycles||[]).length!==(r.cycles||[]).length)throw Error('Lịch sử chu kỳ chưa khớp tại hồ sơ '+v.id);
   const fields=[['vehicleType',vehicleTypeOf(v),vehicleTypeOf(r)],['model',v.model||'',r.model||''],['color',v.color||'',r.color||''],['position',position(v)==='Chờ gán vị trí'?'':position(v),position(r)==='Chờ gán vị trí'?'':position(r)],['status',v.status||'',r.status||''],['missingInitialEntryDate',!!v.missingInitialEntryDate,!!r.missingInitialEntryDate]];
   const mismatch=fields.find(x=>String(x[1])!==String(x[2]));
-  if(mismatch)throw Error('Trường '+mismatch[0]+' chưa khớp tại hồ sơ '+v.id);
+  if(mismatch)return false;
   const cycleFields=['entryDate','entryStaff','exitDate','exitStaff','note'];
   for(let i=0;i<(v.cycles||[]).length;i++){
-   for(const field of cycleFields){const a=(v.cycles[i]||{})[field]||'',b=(r.cycles[i]||{})[field]||'';if(String(a)!==String(b))throw Error('Chu kỳ '+(i+1)+' / '+field+' chưa khớp tại hồ sơ '+v.id)}
+   for(const field of cycleFields){const a=(v.cycles[i]||{})[field]||'',b=(r.cycles[i]||{})[field]||'';if(String(a)!==String(b))return false}
    const aReason=(v.cycles[i]||{}).exitReason||(v.cycles[i]||{}).reason||'',bReason=(r.cycles[i]||{}).exitReason||(r.cycles[i]||{}).reason||'';
-   if(String(aReason)!==String(bReason))throw Error('Chu kỳ '+(i+1)+' / reason chưa khớp tại hồ sơ '+v.id);
+   if(String(aReason)!==String(bReason))return false;
   }
  }
  for(const k of ['models','colors','staffDepts','reasons']){
   const a=[...(local.catalogs?.[k]||[])].map(String).sort(),b=[...(remote.catalogs?.[k]||[])].map(String).sort();
-  if(JSON.stringify(a)!==JSON.stringify(b))throw Error('Danh mục '+k+' chưa đồng bộ đầy đủ');
+  if(JSON.stringify(a)!==JSON.stringify(b))return false;
  }
  return true;
 }
 async function pushToGoogleSheet(){
- if(syncing){showToast('Đang có lượt đồng bộ khác chạy. Vui lòng đợi hoàn tất.','warn');return}const url=localStorage.getItem(URL_KEY);if(!url){setSync('err','Offline');showToast('Chưa lưu URL Google Apps Script Web App.','error');return}if(!Array.isArray(state.vehicles)||!state.vehicles.length){showToast('Không có hồ sơ xe trên thiết bị để đồng bộ.','error');return}
- syncing=true;setSync('busy','Đang đồng bộ');
+ if(syncing)return;
+ const url=localStorage.getItem(URL_KEY);
+ if(!url){setSync('err','Chưa cấu hình Google Sheets');return}
+ if(!syncReady){showToast('Đang xác lập dữ liệu gốc từ Google Sheets. Vui lòng đợi.','warn');return}
+ syncing=true;setSync('busy','Đang gửi thay đổi lên Sheet');
  try{
-  // text/plain là CORS-safelisted; no-cors cho phép gửi POST đơn giản từ GitHub Pages.
-  // Phản hồi POST là opaque nên bắt buộc đọc lại getAll và đối chiếu dữ liệu thực tế.
-  const payload={action:'syncFull',data:{vehicles:state.vehicles,catalogs:state.catalogs}};
-   await fetch(url,{method:'POST',mode:'no-cors',redirect:'follow',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(payload)});
-  const check=await gasGet('getAll');if(check.status!=='ok')throw Error(check.message||'Không đọc được dữ liệu sau đồng bộ');
-  verifyRemoteState(check,state);setSync('ok','Đã đồng bộ và xác minh');showToast('Đồng bộ thành công: '+state.vehicles.length+' hồ sơ xe, '+state.vehicles.reduce((n,v)=>n+(v.cycles||[]).length,0)+' lượt lịch sử. Sheet tồn bãi: '+liveVehicles().length+' xe.','success');
- }catch(e){setSync('err','Đồng bộ chưa xác minh');showToast(e.message||'Lỗi đồng bộ Google Sheets','error');console.error(e)}finally{syncing=false}
+  const payload={action:'syncFull',baseRevision:serverRevision,data:{vehicles:state.vehicles,catalogs:state.catalogs}};
+  await fetch(url,{method:'POST',mode:'no-cors',redirect:'follow',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(payload)});
+  const remote=await gasGet('getAll');
+  if(remote.status!=='ok')throw Error(remote.message||'Không đọc được Google Sheets');
+  if(!verifyRemoteState(remote,state)){
+   state={vehicles:remote.vehicles||remote.records||[],catalogs:{...DEFAULT_CATALOGS,...(remote.catalogs||{})}};
+   localStorage.setItem(DB_KEY,JSON.stringify(state));serverRevision=remote.revision||'';localStorage.setItem('BX34_SERVER_REVISION',serverRevision);localDirty=false;render();
+   setSync('warn','Có xung đột – đã tải bản Sheet');showToast('Sheet đã có thay đổi mới hơn. Đã ưu tiên dữ liệu Google Sheets để tránh ghi đè.','warn');return;
+  }
+  serverRevision=remote.revision||serverRevision;localStorage.setItem('BX34_SERVER_REVISION',serverRevision);localDirty=false;
+  setSync('ok','Hai chiều đã đồng bộ');
+ }catch(e){setSync('err','Đồng bộ thất bại');showToast(e.message||'Lỗi đồng bộ Google Sheets','error');console.error(e)}finally{syncing=false}
 }
-async function pullFromGoogleSheet(){const remote=await gasGet('getAll');if(remote.status!=='ok')throw Error(remote.message||'Lỗi tải dữ liệu');state={vehicles:remote.vehicles||remote.records||[],catalogs:{...DEFAULT_CATALOGS,...(remote.catalogs||{})}};localStorage.setItem(DB_KEY,JSON.stringify(state));render();setSync('ok','Đã tải dữ liệu')}
+async function pullFromGoogleSheet(silent=false){
+ const remote=await gasGet('getAll');if(remote.status!=='ok')throw Error(remote.message||'Lỗi tải dữ liệu');
+ state={vehicles:remote.vehicles||remote.records||[],catalogs:{...DEFAULT_CATALOGS,...(remote.catalogs||{})}};
+ localStorage.setItem(DB_KEY,JSON.stringify(state));serverRevision=remote.revision||'';localStorage.setItem('BX34_SERVER_REVISION',serverRevision);localDirty=false;syncReady=true;render();setSync('ok','Đã tải dữ liệu mới nhất từ Google Sheets');
+ if(!silent)showToast('Đã tải '+state.vehicles.length+' hồ sơ mới nhất từ Google Sheets');
+ return remote;
+}
+async function initializeSync(){
+ if(!localStorage.getItem(URL_KEY)){setSync('err','Chưa cấu hình Google Sheets');return}
+ try{
+  const localCount=state.vehicles.length;
+  const remote=await gasGet('getAll');if(remote.status!=='ok')throw Error(remote.message||'Không đọc được Google Sheets');
+  const remoteVehicles=remote.vehicles||remote.records||[];
+  if(remoteVehicles.length){
+   state={vehicles:remoteVehicles,catalogs:{...DEFAULT_CATALOGS,...(remote.catalogs||{})}};
+   localStorage.setItem(DB_KEY,JSON.stringify(state));serverRevision=remote.revision||'';localStorage.setItem('BX34_SERVER_REVISION',serverRevision);localDirty=false;
+  }else if(localCount){
+   serverRevision=remote.revision||'';localStorage.setItem('BX34_SERVER_REVISION',serverRevision);syncReady=true;localDirty=true;await pushToGoogleSheet();
+  }else{
+   serverRevision=remote.revision||'';localStorage.setItem('BX34_SERVER_REVISION',serverRevision);
+  }
+  syncReady=true;render();setSync('ok','Đã kết nối hai chiều');
+ }catch(e){syncReady=false;setSync('err','Không tải được dữ liệu từ Sheet');showToast('Không thể khởi tạo đồng bộ: '+e.message,'error');console.error(e)}
+}
+function startSheetPolling(){
+ clearInterval(pollTimer);pollTimer=setInterval(async()=>{
+  if(document.hidden||syncing||!syncReady||!localStorage.getItem(URL_KEY))return;
+  try{
+   const remote=await gasGet('getAll');if(remote.status!=='ok')throw Error(remote.message||'Lỗi kiểm tra Sheet');
+   if(remote.revision&&remote.revision!==serverRevision){
+    if(localDirty){
+     setSync('warn','Sheet có thay đổi – đang xử lý xung đột');
+     // Server revision guard prevents stale local data from overwriting the Sheet.
+     await pushToGoogleSheet();
+    }else{
+     state={vehicles:remote.vehicles||remote.records||[],catalogs:{...DEFAULT_CATALOGS,...(remote.catalogs||{})}};
+     localStorage.setItem(DB_KEY,JSON.stringify(state));serverRevision=remote.revision;localStorage.setItem('BX34_SERVER_REVISION',serverRevision);render();
+     setSync('ok','Đã nhận thay đổi từ Google Sheets');showToast('Google Sheets vừa thay đổi. HTML đã cập nhật dữ liệu mới.','success');
+    }
+   }
+  }catch(e){setSync('err','Mất kết nối Google Sheets');console.warn(e)}
+ },30000);
+}
 function parseDateValue(x){
  if(!x)return null;
  if(/^\d{4}-\d\d-\d\d$/.test(String(x)))return new Date(String(x)+'T00:00:00');
@@ -317,6 +367,6 @@ function openReportPreview(){
 }
 document.getElementById('reportBtn').onclick=openReportPreview;
 render();
-if(localStorage.getItem(URL_KEY)){setSync('busy','Đã lưu URL');}
+if(localStorage.getItem(URL_KEY)){setSync('busy','Đang tải dữ liệu trung tâm');initializeSync().then(startSheetPolling);}
 </script>
 </body></html>
