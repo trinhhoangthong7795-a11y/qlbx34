@@ -1,1304 +1,321 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#0b2e59">
-<title>QLBX34 - Quản Lý Bãi Xe 34</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0066CC"><title>BÃI XE 34</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
-:root{--blue:#0057b8;--blue2:#1e7bff;--navy:#0b2e59;--blue-bg:#e8f1ff;--ink:#0f1c2e;--mute:#5d6b7e;--line:#d6dfeb;--bg:#f3f6fb;--ok:#12a150;--bad:#d92d20;--warn:#f59e0b;--r:14px}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.4}
-button{font-family:inherit;font-size:16px;cursor:pointer}
-input,select,textarea{font-family:inherit;font-size:16px;width:100%;padding:12px;border:1.5px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);outline:none}
-input:focus,select:focus,textarea:focus{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(30,123,255,.15)}
-textarea{resize:vertical;min-height:80px}
-label{display:block;font-weight:700;font-size:14px;margin:14px 0 6px;color:#26364d}
-.req{color:var(--bad)}
-#header{position:fixed;top:0;left:0;right:0;height:56px;background:var(--navy);color:#fff;display:flex;align-items:center;padding:0 8px;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.18)}
-#header .burger{width:48px;height:48px;background:none;border:none;color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px}
-#header .burger span{display:block;width:24px;height:3px;background:#fff;border-radius:2px}
-#header .ttl{flex:1;font-weight:800;font-size:18px;padding-left:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#header .ttl small{display:block;font-weight:500;font-size:11px;opacity:.85;margin-top:-2px}
-.dotwrap{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);padding:6px 10px;border-radius:20px;font-size:12px;font-weight:700;margin-right:4px}
-.dot{width:12px;height:12px;border-radius:50%;background:var(--bad);box-shadow:0 0 0 3px rgba(255,255,255,.35)}
-.dot.on{background:#3ddc84}
-#searchbar{position:fixed;top:56px;left:0;right:0;background:#fff;padding:8px 12px;z-index:40;border-bottom:1px solid var(--line);display:flex;gap:8px}
-#searchbar input{padding:11px 14px;border-radius:24px;background:var(--bg)}
-#searchbar button{border:none;background:var(--blue-bg);color:var(--blue);font-weight:800;border-radius:24px;padding:0 16px}
-#main{padding:122px 12px 40px;max-width:900px;margin:0 auto}
-#overlay{position:fixed;inset:0;background:rgba(10,20,40,.5);opacity:0;pointer-events:none;transition:opacity .25s;z-index:60}
-#overlay.show{opacity:1;pointer-events:auto}
-#sidebar{position:fixed;top:0;bottom:0;left:0;width:82%;max-width:320px;background:#fff;transform:translateX(-102%);transition:transform .28s cubic-bezier(.3,.8,.3,1);z-index:70;display:flex;flex-direction:column;box-shadow:4px 0 20px rgba(0,0,0,.25)}
-#sidebar.show{transform:translateX(0)}
-#sidebar .sh{background:var(--navy);color:#fff;padding:22px 18px}
-#sidebar .sh b{font-size:20px;display:block}
-#sidebar .sh span{font-size:13px;opacity:.85}
-#sidebar nav{flex:1;overflow:auto;padding:8px}
-#sidebar nav button{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:none;background:none;padding:16px 14px;border-radius:12px;font-size:16px;font-weight:600;color:var(--ink)}
-#sidebar nav button.act{background:var(--blue-bg);color:var(--blue)}
-#sidebar nav button i{font-style:normal;font-size:22px;width:28px;text-align:center}
-.card{background:#fff;border-radius:var(--r);padding:14px;margin-bottom:14px;box-shadow:0 1px 4px rgba(15,28,46,.08);border:1px solid #e6edf6}
-.card h3{margin:0 0 10px;font-size:17px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
-.stat{background:#fff;border-radius:var(--r);padding:12px 6px;text-align:center;border:1px solid #e6edf6;box-shadow:0 1px 4px rgba(15,28,46,.06)}
-.stat b{display:block;font-size:26px;color:var(--blue)}
-.stat span{font-size:12px;color:var(--mute);font-weight:600}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:12px;padding:14px 16px;font-weight:800;background:var(--blue);color:#fff;min-height:50px}
-.btn.sec{background:var(--blue-bg);color:var(--blue)}
-.btn.red{background:#fdecea;color:var(--bad)}
-.btn.grn{background:#e3f7ec;color:var(--ok)}
-.btn.block{width:100%}
-.btn:active{transform:scale(.98);opacity:.9}
-.row{display:flex;gap:8px}
-.row>*{flex:1}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.chip{border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:9px 14px;font-weight:700;font-size:14px;color:var(--ink)}
-.chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
-.chip.cu{background:#e3eeff;border-color:#8db6f5}
-.chip.moi{background:#dff6e6;border-color:#7ed3a1}
-.ddw{display:flex;gap:8px}
-.ddw select{flex:1}
-.plus{flex:0 0 52px;border:none;border-radius:12px;background:var(--blue);color:#fff;font-size:24px;font-weight:800}
-.addrow{display:flex;gap:8px;margin-top:8px}
-.addrow .btn{flex:0 0 auto;min-height:0;padding:0 18px}
-.seg{display:flex;background:#e6edf6;border-radius:12px;padding:4px;gap:4px;margin-top:6px}
-.seg button{flex:1;border:none;background:none;padding:12px 6px;border-radius:9px;font-weight:800;color:var(--mute);font-size:15px}
-.seg button.on{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.15)}
-.seg button.on.m{color:var(--ok)}
-.dcards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.dcard{background:#fff;border:1.5px solid #d3e0f3;border-radius:16px;padding:14px;text-align:left;box-shadow:0 1px 4px rgba(15,28,46,.08)}
-.dcard b{font-size:20px;display:block;color:var(--navy)}
-.dcard .sub{font-size:13px;color:var(--mute);font-weight:600;margin-top:2px}
-.bar{height:10px;background:#e3eaf4;border-radius:6px;overflow:hidden;margin:10px 0 6px}
-.bar i{display:block;height:100%;background:linear-gradient(90deg,#1e7bff,#0057b8);border-radius:6px}
-.bar i.hi{background:linear-gradient(90deg,#f59e0b,#d92d20)}
-.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;font-weight:700;color:var(--mute);margin:6px 0 10px}
-.legend s{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:5px;text-decoration:none}
-.colhd{display:grid;grid-template-columns:1fr 1fr 12px 1fr 1fr;gap:5px;position:sticky;top:108px;z-index:5;background:var(--bg);padding:6px 0;text-align:center;font-weight:900;font-size:14px;color:var(--navy)}
-.lot{display:grid;grid-template-columns:1fr 1fr 12px 1fr 1fr;gap:5px}
-.lot .aisle{background:repeating-linear-gradient(0deg,#cdd8e6 0 6px,transparent 6px 12px);width:3px;margin:0 auto;border-radius:2px}
-.cell{min-height:58px;border-radius:10px;border:1.5px dashed #c4d1e2;background:#f7f9fc;padding:3px 2px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:hidden;color:var(--ink);width:100%;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
-.cell .sl{font-size:10px;color:#8a98ab;font-weight:700}
-.cell .pl{font-size:12px;font-weight:900;letter-spacing:-.2px;word-break:break-all;line-height:1.1}
-.cell .md{font-size:10px;font-weight:700;margin-top:2px;line-height:1.1}
-.cell.occ{border-style:solid}
-.cell.occ.cu{border-color:#1e6fe0;background:#e3eeff}
-.cell.occ.cu .sl,.cell.occ.cu .md{color:#1e6fe0}
-.cell.occ.moi{border-color:#15a34a;background:#dff6e6}
-.cell.occ.moi .sl,.cell.occ.moi .md{color:#15803d}
-.cell.free{background:#eefaf2;border:1.5px solid #7ed3a1}
-.cell.dis{opacity:.45;pointer-events:none}
-.cell.hl{outline:3px solid var(--warn);background:#fff6dd}
-.cell.target{outline:3px solid #12a150;background:#d5f5e1}
-.cell.pk{min-height:42px}
-.ghost{position:fixed;z-index:500;pointer-events:none;background:#fff;border:2px solid var(--blue);border-radius:10px;padding:8px 12px;font-weight:900;box-shadow:0 6px 18px rgba(0,0,0,.3);transform:translate(-50%,-120%)}
-.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
-.tabs button{flex:1;border:none;background:#e6edf6;padding:12px;border-radius:12px;font-weight:800;color:var(--mute);min-width:56px}
-.tabs button.on{background:var(--blue);color:#fff}
-.item{background:#fff;border-radius:var(--r);border:1px solid #e6edf6;padding:12px;margin-bottom:10px;display:block;width:100%;text-align:left;box-shadow:0 1px 3px rgba(15,28,46,.06)}
-.item .top{display:flex;justify-content:space-between;gap:8px;align-items:center}
-.item .plate{font-size:20px;font-weight:900;letter-spacing:.5px}
-.badge{display:inline-block;background:var(--blue-bg);color:var(--blue);font-weight:800;font-size:12px;border-radius:8px;padding:3px 8px}
-.badge.g{background:#e9edf3;color:#556}
-.badge.o{background:#fff1d6;color:#9a5b00}
-.badge.m{background:#dff6e6;color:#15803d}
-.item .meta{font-size:14px;color:var(--mute);margin-top:4px}
-.empty{text-align:center;color:var(--mute);padding:30px 10px}
-.lrow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #edf1f6}
-.lrow span{flex:1;font-weight:600}
-.lrow button{border:none;background:#eef2f7;border-radius:10px;width:42px;height:42px;font-size:18px}
-#modal{position:fixed;inset:0;background:rgba(10,20,40,.55);z-index:90;display:none;align-items:flex-end;justify-content:center}
-#modal.show{display:flex}
-#sheet{background:#fff;width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px 16px 28px;animation:up .22s ease-out}
-@keyframes up{from{transform:translateY(40px);opacity:.5}to{transform:none;opacity:1}}
-#sheet .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-#sheet .hd h2{margin:0;font-size:20px}
-#sheet .x{border:none;background:#eef2f7;width:40px;height:40px;border-radius:50%;font-size:20px;font-weight:800;color:var(--mute)}
-.kv{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #edf1f6;font-size:15px}
-.kv span{color:var(--mute);flex:0 0 38%}
-.kv b{text-align:right;flex:1;word-break:break-word}
-#loading{position:fixed;inset:0;background:rgba(255,255,255,.85);z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-weight:800;color:var(--blue)}
-#loading.show{display:flex}
-.spin{width:48px;height:48px;border:5px solid var(--blue-bg);border-top-color:var(--blue);border-radius:50%;animation:sp .8s linear infinite}
-@keyframes sp{to{transform:rotate(360deg)}}
-#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);background:#16233a;color:#fff;padding:12px 20px;border-radius:24px;font-weight:700;z-index:300;transition:transform .25s;max-width:90%;text-align:center;font-size:15px}
-#toast.show{transform:translateX(-50%) translateY(0)}
-.hint{font-size:13px;color:var(--mute);margin:6px 0}
-.pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:13px;font-weight:700}
-.chk{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1.5px solid var(--line);border-radius:12px;margin-top:8px;font-size:14px;font-weight:600}
-.chk input{width:22px;height:22px;flex:0 0 22px;margin:0;padding:0}
-#prevImg{width:100%;border:1px solid var(--line);border-radius:10px;margin-top:12px}
-
-/* ===== Report dashboard (landscape) ===== */
-#reportHost{position:absolute;left:-10000px;top:0;width:1150px}
-.rpd{width:1150px;background:#f0f4f9;padding:30px 32px 22px;color:#0f1c2e;font-family:Roboto,-apple-system,"Segoe UI",Arial,sans-serif}
-.rpd .hb{background:#0b2e59;color:#fff;border-radius:26px;padding:32px 38px 28px}
-.rpd .hb h1{margin:0;font-size:36px;font-weight:700;letter-spacing:.3px}
-.rpd .hb p{margin:6px 0 0;font-size:18px;opacity:.88}
-.rpd .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:10px}
-.rpd .kp{background:#fff;border-radius:16px;padding:22px 24px 12px;border-top:6px solid #2563eb;height:150px}
-.rpd .kp .l{font-size:17px;font-weight:700;color:#475569;letter-spacing:.2px}
-.rpd .kp .n{font-size:58px;font-weight:700;margin-top:18px;line-height:1}
-.rpd .mid{display:grid;grid-template-columns:65fr 35fr;gap:12px;margin-top:12px}
-.rpd .cd{background:#fff;border-radius:18px;padding:28px 30px}
-.rpd .cd h2{margin:0;font-size:22px;font-weight:700;color:#0b2e59;text-transform:uppercase}
-.rpd .cd .sub{font-size:14px;color:#94a3b8;margin-top:6px}
-.rpd .chart{position:relative;height:290px;margin:22px 0 0 44px}
-.rpd .gl{position:absolute;left:0;right:0;border-top:2px solid #e5ebf3}
-.rpd .gl span{position:absolute;left:-44px;top:-9px;font-size:13px;color:#94a3b8}
-.rpd .cols{position:absolute;left:0;right:0;top:0;bottom:0;display:flex}
-.rpd .col{flex:1;display:flex;justify-content:center;align-items:flex-end;gap:4px;height:100%}
-.rpd .bw{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;width:22px}
-.rpd .bv{font-size:13px;font-weight:700;line-height:16px;height:16px}
-.rpd .b{width:16px;border-radius:5px 5px 0 0;min-height:0}
-.rpd .xl{display:flex;margin:8px 0 0 44px}
-.rpd .xl span{flex:1;text-align:center;font-size:14px;color:#64748b}
-.rpd .lg{display:flex;gap:26px;margin-top:14px;font-size:15px;color:#475569}
-.rpd .lg i{display:inline-block;width:13px;height:13px;border-radius:50%;margin-right:7px;vertical-align:-1px}
-.rpd .ind{display:flex;justify-content:space-between;align-items:center;padding:30px 4px 18px;border-bottom:2px solid #e5ebf3;font-size:20px;color:#334155}
-.rpd .ind:last-child{border-bottom:none}
-.rpd .ind b{font-size:36px;font-weight:500;color:#0f1c2e}
-.rpd .age{display:grid;grid-template-columns:340px 1fr 70px;align-items:center;gap:0 14px;margin-top:20px;font-size:19px;color:#334155}
-.rpd .tr{height:22px;background:#e2e8f0;border-radius:11px;overflow:hidden}
-.rpd .tr i{display:block;height:100%;border-radius:11px}
-.rpd .age b{text-align:right;font-size:20px;color:#0f1c2e}
-.rpd .nb{margin-top:14px;border:2px solid #cbd5e1;border-radius:14px;padding:22px 24px;min-height:96px;font-size:18px;white-space:pre-wrap;color:#1e293b}
-.rpd .nb.none{font-style:italic;color:#94a3b8}
-.rpd .ft{margin-top:18px;font-size:14px;color:#94a3b8;line-height:1.5}
+:root{--blue:#0066cc;--sky:#0284c7;--green:#059669;--ink:#142235;--muted:#64748b;--line:#dbe5ef}
+*{box-sizing:border-box}html,body{margin:0;max-width:100%;overflow-x:hidden;background:#f3f7fb;color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,select,textarea{font:inherit}button{touch-action:manipulation}.top{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 2px 12px #0b31500c}
+.wrap{max-width:1400px;margin:auto;padding:12px 14px}.brand{display:flex;align-items:center;gap:9px;font-weight:900;color:var(--blue);letter-spacing:.2px}.brand svg{width:42px;height:32px}.toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:10px}.search{width:100%;border:1px solid #cbd9e8;border-radius:12px;padding:11px 13px;outline:none;background:#f8fbff}.search:focus,input:focus,select:focus,textarea:focus{border-color:var(--sky);box-shadow:0 0 0 3px #0284c71c}.tools{display:flex;gap:6px;align-items:center}.btn{border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:pointer;background:#e8f2fc;color:#07569d}.btn.primary{background:var(--blue);color:white}.btn.green{background:#e4f7ee;color:#087344}.btn.red{background:#fff0f0;color:#b42318}.btn.gray{background:#edf2f7;color:#334155}.btn.small{padding:7px 9px;font-size:12px}.syncdot{width:8px;height:8px;display:inline-block;border-radius:50%;background:#94a3b8;margin-right:4px}.syncdot.ok{background:#16a34a}.syncdot.busy{background:#f59e0b}.syncdot.err{background:#ef4444}
+main{max-width:1400px;margin:auto;padding:14px}.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.kpi,.panel{background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:0 3px 12px #12345608}.kpi{padding:13px}.kpi small{color:var(--muted);font-weight:650}.kpi strong{display:block;font-size:25px;margin-top:5px}.panel{margin-top:12px;overflow:hidden}.panelhead{padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer}.panelhead h2{font-size:15px;font-weight:850;margin:0}.panelbody{padding:0 12px 13px}.panel.collapsed .panelbody{display:none}.yardgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.slot{min-width:0;min-height:46px;border:1px dashed #cbd5e1;background:#f8fafc;border-radius:8px;padding:4px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;overflow:hidden}.slot b{font-size:10px;line-height:1.2}.slot span{font-size:10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.slot.old{background:#0284c7;color:white;border:1px solid #0284c7}.slot.new{background:#059669;color:white;border:1px solid #059669}.slot.wait{background:#fff7e6;border-color:#f59e0b;color:#92400e}.slot.empty{color:#64748b}.summary{font-size:12px;color:var(--muted);font-weight:600}.waitlist{display:flex;flex-wrap:wrap;gap:7px}.vehicle-chip{border:1px solid #f2c66d;background:#fff9e9;border-radius:10px;padding:8px 10px;font-size:12px;cursor:pointer}
+.suggestions{position:absolute;left:0;right:0;top:calc(100% + 5px);z-index:50;background:white;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 28px #102a4322;max-height:55vh;overflow:auto}.suggestion{padding:10px 12px;border-bottom:1px solid #eef2f7;cursor:pointer}.suggestion:last-child{border:0}.suggestion:hover{background:#f0f7ff}.relative{position:relative}
+.overlay{position:fixed;inset:0;background:#0b1b2c88;z-index:80;display:none;align-items:flex-end;justify-content:center;padding:10px}.overlay.show{display:flex}.modal{background:white;width:min(620px,100%);max-height:92dvh;overflow:auto;border-radius:20px 20px 14px 14px;padding:17px;box-shadow:0 20px 70px #0003}.modal.wide{width:min(950px,100%)}.modal h3{font-size:18px;font-weight:900;margin:0 0 13px}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.field{min-width:0}.field.full{grid-column:1/-1}.field label{display:block;font-size:12px;font-weight:750;color:#475569;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:10px;background:white;min-width:0}.field textarea{min-height:70px}.rowselect{display:flex;gap:5px}.rowselect select{flex:1}.rowselect button{flex:0 0 36px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.actions>*{flex:1}.notice{font-size:12px;padding:9px;border-radius:9px;margin-top:8px}.danger{background:#fff0f0;color:#b42318}.muted{color:var(--muted)}.toastbox{position:fixed;top:12px;left:50%;transform:translate(-50%,-130%);z-index:120;transition:transform .25s ease;width:min(92vw,440px);padding:12px 15px;border-radius:12px;color:white;font-weight:750;box-shadow:0 8px 25px #0002}.toastbox.show{transform:translate(-50%,0)}.toastbox.success{background:#15803d}.toastbox.error{background:#b42318}.toastbox.warn{background:#b7791f}.fab{position:fixed;right:20px;bottom:22px;width:58px;height:58px;border-radius:50%;border:0;background:var(--blue);color:#fff;font-size:32px;box-shadow:0 8px 25px #0066cc55;z-index:40;cursor:pointer}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:8px;border-bottom:1px solid #e5edf5;text-align:left;white-space:nowrap}th{background:#edf6ff;color:#174477}.report{width:1080px;background:#f5f8fc;padding:28px;color:#172b45}.report h1{font-size:27px;font-weight:900;color:#075ba8}.reportcards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.reportcard{background:white;border:1px solid #dbe5ef;border-radius:12px;padding:16px}.reportcard strong{font-size:30px;display:block}.reportgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.reportbox{background:white;border:1px solid #dbe5ef;border-radius:12px;padding:15px}#reportHost{position:fixed;left:-12000px;top:0;z-index:-1}.report{width:1400px;background:#fff;padding:17px 17px 13px;color:#263b55;font-family:Arial,Helvetica,sans-serif;border:1px solid #dce5ef;border-radius:18px}.report-banner{height:91px;border-radius:13px;background:linear-gradient(105deg,#092448,#104d82);color:#fff;padding:22px 20px}.report-banner h1{font-size:19px;line-height:1.2;font-weight:800;margin:0 0 7px}.report-banner p{font-size:13px;color:#d8e5f3;margin:0}.reportcards{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin:13px 0}.reportcard{height:92px;background:#fff;border:1px solid #dce5ef;border-top:5px solid #1684d2;border-radius:14px;padding:14px}.reportcard:nth-child(2){border-top-color:#12aaa5}.reportcard:nth-child(3){border-top-color:#109b69}.reportcard:nth-child(4){border-top-color:#e43d4b}.reportcard span{font-size:11px;font-weight:800;color:#687b95;text-transform:uppercase}.reportcard strong{font-size:29px;line-height:1.1;display:block;margin-top:7px;color:#0d315a}.reportcard:nth-child(4) strong{color:#e43d4b}.report-mid{display:grid;grid-template-columns:2fr 1fr;gap:11px;margin-bottom:13px}.reportbox{background:white;border:1px solid #dce5ef;border-radius:17px;padding:18px}.reportbox h2{font-size:17px;font-weight:850;color:#0d315a;margin:0 0 14px}.report-sub{font-size:13px;color:#7b8da7;margin-bottom:8px}.trend-chart{height:169px;display:flex;align-items:stretch;justify-content:space-around;border-bottom:1px solid #e3eaf2;padding:3px 12px 0}.trend-day{width:12%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative}.trend-bars{height:137px;display:flex;align-items:flex-end;gap:8px}.trend-bar{width:10px;min-height:2px;border-radius:7px 7px 0 0;position:relative}.trend-bar.old{background:#1684c9}.trend-bar.new{background:#16a56d}.trend-val{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;color:#34465e}.trend-day small{font-size:10px;color:#8493a8;margin-top:10px}.trend-legend{font-size:12px;color:#70839d;padding-top:12px}.trend-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 5px 0 0}.report-metrics{padding:0}.metric-row{height:49px;border-bottom:1px solid #e0e7ef;display:flex;align-items:center;justify-content:space-between;font-size:14px}.metric-row b{color:#263b55}.report-age{margin-bottom:13px}.age-row{display:grid;grid-template-columns:112px 1fr 34px;gap:10px;align-items:center;margin:13px 0;font-size:13px}.age-track{height:14px;background:#edf1f5;border-radius:10px;overflow:hidden}.age-fill{height:100%;border-radius:10px}.report-special{margin-bottom:0}.special-content{min-height:65px;border:1px solid #dce5ef;border-radius:12px;padding:14px;font-size:14px;line-height:1.55;color:#263b55;white-space:normal}.report-foot{font-size:10px;color:#8494aa;margin-top:18px}.report-preview-title{font-size:11px;font-weight:850;color:#64748b;margin:18px 0 7px}.report-preview-window{max-height:45dvh;overflow:auto;border:1px solid #dbe5ef;border-radius:12px;background:#f4f7fb;padding:8px}.report-preview-window .report{zoom:.62}.report-preview-window .report-special{margin-top:13px}.hidden{display:none!important}
+@media(min-width:800px){.wrap{display:flex;align-items:center;gap:22px}.toolbar{flex:1;margin:0}.brand{min-width:170px}.overlay{align-items:center}.modal{border-radius:18px}.yardgrid{gap:7px}.slot{min-height:55px}.slot b,.slot span{font-size:11px}}
+@media(max-width:560px){.wrap{padding:9px}.brand{font-size:15px}.brand svg{width:35px}.toolbar{grid-template-columns:1fr;gap:7px}.tools{display:grid;grid-template-columns:1fr 1fr 42px}.tools .btn{padding:8px 5px;font-size:11px}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi strong{font-size:22px}main{padding:10px}.formgrid{grid-template-columns:1fr}.field.full{grid-column:auto}.slot{min-height:43px}.fab{right:15px;bottom:17px}}
 </style>
 </head>
 <body>
-
-<div id="header">
-  <button class="burger" onclick="toggleSidebar(true)" aria-label="Menu"><span></span><span></span><span></span></button>
-  <div class="ttl">QLBX34<small>Quản Lý Bãi Xe 34</small></div>
-  <div class="dotwrap" onclick="setView('settings')"><span class="dot" id="hdot"></span><span id="htxt">Offline</span></div>
-</div>
-
-<div id="searchbar">
-  <input id="q" type="search" placeholder="Tìm biển số, VIN, dòng xe, tên/bộ phận, vị trí..." oninput="onSearch()" autocomplete="off">
-  <button id="qclear" onclick="clearSearch()">✕</button>
-</div>
-
-<div id="overlay" onclick="toggleSidebar(false)"></div>
-<aside id="sidebar">
-  <div class="sh"><b>🚗 QLBX34</b><span>Quản Lý Bãi Xe 34</span></div>
-  <nav id="nav">
-    <button data-v="overview" onclick="setView('overview')"><i>🅿️</i>Tổng quan &amp; Sơ đồ bãi</button>
-    <button data-v="add" onclick="toggleSidebar(false);openForm({})"><i>➕</i>Nhập xe mới</button>
-    <button data-v="list" onclick="setView('list')"><i>📋</i>Danh sách xe tồn / Lịch sử xuất</button>
-    <button data-v="report" onclick="setView('report')"><i>🖼️</i>Báo cáo hình ảnh &amp; Excel</button>
-    <button data-v="settings" onclick="setView('settings')"><i>☁️</i>Cấu hình Firebase &amp; Sao lưu</button>
-  </nav>
-  <div style="padding:14px 18px;font-size:13px;color:var(--mute);border-top:1px solid var(--line)">
-    <span class="dot" id="sdot" style="display:inline-block;vertical-align:middle"></span>
-    <span id="stxt" style="vertical-align:middle;font-weight:700"> Offline</span>
+<header class="top"><div class="wrap">
+  <div class="brand">
+    <svg viewBox="0 0 100 70" aria-label="Biểu tượng xe"><path d="M12 43 20 23q3-8 13-8h37q8 0 13 8l7 20 4 4v12H6V47z" fill="#0066cc"/><path d="m27 23-6 16h58l-7-16q-2-4-8-4H35q-5 0-8 4" fill="#dff2ff"/><path d="M8 44h84" stroke="#fff" stroke-width="3"/><circle cx="25" cy="58" r="8" fill="#18334f"/><circle cx="76" cy="58" r="8" fill="#18334f"/><circle cx="25" cy="58" r="3" fill="#fff"/><circle cx="76" cy="58" r="3" fill="#fff"/></svg>
+    <span>BÃI XE 34</span>
   </div>
-</aside>
+  <div class="toolbar">
+    <div class="relative"><input id="search" class="search" placeholder="Tìm biển số hoặc 6 số VIN..." autocomplete="off"><div id="suggestions" class="suggestions hidden"></div></div>
+    <div class="tools">
+      <button class="btn small" id="reportBtn">▣ Báo cáo ảnh</button>
+      <button class="btn small" id="excelBtn">⇩ Tồn Excel</button>
+      <button class="btn small" id="settingsBtn" title="Cài đặt">⚙️ <span id="syncdot" class="syncdot"></span></button>
+    </div>
+  </div>
+</div></header>
+<main>
+  <section class="kpis">
+    <div class="kpi"><small>Tổng tồn bãi</small><strong id="kpiTotal">0</strong></div>
+    <div class="kpi"><small>Xe cũ</small><strong id="kpiOld">0</strong></div>
+    <div class="kpi"><small>Xe mới</small><strong id="kpiNew">0</strong></div>
+    <div class="kpi"><small>Chờ gán vị trí</small><strong id="kpiWait">0</strong></div>
+  </section>
+  <section class="panel collapsed" id="waitPanel">
+    <div class="panelhead"><div><h2>⏳ Danh sách chờ gán vị trí</h2><div class="summary" id="waitSummary">0 xe đang chờ</div></div><span>⌄</span></div>
+    <div class="panelbody"><div id="waitList" class="waitlist"></div></div>
+  </section>
+  <div id="yard"></div>
+  <section class="panel">
+    <div class="panelhead"><div><h2>📋 Danh sách xe đang trong bãi</h2><div class="summary">Chạm vào xe để xem hồ sơ và thao tác</div></div></div>
+    <div class="panelbody tablewrap"><table><thead><tr><th>Xe</th><th>Loại</th><th>Dòng xe</th><th>Vị trí</th><th>Ngày nhập</th><th>Thao tác</th></tr></thead><tbody id="inventory"></tbody></table></div>
+  </section>
+</main>
+<button class="fab" id="fab" aria-label="Nhập xe">+</button>
+<div id="toast" class="toastbox"></div>
+<div id="overlay" class="overlay"><div id="modal" class="modal"></div></div>
+<div id="reportHost" class="hidden"></div>
 
-<div id="main"></div>
-<div id="modal" onclick="if(event.target===this)closeModal()"><div id="sheet"></div></div>
-<div id="loading"><div class="spin"></div><div id="loadtxt">Đang xử lý...</div></div>
-<div id="toast"></div>
-<div id="reportHost"></div>
-<input type="file" id="fileIn" style="display:none">
-
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 'use strict';
-/* ================= CONSTANTS ================= */
-var DEF_LISTS={
-  dongXe:['VF 3','VF 5','VFe34','VF 6','VF 7','VF 8','VF 9','Limo Green','Minio Green','EC Van'],
-  boPhan:['Điều phối','Cố vấn','Kỹ thuật','Kho','PKD'],
-  ttVao:['Chờ sửa','Chờ giao','Lưu bãi'],
-  ttRa:['Về xưởng','Giao GSM','Giao khách']
+const DB_KEY='BX34_DB', URL_KEY='GAS_WEB_APP_URL', MAX_CYCLES=10;
+const DEFAULT_CATALOGS={
+ models:['VF 3','VF 5','VF e34','VF 6','VF 7','VF 8','VF 9','Minio Green','Herio Green','Limo Green','EC Van'],
+ colors:['Trắng','Đen','Bạc','Xám','Đỏ','Xanh dương','Xanh lá','Vàng','Cam'],
+ staffDepts:['Thông/Kho','Điều phối','Kỹ thuật','PKD'],
+ reasons:['Giao khách','Về xưởng','Giao GSM','Điều chuyển','Khác']
 };
-var LIST_NAMES={dongXe:'Dòng xe',boPhan:'Tên / Bộ phận',ttVao:'Trạng thái khi vào',ttRa:'Trạng thái khi ra'};
-var COLS=['T','TLD','PLD','P'];
-var ROWS=20;
-var LS_DATA='qlbx34_sessions', LS_FB='qlbx34_fbcfg2', LS_DEL='qlbx34_deleted', LS_APP='qlbx34_appcfg', LS_REPTXT='qlbx34_rep_text';
-var DB_PATH='qlbx34/sessions', CFG_PATH='qlbx34/config';
-var DEFAULT_FIREBASE_CONFIG={
-  apiKey:"AIzaSyDrMV8t3UTbanAsX5kvbvd6ft6kMxcTS6s",
-  authDomain:"new-erp-608f6.firebaseapp.com",
-  databaseURL:"https://new-erp-608f6-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:"new-erp-608f6",
-  storageBucket:"new-erp-608f6.firebasestorage.app",
-  messagingSenderId:"810747632401",
-  appId:"1:810747632401:web:53951e1b5579189f2b4ab0",
-  measurementId:"G-YE2DVXP896"
-};
-var DEFAULT_FB=DEFAULT_FIREBASE_CONFIG;
-var DAY_MS=86400000;
-
-/* ================= STATE ================= */
-var sessions=[], tombstones={}, appCfg=null;
-var view='overview', listTab='in', searchQ='', openDay=null, unQ='', formType='cu';
-var fbRef=null, cfgRef=null, fbConnected=false, fbConfigured=false, remoteKnown={};
-var fbDb=null, restMode=false, restOk=false, restTimer=null, lastErr='';
-var reportBlob=null;
-var rep={mode:'tuan',anchor:'',from:'',to:'',sel:{},text:''};
-
-/* ================= UTILS ================= */
-function $(id){return document.getElementById(id);}
-function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-function normPlate(v){return String(v==null?'':v).toUpperCase().replace(/[-.\s]/g,'');}
-function normVin(v){return String(v==null?'':v).toUpperCase().replace(/[^A-Z0-9]/g,'').slice(-6);}
-function stripAcc(s){return String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase();}
-var dfmt=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric'});
-function today(){return dfmt.format(new Date());}
-function pad(n){return (n<10?'0':'')+n;}
-function validDate(s){
-  var m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s||''); if(!m)return false;
-  var d=+m[1],mo=+m[2],y=+m[3]; if(mo<1||mo>12||d<1||y<2000)return false;
-  var dt=new Date(Date.UTC(y,mo-1,d)); return dt.getUTCDate()===d&&dt.getUTCMonth()===mo-1;
-}
-function dateKey(s){var m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s||'');return m?(m[3]+m[2]+m[1]):'';}
-function parseD(s){var m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s||'');return m?Date.UTC(+m[3],+m[2]-1,+m[1]):NaN;}
-function strD(ms){var d=new Date(ms);return pad(d.getUTCDate())+'/'+pad(d.getUTCMonth()+1)+'/'+d.getUTCFullYear();}
-function normDate(v){
-  if(v==null||v==='')return '';
-  if(v instanceof Date&&!isNaN(v)){return pad(v.getDate())+'/'+pad(v.getMonth()+1)+'/'+v.getFullYear();}
-  if(typeof v==='number'){var dt=new Date(Math.round((v-25569)*DAY_MS));return pad(dt.getUTCDate())+'/'+pad(dt.getUTCMonth()+1)+'/'+dt.getUTCFullYear();}
-  var s=String(v).trim(), m=/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/.exec(s);
-  if(m){return pad(+m[1])+'/'+pad(+m[2])+'/'+m[3];}
-  m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s); if(m)return m[3]+'/'+m[2]+'/'+m[1];
-  return '';
-}
-function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
-function toArr(v){if(Array.isArray(v))return v.filter(function(x){return x!=null;});if(v&&typeof v==='object')return Object.keys(v).map(function(k){return v[k];});return [];}
-var toastT=null;
-function toast(msg){var t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show');},2600);}
-function showLoading(t){$('loadtxt').textContent=t||'Đang xử lý...';$('loading').classList.add('show');}
-function hideLoading(){$('loading').classList.remove('show');}
-function fmtDate(el){
-  var v=el.value.replace(/\D/g,'').slice(0,8), o=v;
-  if(v.length>4)o=v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4);
-  else if(v.length>2)o=v.slice(0,2)+'/'+v.slice(2);
-  el.value=o;
-}
-function download(blob,name){
-  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;
-  document.body.appendChild(a);a.click();
-  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1500);
-}
-
-/* ================= SESSION HELPERS ================= */
-function sKey(s){return s.loai==='moi'?('VIN:'+s.vin6):s.bienSo;}
-function dispKey(s){return s.loai==='moi'?('VIN '+s.vin6):s.bienSo;}
-function cellKey(s){return s.loai==='moi'?s.vin6:s.bienSo;}
-
-/* ================= SLOTS ================= */
-var SLOT_RE=/^(\d+)(TLD|PLD|T|P)-(\d+)$/;
-function slotId(d,r,c){return d+c+'-'+r;}
-function slotLabel(id){var m=SLOT_RE.exec(id||'');return m?('Dãy '+m[1]+' · '+id):'Chưa xếp';}
-function slotDay(id){var m=SLOT_RE.exec(id||'');return m?+m[1]:0;}
-function parseSlot(v){
-  var s=String(v==null?'':v).toUpperCase().replace(/[\s.·:_]/g,'');
-  s=s.replace(/^(DÃY|DAY)/,'D');
-  var m=SLOT_RE.exec(s);
-  if(m&&+m[3]>=1&&+m[3]<=ROWS)return s;
-  m=/^D(\d+)-?(\d+)(TLD|PLD|T|P)$/.exec(s); /* định dạng cũ D1-1T */
-  if(m&&+m[2]>=1&&+m[2]<=ROWS)return slotId(+m[1],+m[2],m[3]);
-  m=/^(\d+)-(\d+)(TLD|PLD|T|P)$/.exec(s);
-  if(m&&+m[2]>=1&&+m[2]<=ROWS)return slotId(+m[1],+m[2],m[3]);
-  return '';
-}
-function occMap(){var o={};sessions.forEach(function(s){if(s.status==='in_lot'&&s.viTri)o[s.viTri]=s;});return o;}
-
-/* ================= CONFIG (days + dropdown lists) ================= */
-function normCfg(c){
-  c=c||{};var L=c.lists||{};
-  var out={days:[],lists:{},updatedAt:c.updatedAt||0};
-  var seen={};
-  toArr(c.days).map(Number).forEach(function(n){if(n>0&&isFinite(n)&&!seen[n]){seen[n]=1;out.days.push(n);}});
-  out.days.sort(function(a,b){return a-b;});
-  if(!out.days.length)out.days=[1,2,3,4,5];
-  Object.keys(DEF_LISTS).forEach(function(k){
-    var a=toArr(L[k]).map(function(x){return String(x).trim();}).filter(Boolean);
-    out.lists[k]=a.length?a:DEF_LISTS[k].slice();
-  });
-  return out;
-}
-function loadAppCfg(){var c=null;try{c=JSON.parse(localStorage.getItem(LS_APP)||'null');}catch(e){}appCfg=normCfg(c);}
-function pushCfg(){
-  if(!fbConfigured)return;
-  var d=JSON.parse(JSON.stringify(appCfg));
-  if(fbConnected&&cfgRef&&!restMode){try{cfgRef.set(d).catch(function(){});}catch(e){}}
-  else restFetch(CFG_PATH,'PUT',d).catch(function(){});
-}
-function saveConfig(){
-  appCfg.updatedAt=Date.now();
-  try{localStorage.setItem(LS_APP,JSON.stringify(appCfg));}catch(e){}
-  pushCfg();
-}
-function onCfgRemote(v){
-  if(!v){pushCfg();return;}
-  var r=normCfg(v);
-  if((r.updatedAt||0)>(appCfg.updatedAt||0)){
-    appCfg=r;try{localStorage.setItem(LS_APP,JSON.stringify(appCfg));}catch(e){}
-    if(openDay&&appCfg.days.indexOf(openDay)<0)openDay=null;
-    render();
-  }else if((r.updatedAt||0)<(appCfg.updatedAt||0))pushCfg();
-}
-function addToList(key,val){
-  val=String(val||'').trim();if(!val)return false;
-  var l=appCfg.lists[key];
-  if(l.some(function(x){return x.toLowerCase()===val.toLowerCase();}))return false;
-  l.push(val);return true;
-}
-function ensureDay(d){
-  if(d>0&&appCfg.days.indexOf(d)<0){appCfg.days.push(d);appCfg.days.sort(function(a,b){return a-b;});return true;}
-  return false;
-}
-
-/* ---- dropdown component ---- */
-function ddHTML(id,key,val){
-  var list=appCfg.lists[key].slice();
-  if(val&&list.indexOf(val)<0)list.push(val);
-  return '<div class="ddw"><select id="'+id+'"><option value="">— Chọn —</option>'+
-    list.map(function(o){return '<option value="'+esc(o)+'"'+(o===val?' selected':'')+'>'+esc(o)+'</option>';}).join('')+
-    '</select><button type="button" class="plus" title="Thêm mới" onclick="ddToggle(\''+id+'\')">＋</button></div>'+
-    '<div class="addrow" id="'+id+'_add" style="display:none"><input id="'+id+'_new" placeholder="Nhập mục mới..." autocomplete="off"><button type="button" class="btn" onclick="ddSave(\''+id+'\',\''+key+'\')">Lưu</button></div>';
-}
-function ddToggle(id){
-  var a=$(id+'_add');a.style.display=a.style.display==='none'?'flex':'none';
-  if(a.style.display==='flex')$(id+'_new').focus();
-}
-function ddSave(id,key){
-  var inp=$(id+'_new'),v=inp.value.trim();
-  if(!v){toast('Nhập tên mục mới');return;}
-  var ex=appCfg.lists[key].filter(function(x){return x.toLowerCase()===v.toLowerCase();})[0];
-  if(!ex){appCfg.lists[key].push(v);saveConfig();ex=v;toast('Đã thêm "'+v+'" vào danh mục');}
-  var sel=$(id);
-  if(!Array.prototype.some.call(sel.options,function(o){return o.value===ex;})){
-    var op=document.createElement('option');op.value=ex;op.textContent=ex;sel.appendChild(op);
-  }
-  sel.value=ex;inp.value='';$(id+'_add').style.display='none';
-}
-
-/* ================= DATA ================= */
-function loadData(){
-  try{var r=localStorage.getItem(LS_DATA);sessions=r?JSON.parse(r):[];if(!Array.isArray(sessions))sessions=[];}catch(e){sessions=[];}
-  sessions=sessions.map(normSession);
-  try{tombstones=JSON.parse(localStorage.getItem(LS_DEL)||'{}')||{};}catch(e){tombstones={};}
-}
-function saveLocal(){
-  try{localStorage.setItem(LS_DATA,JSON.stringify(sessions));localStorage.setItem(LS_DEL,JSON.stringify(tombstones));}
-  catch(e){toast('Không lưu được bộ nhớ máy!');}
-}
-function clean(s){return JSON.parse(JSON.stringify(s));}
-function pushOne(s){
-  if(!fbConfigured)return;
-  if(fbConnected&&fbRef&&!restMode){try{fbRef.child(s.id).set(clean(s)).catch(function(){});}catch(e){}}
-  else restFetch(DB_PATH+'/'+s.id,'PUT',clean(s)).catch(function(){});
-}
-function pushAll(){if(!fbConfigured)return;sessions.forEach(pushOne);}
-function dbRemoveChild(id){
-  if(!fbConfigured)return;
-  if(fbConnected&&fbRef&&!restMode){try{fbRef.child(id).remove().catch(function(){});}catch(e){}}
-  else restFetch(DB_PATH+'/'+id,'DELETE').catch(function(){});
-}
-function upsert(s){
-  s.updatedAt=Date.now();
-  var i=sessions.findIndex(function(x){return x.id===s.id;});
-  if(i>=0)sessions[i]=s;else sessions.push(s);
-  saveLocal();pushOne(s);render();
-}
-function removeSession(id){
-  sessions=sessions.filter(function(x){return x.id!==id;});
-  tombstones[id]=Date.now();saveLocal();
-  dbRemoveChild(id);
-  render();
-}
-function findS(id){return sessions.find(function(x){return x.id===id;});}
-function normSession(o){
-  o=o||{};
-  var ngayRa=normDate(o.ngayRa!=null?o.ngayRa:(o.ngayXuat!=null?o.ngayXuat:o.exitDate));
-  var ttRa=String(o.trangThaiRa!=null?o.trangThaiRa:(o.trangThaiXuat||'')).trim();
-  var st=(o.status==='exited'||o.status==='in_lot')?o.status:((ngayRa||ttRa)?'exited':'in_lot');
-  var bs=normPlate(o.bienSo!=null?o.bienSo:(o.plate!=null?o.plate:''));
-  var vin=normVin(o.vin6!=null?o.vin6:'');
-  var lo=String(o.loai||'').toLowerCase();
-  var loai=(lo==='moi'||lo==='xe mới'||lo==='xe moi')?'moi':((!bs&&vin)?'moi':'cu');
-  return {
-    id:o.id?String(o.id):genId(),
-    loai:loai,
-    bienSo:loai==='moi'?'':bs,
-    vin6:loai==='moi'?vin:'',
-    mauXe:String(o.mauXe||'').trim(),
-    soChia:String(o.soChia||'').trim(),
-    dongXe:String(o.dongXe!=null?o.dongXe:(o.model!=null?o.model:'')).trim(),
-    viTri:parseSlot(o.viTri!=null?o.viTri:o.slot),
-    tenBoPhan:String(o.tenBoPhan!=null?o.tenBoPhan:(o.boPhan!=null?o.boPhan:(o.ten||''))).trim(),
-    trangThaiVao:String(o.trangThaiVao!=null?o.trangThaiVao:'').trim(),
-    ngayVao:normDate(o.ngayVao!=null?o.ngayVao:o.entryDate),
-    trangThaiRa:ttRa,
-    ngayRa:ngayRa,
-    ghiChu:String(o.ghiChu!=null?o.ghiChu:(o.note||'')).trim(),
-    status:st,
-    updatedAt:o.updatedAt||Date.now()
-  };
-}
-
-/* ================= FIREBASE ================= */
-function cleanUrl(u){
-  u=String(u==null?'':u).trim();
-  var m=/\((https?:\/\/[^)\s]+)\)/.exec(u); /* dán nhầm dạng [url](url) */
-  if(m)u=m[1];
-  return u.replace(/[\[\]\s]/g,'').replace(/\/+$/,'');
-}
-function loadFb(){
-  var out=Object.assign({},DEFAULT_FB);
-  try{var c=JSON.parse(localStorage.getItem(LS_FB)||'null');if(c)Object.keys(c).forEach(function(k){if(c[k])out[k]=c[k];});}catch(e){}
-  out.databaseURL=cleanUrl(out.databaseURL);
-  return out;
-}
-function updateDot(){
-  var on=fbConfigured&&(fbConnected||(restMode&&restOk));
-  ['hdot','sdot'].forEach(function(i){var d=$(i);if(d)d.classList.toggle('on',on);});
-  var t=on?(fbConnected?'Đã kết nối':'Đã kết nối (REST dự phòng)'):(fbConfigured?'Offline':'Chưa cấu hình');
-  var dg=$('fbDiag');if(dg)dg.textContent='Chế độ: '+(fbConnected?'Realtime SDK':(restMode?'REST dự phòng (SDK chưa kết nối)':'Đang kết nối...'))+(lastErr?' · Lỗi: '+lastErr:'');
-  $('htxt').textContent=on?'Online':'Offline';
-  $('stxt').textContent=' '+t;
-  var cs=$('cfgStatus');if(cs){cs.textContent=t;cs.style.background=on?'#e3f7ec':'#fdecea';cs.style.color=on?'#12a150':'#d92d20';}
-}
-function initFirebase(){
-  var cfg=loadFb();
-  if(!cfg.databaseURL){fbConfigured=false;updateDot();return;}
-  fbConfigured=true;
-  if(typeof firebase==='undefined'){lastErr='Không tải được Firebase SDK (kiểm tra mạng/CDN)';startRest();updateDot();return;}
-  try{
-    var conf={};Object.keys(cfg).forEach(function(k){if(cfg[k])conf[k]=cfg[k];});
-    var app=firebase.apps&&firebase.apps.length?firebase.app():firebase.initializeApp(conf);
-    fbDb=firebase.database(app);
-    try{fbDb.goOnline();}catch(e){}
-    fbDb.ref('.info/connected').on('value',function(s){
-      fbConnected=!!s.val();
-      if(fbConnected&&restMode)stopRest();
-      updateDot();
-    });
-    fbRef=fbDb.ref(DB_PATH);cfgRef=fbDb.ref(CFG_PATH);
-    var attach=function(){
-      fbRef.on('value',function(snap){onRemote(snap.val()||{});},function(err){lastErr='SDK: '+(err&&err.code||err);updateDot();});
-      cfgRef.on('value',function(snap){onCfgRemote(snap.val());},function(){});
-    };
-    attach();
-    if(typeof firebase.auth==='function'){
-      try{firebase.auth(app).signInAnonymously().then(function(){
-        if(/PERMISSION/i.test(lastErr)){try{fbRef.off();cfgRef.off();}catch(e){}lastErr='';attach();}
-      },function(){});}catch(e){}
-    }
-  }catch(e){lastErr='Khởi tạo: '+(e&&e.message||e);}
-  setTimeout(function(){if(!fbConnected)startRest();},8000);
-  updateDot();
-}
-function startRest(){
-  if(restMode)return;
-  restMode=true;restPoll();
-  restTimer=setInterval(restPoll,10000);updateDot();
-}
-function stopRest(){restMode=false;restOk=false;clearInterval(restTimer);restTimer=null;}
-async function restFetch(path,method,body){
-  var cfg=loadFb(),url=cfg.databaseURL+'/'+path+'.json';
-  try{
-    if(typeof firebase!=='undefined'&&firebase.apps&&firebase.apps.length&&firebase.auth&&firebase.auth().currentUser){
-      url+='?auth='+encodeURIComponent(await firebase.auth().currentUser.getIdToken());
-    }
-  }catch(e){}
-  var ctrl=('AbortController' in window)?new AbortController():null;
-  var to=setTimeout(function(){if(ctrl)ctrl.abort();},12000);
-  try{
-    var opt={method:method,signal:ctrl?ctrl.signal:undefined};
-    if(body!==undefined){opt.headers={'Content-Type':'application/json'};opt.body=JSON.stringify(body);}
-    var r=await fetch(url,opt);
-    if(!r.ok){throw new Error('HTTP '+r.status+(r.status===401||r.status===403?' (Rules từ chối)':''));}
-    return method==='GET'?await r.json():null;
-  }finally{clearTimeout(to);}
-}
-async function restPoll(manual){
-  try{
-    var a=await restFetch(DB_PATH,'GET'),b=await restFetch(CFG_PATH,'GET');
-    restOk=true;lastErr='';
-    onRemote(a||{});onCfgRemote(b);
-    if(manual){pushAll();pushCfg();}
-  }catch(e){restOk=false;lastErr='REST: '+(e&&e.message||e);}
-  updateDot();
-}
-function onRemote(remote){
-  var changed=false, local={};
-  sessions.forEach(function(s){local[s.id]=s;});
-  Object.keys(remote).forEach(function(id){
-    var r=remote[id];if(!r||typeof r!=='object')return;
-    if(tombstones[id]){dbRemoveChild(id);return;}
-    r=normSession(Object.assign({},r,{id:id,updatedAt:r.updatedAt||0}));
-    var l=local[id];
-    if(!l){sessions.push(r);changed=true;}
-    else if((r.updatedAt||0)>(l.updatedAt||0)){sessions[sessions.indexOf(l)]=r;changed=true;}
-    else if((l.updatedAt||0)>(r.updatedAt||0)){pushOne(l);}
-  });
-  Object.keys(tombstones).forEach(function(id){if(!remote[id]&&remoteKnown[id]!==undefined)delete tombstones[id];});
-  var keep=[], cfgCh=false;
-  sessions.forEach(function(s){
-    if(!remote[s.id]){
-      if(remoteKnown[s.id]){changed=true;return;}
-      pushOne(s);
-    }
-    var d=slotDay(s.viTri);if(d&&ensureDay(d))cfgCh=true;
-    keep.push(s);
-  });
-  sessions=keep;
-  if(cfgCh)saveConfig();
-  remoteKnown={};Object.keys(remote).forEach(function(k){remoteKnown[k]=1;});
-  if(changed){saveLocal();render();}
-}
-function syncNow(){
-  if(!fbConfigured){toast('Chưa cấu hình Firebase');return;}
-  showLoading('Đang đồng bộ...');
-  if(!fbConnected)startRest();
-  restPoll(true).then(function(){hideLoading();toast(restOk||fbConnected?'Đã đồng bộ xong ✔':'Đồng bộ lỗi: '+lastErr);});
-}
-function reloadFromCloud(){
-  if(!fbConfigured){toast('Chưa cấu hình Firebase');return;}
-  if(!confirm('Thay toàn bộ dữ liệu trên máy bằng dữ liệu từ Cloud?'))return;
-  showLoading('Đang tải từ Cloud...');
-  Promise.all([restFetch(DB_PATH,'GET'),restFetch(CFG_PATH,'GET')]).then(function(r){
-    var v=r[0]||{};
-    sessions=Object.keys(v).map(function(id){return normSession(Object.assign({},v[id],{id:id,updatedAt:v[id].updatedAt||Date.now()}));});
-    if(r[1]){appCfg=normCfg(r[1]);try{localStorage.setItem(LS_APP,JSON.stringify(appCfg));}catch(e){}}
-    sessions.forEach(function(s){var d=slotDay(s.viTri);if(d)ensureDay(d);});
-    tombstones={};remoteKnown={};Object.keys(v).forEach(function(k){remoteKnown[k]=1;});
-    saveLocal();hideLoading();render();toast('Đã tải '+sessions.length+' lượt xe từ Cloud');
-  }).catch(function(e){hideLoading();toast('Tải lỗi: '+(e&&e.message||'mạng'));});
-}
-function saveFb(){
-  var cfg=Object.assign({},DEFAULT_FB,{apiKey:$('c_key').value.trim(),authDomain:$('c_auth').value.trim(),databaseURL:cleanUrl($('c_url').value),projectId:$('c_pid').value.trim(),appId:$('c_app').value.trim()});
-  if(!/^https:\/\/.+/.test(cfg.databaseURL)){toast('databaseURL phải bắt đầu bằng https://');return;}
-  localStorage.setItem(LS_FB,JSON.stringify(cfg));
-  toast('Đã lưu cấu hình, đang tải lại...');
-  setTimeout(function(){location.reload();},700);
-}
-function resetFb(){
-  if(!confirm('Khôi phục cấu hình Firebase mặc định?'))return;
-  localStorage.removeItem(LS_FB);location.reload();
-}
-function testFb(){
-  var url=cleanUrl($('c_url').value);
-  if(!url){toast('Nhập databaseURL');return;}
-  showLoading('Đang kiểm tra kết nối...');
-  var ctrl=('AbortController' in window)?new AbortController():null;
-  var to=setTimeout(function(){if(ctrl)ctrl.abort();},9000);
-  fetch(url+'/.json?shallow=true',{signal:ctrl?ctrl.signal:undefined}).then(function(r){
-    clearTimeout(to);hideLoading();
-    if(r.ok)toast('Kết nối OK ✔ (đọc được database)');
-    else if(r.status===401||r.status===403)toast('Database từ chối (Rules chưa cho phép đọc/ghi)');
-    else toast('Lỗi HTTP '+r.status);
-  }).catch(function(){clearTimeout(to);hideLoading();toast('Không kết nối được. Kiểm tra mạng/URL');});
-}
-
-/* ================= SEARCH ================= */
-function onSearch(){searchQ=$('q').value;render();window.scrollTo(0,0);}
-function clearSearch(){$('q').value='';searchQ='';render();}
-function hay(s){
-  var sl=s.viTri?(slotLabel(s.viTri)+' '+s.viTri):'';
-  return stripAcc([s.bienSo,s.vin6,s.mauXe,s.soChia,s.dongXe,s.tenBoPhan,s.trangThaiVao,s.trangThaiRa,sl,s.loai==='moi'?'xe moi chua bien':'xe cu co bien'].join(' | '));
-}
-function matches(s,q){
-  var qp=normPlate(q), qt=stripAcc(q).trim();
-  if(!qt&&!qp)return true;
-  if(qp&&(s.bienSo.indexOf(qp)>=0||(s.vin6&&s.vin6.indexOf(qp)>=0)))return true;
-  return hay(s).indexOf(qt)>=0;
-}
-
-/* ================= NAV / RENDER ================= */
-function toggleSidebar(open){$('sidebar').classList.toggle('show',open);$('overlay').classList.toggle('show',open);}
-function setView(v){view=v;if(v==='overview')openDay=null;toggleSidebar(false);render();window.scrollTo(0,0);}
+let state=loadState(), activeVehicleId=null, toastTimer=null, syncing=false, syncTimer=null;
+let openRows=new Set();
+function loadState(){try{const x=JSON.parse(localStorage.getItem(DB_KEY)||'{}');return {vehicles:Array.isArray(x.vehicles)?x.vehicles:[],catalogs:{...DEFAULT_CATALOGS,...(x.catalogs||{})}}}catch(e){return {vehicles:[],catalogs:structuredCloneSafe(DEFAULT_CATALOGS)}}}
+function structuredCloneSafe(x){return JSON.parse(JSON.stringify(x))}
+function saveState(){localStorage.setItem(DB_KEY,JSON.stringify(state));scheduleSync()}
+function todayISO(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
+function fmtDate(x){if(!x)return 'Chưa có ngày nhập';let d;if(/^\d{4}-\d\d-\d\d$/.test(String(x)))d=new Date(x+'T00:00:00');else{const m=String(x).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);d=m?new Date(+m[3],+m[2]-1,+m[1]):new Date(x)}return isNaN(d)?'Chưa có ngày nhập':new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}).format(d)}
+function ageDays(x){if(!x)return null;let d;if(/^\d{4}-\d\d-\d\d$/.test(String(x)))d=new Date(x+'T00:00:00');else{const m=String(x).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);d=m?new Date(+m[3],+m[2]-1,+m[1]):new Date(x)}if(isNaN(d))return null;const now=new Date(todayISO()+'T00:00:00');return Math.max(0,Math.floor((now-d)/86400000))}
+function normId(x){return String(x||'').toUpperCase().replace(/[.\-\s]/g,'').trim()}
+function inYard(v){const status=String(v.status||v.currentStatus||'').toLowerCase();if(['đang trong bãi','trong bãi','in_yard','inside','đang tồn'].includes(status))return true;if(status==='đã xuất bãi'||status==='exited'||status==='out')return false;const c=currentCycle(v);return !!(v.cycles?.length)&&!(c.exitDate||c.dateOut||c.ngayXuat)}
+function currentCycle(v){return (v.cycles||[]).slice(-1)[0]||{}}
+function vehicleTypeOf(v){return v.vehicleType||v.type||''}
+function entryDate(v){const c=currentCycle(v);return c.entryDate||c.dateIn||v.entryDate||''}
+function initialEntryDate(v){if(v.missingInitialEntryDate===true)return '';const first=(v.cycles||[])[0]||{};return first.entryDate||first.dateIn||v.initialEntryDate||v.entryDate||''}
+function position(v){return v.position||v.currentPosition||v.slot||'Chờ gán vị trí'}
+function showToast(msg,type='success'){const el=document.getElementById('toast');el.textContent=msg;el.className='toastbox '+type+' show';clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2500)}
+function setSync(status,msg){const dot=document.getElementById('syncdot');dot.className='syncdot '+status;dot.title=msg||status}
+function openModal(html,wide=false){const m=document.getElementById('modal');m.className='modal'+(wide?' wide':'');m.innerHTML=html;document.getElementById('overlay').classList.add('show')}
+function closeModal(){document.getElementById('overlay').classList.remove('show')}
+document.getElementById('overlay').addEventListener('click',e=>{if(e.target.id==='overlay')closeModal()});
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function liveVehicles(){return state.vehicles.filter(inYard)}
+function captureYardView(){const root=document.getElementById('yard');if(root){[...root.querySelectorAll(':scope > .panel')].forEach((panel,i)=>{if(!panel.classList.contains('collapsed'))openRows.add(i+1);else openRows.delete(i+1)})}return {scrollY:window.scrollY,rows:new Set(openRows)}}
 function render(){
-  Array.prototype.forEach.call($('nav').querySelectorAll('button'),function(b){b.classList.toggle('act',b.getAttribute('data-v')===view);});
-  var h;
-  if(openDay&&appCfg.days.indexOf(openDay)<0)openDay=null;
-  if(searchQ.trim())h=renderSearch();
-  else if(view==='overview')h=openDay?renderDay(openDay):renderOverview();
-  else if(view==='list')h=renderList();
-  else if(view==='report')h=renderReportView();
-  else h=renderSettings();
-  $('main').innerHTML=h;
-  renderUn();
-  updateDot();
+ const view=captureYardView();
+ const live=liveVehicles(), old=live.filter(v=>vehicleTypeOf(v)==='Xe cũ').length, nw=live.length-old, wait=live.filter(v=>!position(v)||position(v)==='Chờ gán vị trí').length;
+ document.getElementById('kpiTotal').textContent=live.length;document.getElementById('kpiOld').textContent=old;document.getElementById('kpiNew').textContent=nw;document.getElementById('kpiWait').textContent=wait;
+ document.getElementById('waitSummary').textContent=wait+' xe đang chờ · '+old+' xe cũ · '+nw+' xe mới';
+ document.getElementById('waitList').innerHTML=live.filter(v=>!position(v)||position(v)==='Chờ gán vị trí').map(v=>`<button class="vehicle-chip" data-detail="${esc(v.id)}">${esc(v.id)} · ${esc(v.model||'Chưa rõ dòng xe')}</button>`).join('')||'<span class="muted text-sm">Không có xe chờ gán.</span>';
+ renderYard(view);renderInventory();
 }
-function dispDate(d){return d||'Không rõ thời gian nhập';}
+function slotCodes(){const a=[];for(let r=1;r<=20;r++)for(const p of ['T','TLD','PLD','P'])a.push(p+'-'+String(r).padStart(2,'0'));return a}
+function renderYard(view=null){
+ const snapshot=view||captureYardView(),root=document.getElementById('yard');root.innerHTML='';
+ for(let d=1;d<=5;d++){
+  const codes=slotCodes().map(s=>d+s), count=liveVehicles().filter(v=>position(v)!=='Chờ gán vị trí'&&position(v).startsWith(d)).length, free=80-count;
+  const panel=document.createElement('section');panel.className='panel'+(snapshot.rows.has(d)?'':' collapsed');panel.dataset.row=d;panel.innerHTML=`<div class="panelhead"><div><h2>▦ Dãy ${d}</h2><div class="summary">${count}/80 vị trí có xe · ${free} chỗ trống</div></div><span>⌄</span></div><div class="panelbody"><div class="yardgrid">${codes.map(code=>{const v=liveVehicles().find(x=>position(x)===code);const cls=!v?'empty':vehicleTypeOf(v)==='Xe cũ'?'old':'new';return `<button class="slot ${cls}" data-slot="${code}"><b>${code}</b><span>${v?esc(v.id):'Trống'}</span></button>`}).join('')}</div></div>`;
+  panel.querySelector('.panelhead').onclick=()=>{panel.classList.toggle('collapsed');if(panel.classList.contains('collapsed'))openRows.delete(d);else openRows.add(d)};root.appendChild(panel);
+ }
+ openRows=new Set(snapshot.rows);requestAnimationFrame(()=>window.scrollTo(0,snapshot.scrollY));
+}
+function renderInventory(){document.getElementById('inventory').innerHTML=liveVehicles().map(v=>`<tr><td><b>${esc(v.id)}</b></td><td>${esc(vehicleTypeOf(v))}</td><td>${esc(v.model||'')}</td><td>${esc(position(v))}</td><td>${esc(fmtDate(entryDate(v)))}</td><td><button class="btn small" data-detail="${esc(v.id)}">Chi tiết</button></td></tr>`).join('')||'<tr><td colspan="6" class="muted">Bãi hiện chưa có xe.</td></tr>'}
+document.addEventListener('click',e=>{const d=e.target.closest('[data-detail]');if(d){showVehicle(d.dataset.detail);return}const s=e.target.closest('[data-slot]');if(s)slotAction(s.dataset.slot)});
+function showVehicle(id){const v=state.vehicles.find(x=>normId(x.id)===normId(id));if(!v)return;activeVehicleId=v.id;const c=currentCycle(v);openModal(`<h3>Hồ sơ xe ${esc(v.id)}</h3><div class="grid grid-cols-2 gap-2 text-sm"><div>Loại xe: <b>${esc(vehicleTypeOf(v))}</b></div><div>Dòng xe: <b>${esc(v.model||'')}</b></div><div>Màu: <b>${esc(v.color||'')}</b></div><div>Vị trí: <b>${esc(position(v))}</b></div><div>Ngày nhập: <b>${esc(fmtDate(entryDate(v)))}</b></div><div>Trạng thái: <b>${esc(v.status||'')}</b></div></div><div class="mt-3 text-sm font-bold">Lịch sử (${(v.cycles||[]).length}/10 chu kỳ)</div><div class="mt-2 space-y-2">${(v.cycles||[]).map((x,i)=>`<div class="p-2 rounded-lg bg-slate-50 text-xs">Chu kỳ ${i+1}: Vào ${esc(fmtDate(x.entryDate))} · Ra ${esc(fmtDate(x.exitDate))} · ${esc(x.exitReason||'')}</div>`).join('')}</div><div class="actions"><button class="btn primary" id="detailExit">Xuất xe</button><button class="btn" id="detailEdit">Sửa thông tin</button><button class="btn" id="detailKick">Kích xe ra ô</button><button class="btn red" id="detailDelete">Xóa hồ sơ</button></div><div class="actions"><button class="btn gray" id="detailClose">Đóng</button></div>`);
+ document.getElementById('detailClose').onclick=closeModal;document.getElementById('detailExit').onclick=()=>openExit(v.id);document.getElementById('detailEdit').onclick=()=>openEntry(v.id,true);document.getElementById('detailKick').onclick=()=>kickVehicle(v.id);document.getElementById('detailDelete').onclick=()=>confirmDelete(v.id)}
+function options(list,current){return '<option value="">-- Không chọn --</option>'+list.map(x=>`<option ${x===current?'selected':''} value="${esc(x)}">${esc(x)}</option>`).join('')}
+function catalogField(label,key,id){return `<div class="field"><label>${label}</label><div class="rowselect"><select id="${id}">${options(state.catalogs[key]||[])}</select><button class="btn small" data-catadd="${key}" type="button">+</button><button class="btn small red" data-catdel="${key}" type="button">🗑</button></div></div>`}
+document.addEventListener('click',e=>{const a=e.target.closest('[data-catadd]');if(a)catalogAdd(a.dataset.catadd);const d=e.target.closest('[data-catdel]');if(d)catalogDelete(d.dataset.catdel)});
+function catalogAdd(key){openModal(`<h3>Thêm danh mục</h3><div class="field"><label>Giá trị mới</label><input id="catValue" maxlength="80"></div><div class="actions"><button class="btn primary" id="catSave">Lưu</button><button class="btn gray" onclick="closeModal()">Hủy</button></div>`);document.getElementById('catSave').onclick=()=>{const x=document.getElementById('catValue').value.trim();if(!x)return showToast('Vui lòng nhập nội dung','warn');if(!state.catalogs[key].includes(x))state.catalogs[key].push(x);saveState();closeModal();render();showToast('Đã thêm danh mục')}}
+function catalogDelete(key){const sel=document.querySelector(`select[id$="${key}"]`)||document.querySelector('.modal select');const val=sel?.value;if(!val)return showToast('Chọn danh mục cần xóa','warn');openModal(`<h3>Xóa danh mục?</h3><p>Bạn có chắc muốn xóa “${esc(val)}” khỏi danh mục?</p><div class="actions"><button class="btn red" id="catDelYes">Xóa</button><button class="btn gray" onclick="closeModal()">Hủy</button></div>`);document.getElementById('catDelYes').onclick=()=>{state.catalogs[key]=state.catalogs[key].filter(x=>x!==val);saveState();closeModal();render();showToast('Đã xóa danh mục')}}
+function openEntry(id='',edit=false,forcedPosition=''){
+ const v=edit?state.vehicles.find(x=>normId(x.id)===normId(id)):null,c=v?currentCycle(v):{};
+ openModal(`<h3>${edit?'Sửa hồ sơ xe':'Nhập xe vào bãi'}</h3><div class="formgrid">
+ <div class="field"><label>Loại xe</label><select id="fType"><option ${v?.vehicleType==='Xe mới'?'selected':''}>Xe mới</option><option ${v?.vehicleType==='Xe cũ'?'selected':''}>Xe cũ</option></select></div>
+ <div class="field"><label>Biển số / 6 số cuối VIN</label><input id="fId" value="${esc(v?.id||'')}" ${edit?'readonly':''} placeholder="Nhập mã xe"></div>
+ <div class="field">${catalogField('Dòng xe','models','fModel')}</div>
+ <div class="field">${catalogField('Màu xe','colors','fColor')}</div>
+ <div class="field">${catalogField('Tên / Bộ phận','staffDepts','fStaff')}</div>
+ <div class="field"><label>Ngày nhập</label><input type="date" id="fDate" value="${esc(c.entryDate||todayISO())}"><label class="mt-2"><input type="checkbox" id="fMissing" ${v?.missingInitialEntryDate?'checked':''}> Chưa có ngày nhập</label></div>
+ <div class="field full"><label>Vị trí đỗ (để trống nếu chưa gán)</label><select id="fPosition"><option value="">Chờ gán vị trí</option>${allFreeSlots(v?.position).map(x=>`<option ${x===(forcedPosition||v?.position)?'selected':''}>${x}</option>`).join('')}</select></div>
+ <div class="field full"><label>Ghi chú</label><textarea id="fNote">${esc(c.note||v?.note||'')}</textarea></div>
+ </div><div id="duplicateWarning"></div><div id="returningNotice" class="notice" style="display:none;background:#eaf7ef;color:#087344"></div><div class="actions"><button class="btn primary" id="saveEntry">${edit?'Lưu thay đổi':'Lưu nhập xe'}</button><button class="btn gray" onclick="closeModal()">Hủy</button></div>`);
+ if(v){document.getElementById('fModel').value=v.model||'';document.getElementById('fColor').value=v.color||'';document.getElementById('fStaff').value=c.entryStaff||''}
+ const idInput=document.getElementById('fId'), save=document.getElementById('saveEntry');
+ function checkDuplicate(){const key=normId(idInput.value);const dup=state.vehicles.find(x=>normId(x.id)===key&&inYard(x)&&(!edit||normId(x.id)!==normId(v.id)));const warn=document.getElementById('duplicateWarning'),notice=document.getElementById('returningNotice');if(dup){warn.innerHTML=`<div class="notice danger">Mã xe đang tồn tại tại vị trí: ${esc(position(dup))}. Không thể nhập trùng.</div>`;save.disabled=true;save.style.opacity='.45';notice.style.display='none'}else{warn.innerHTML='';save.disabled=false;save.style.opacity='1';const prior=!edit&&key?state.vehicles.find(x=>normId(x.id)===key&&!inYard(x)):null;if(prior){const cycles=prior.cycles||[];if(cycles.length>=MAX_CYCLES){notice.textContent='Hồ sơ đã đủ 10 chu kỳ Vào/Ra, không thể nhập thêm.';notice.style.display='block';save.disabled=true;save.style.opacity='.45';return;}if(prior.model){const sel=document.getElementById('fModel');if(![...sel.options].some(o=>o.value===prior.model))sel.add(new Option(prior.model,prior.model));sel.value=prior.model}if(prior.color){const sel=document.getElementById('fColor');if(![...sel.options].some(o=>o.value===prior.color))sel.add(new Option(prior.color,prior.color));sel.value=prior.color}notice.textContent=`🔄 Xe quay lại bãi (Chu kỳ thứ ${cycles.length+1}) – Đã tự động điền dòng xe`;notice.style.display='block'}else{notice.style.display='none'}}}
+ idInput.addEventListener('input',checkDuplicate);checkDuplicate();
+ save.onclick=()=>{const raw=idInput.value.trim(),type=document.getElementById('fType').value;const clean=type==='Xe cũ'?normId(raw):raw.replace(/\D/g,'').slice(-6);if(!clean)return showToast(type==='Xe cũ'?'Cần nhập biển số':'Cần nhập 6 số cuối VIN','error');if(type==='Xe mới'&&!/^\d{6}$/.test(clean))return showToast('VIN phải có đúng 6 chữ số cuối','error');const dup=state.vehicles.find(x=>normId(x.id)===normId(clean)&&inYard(x)&&(!edit||normId(x.id)!==normId(v.id)));if(dup)return showToast('Xe đang tồn tại: '+position(dup),'error');
+ const date=document.getElementById('fMissing').checked?'':document.getElementById('fDate').value;const pos=document.getElementById('fPosition').value;let target=v;
+ if(edit){target.model=document.getElementById('fModel').value;target.color=document.getElementById('fColor').value;target.position=pos;target.note=document.getElementById('fNote').value;target.vehicleType=type;target.updatedAt=new Date().toISOString();if(c && !c.entryDate)c.entryDate=date;const first=(target.cycles||[])[0]||{};target.missingInitialEntryDate=!(first.entryDate||first.dateIn||target.initialEntryDate||target.entryDate)}
+ else{target=state.vehicles.find(x=>normId(x.id)===normId(clean));if(!target)target={id:clean,cycles:[],vehicleType:type};if(!target.cycles)target.cycles=[];if(target.cycles.length>=MAX_CYCLES)target.cycles=target.cycles.slice(-(MAX_CYCLES-1));target.cycles.push({entryDate:date,entryStaff:document.getElementById('fStaff').value,entryAt:new Date().toISOString(),note:document.getElementById('fNote').value});target.status='Đang trong bãi';target.vehicleType=type;target.model=document.getElementById('fModel').value;target.color=document.getElementById('fColor').value;target.position=pos||'';const first=(target.cycles||[])[0]||{};target.missingInitialEntryDate=!(first.entryDate||first.dateIn||target.initialEntryDate||target.entryDate);target.updatedAt=new Date().toISOString();if(!state.vehicles.some(x=>normId(x.id)===normId(clean)))state.vehicles.push(target)}
+ saveState();closeModal();render();showToast(edit?'Đã cập nhật hồ sơ':'Đã nhập xe thành công')};
+}
+function allFreeSlots(allow=''){const used=new Set(liveVehicles().filter(v=>v.position&&v.position!==allow).map(v=>v.position));const out=[];for(let d=1;d<=5;d++)for(let r=1;r<=20;r++)for(const p of ['T','TLD','PLD','P']){const x=d+p+'-'+String(r).padStart(2,'0');if(!used.has(x))out.push(x)}return out}
+function openExit(id){const v=state.vehicles.find(x=>normId(x.id)===normId(id));if(!v||!inYard(v)||!(v.cycles||[]).length)return showToast('Không thể xuất: xe chưa nhập hoặc đã xuất bãi','error');const c=currentCycle(v);openModal(`<h3>Xuất xe khỏi bãi</h3><div class="p-3 rounded-xl bg-slate-50 text-sm mb-3"><b>${esc(v.id)}</b> · ${esc(v.model||'')} · ${esc(v.color||'')}<br>Vị trí: ${esc(position(v))}</div><div class="formgrid"><div class="field">${catalogField('Tên / Bộ phận','staffDepts','xStaff')}</div><div class="field">${catalogField('Lý do xuất','reasons','xReason')}</div><div class="field full"><label>Ngày xuất</label><input type="date" id="xDate" value="${todayISO()}"></div><div class="field full"><label>Ghi chú</label><textarea id="xNote"></textarea></div></div><div class="actions"><button class="btn primary" id="doExit">Xác nhận xuất xe</button><button class="btn gray" onclick="closeModal()">Hủy</button></div>`);document.getElementById('doExit').onclick=()=>{const cycle=currentCycle(v);cycle.exitDate=document.getElementById('xDate').value;cycle.exitStaff=document.getElementById('xStaff').value;cycle.exitReason=document.getElementById('xReason').value;cycle.exitNote=document.getElementById('xNote').value;cycle.exitAt=new Date().toISOString();v.status='Đã xuất bãi';v.position='';v.updatedAt=new Date().toISOString();saveState();closeModal();render();showToast('Đã xuất xe, vị trí được giải phóng')}}
+function kickVehicle(id){const v=state.vehicles.find(x=>normId(x.id)===normId(id));if(!v)return;openModal(`<h3>Kích xe ra khỏi vị trí?</h3><p>Xe ${esc(v.id)} sẽ chuyển về danh sách chờ gán, vẫn được tính tồn bãi.</p><div class="actions"><button class="btn primary" id="kickYes">Xác nhận</button><button class="btn gray" onclick="closeModal()">Hủy</button></div>`);document.getElementById('kickYes').onclick=()=>{v.position='';v.updatedAt=new Date().toISOString();saveState();closeModal();render();showToast('Xe đã chuyển về danh sách chờ')}}
+function confirmDelete(id){openModal(`<h3>Xóa hồ sơ xe?</h3><p>Toàn bộ hồ sơ và lịch sử tối đa 10 chu kỳ của xe <b>${esc(id)}</b> sẽ bị xóa.</p><div class="actions"><button class="btn red" id="deleteYes">Xóa vĩnh viễn</button><button class="btn gray" onclick="closeModal()">Hủy</button></div>`);document.getElementById('deleteYes').onclick=()=>{state.vehicles=state.vehicles.filter(x=>normId(x.id)!==normId(id));saveState();closeModal();render();showToast('Đã xóa hồ sơ xe')}}
+function slotAction(code){
+ const occupied=liveVehicles().find(x=>position(x)===code);if(occupied){showVehicle(occupied.id);return}
+ const waiting=liveVehicles().filter(x=>!x.position||x.position==='Chờ gán vị trí');
+ openModal(`<h3>Chọn thao tác cho ô ${esc(code)}</h3><p class="text-sm muted mb-3">Ô đang trống · Chọn xe để chuyển vào vị trí này hoặc nhập hồ sơ mới</p><div class="field"><label>Tìm nhanh biển số / 6 số VIN</label><input id="slotQuickSearch" placeholder="Gõ ít nhất 2 ký tự..." autocomplete="off"></div><div id="slotSearchResults" class="mt-2" style="max-height:190px;overflow:auto"></div><div class="actions"><button class="btn primary" id="slotNew">＋ Nhập xe mới vào ô này</button></div><div class="mt-4"><b class="text-sm">Xe đang chờ gán vị trí (${waiting.length})</b><div id="slotWaitingList" class="mt-2" style="max-height:230px;overflow:auto">${waiting.map(x=>`<button class="vehicle-chip block w-full text-left my-1" data-slot-pick="${esc(x.id)}">${esc(x.id)} · ${esc(x.model||'Chưa rõ dòng xe')}</button>`).join('')||'<div class="muted text-sm py-2">Không có xe chờ gán.</div>'}</div></div><div class="actions"><button class="btn gray" onclick="closeModal()">Đóng</button></div>`);
+ const assign=id=>{const x=state.vehicles.find(v=>normId(v.id)===normId(id));if(!x)return;if(inYard(x)){x.position=code}else{const cycles=x.cycles||[];if(cycles.length>=MAX_CYCLES)return showToast('Hồ sơ đã đủ 10 chu kỳ, không thể nhập thêm','error');cycles.push({entryDate:todayISO(),entryAt:new Date().toISOString(),note:'Xe quay lại bãi từ thao tác gán ô'});x.cycles=cycles;x.status='Đang trong bãi';x.position=code}x.updatedAt=new Date().toISOString();saveState();closeModal();render();showToast('Đã xếp xe '+id+' vào '+code)};
+ document.getElementById('slotNew').onclick=()=>openEntry('',false,code);
+ document.getElementById('slotQuickSearch').addEventListener('input',e=>{const q=normId(e.target.value),box=document.getElementById('slotSearchResults');if(q.length<2){box.innerHTML='<div class="muted text-xs py-2">Nhập từ 2 ký tự để tìm xe trong toàn bộ hồ sơ.</div>';return}const found=state.vehicles.filter(x=>normId(x.id).includes(q)).slice(0,15);box.innerHTML=found.map(x=>`<button class="vehicle-chip block w-full text-left my-1" data-slot-pick="${esc(x.id)}">${esc(x.id)} · ${esc(x.model||'Chưa rõ dòng xe')} · ${esc(inYard(x)?(position(x)||'Chờ gán'):'Đã xuất bãi')}</button>`).join('')||'<div class="muted text-sm py-2">Không tìm thấy hồ sơ phù hợp.</div>'});
+ document.getElementById('slotWaitingList').addEventListener('click',e=>{const b=e.target.closest('[data-slot-pick]');if(b)assign(b.dataset.slotPick)});
+}
+document.getElementById('fab').onclick=()=>openEntry();
+document.getElementById('search').addEventListener('input',e=>{const q=normId(e.target.value),box=document.getElementById('suggestions');if(q.length<2){box.classList.add('hidden');return}const found=state.vehicles.filter(v=>normId(v.id).includes(q)).slice(0,12);box.innerHTML=found.map(v=>`<div class="suggestion" data-detail="${esc(v.id)}"><b>${esc(v.id)}</b><div class="text-xs muted">${esc(v.model||'')} · ${esc(inYard(v)?position(v):'Đã xuất bãi')}</div></div>`).join('')||'<div class="suggestion muted">Không tìm thấy xe</div>';box.classList.remove('hidden')});
+document.addEventListener('click',e=>{if(!e.target.closest('#search')&&!e.target.closest('#suggestions'))document.getElementById('suggestions').classList.add('hidden')});
+document.getElementById('waitPanel').querySelector('.panelhead').onclick=()=>document.getElementById('waitPanel').classList.toggle('collapsed');
 
-function itemHTML(s){
-  var out=s.status==='exited';
-  return '<button class="item" onclick="openDetail(\''+s.id+'\')"><div class="top"><span class="plate">'+esc(dispKey(s))+'</span>'+
-  (out?'<span class="badge g">Đã xuất</span>':(s.viTri?'<span class="badge">'+esc(slotLabel(s.viTri))+'</span>':'<span class="badge o">Chưa xếp</span>'))+'</div>'+
-  '<div class="meta">'+(s.loai==='moi'?'<span class="badge m">Xe mới</span> ':'')+'<b>'+esc(s.dongXe||'—')+'</b>'+(s.loai==='moi'&&s.mauXe?' · '+esc(s.mauXe):'')+(s.tenBoPhan?' · '+esc(s.tenBoPhan):'')+(s.trangThaiVao?' · '+esc(s.trangThaiVao):'')+'</div>'+
-  '<div class="meta">Vào: '+esc(dispDate(s.ngayVao))+(out?' → Xuất: '+esc(s.ngayRa||'—')+(s.trangThaiRa?' ('+esc(s.trangThaiRa)+')':''):'')+'</div>'+
-  (s.ghiChu?'<div class="meta">📝 '+esc(s.ghiChu)+'</div>':'')+'</button>';
-}
-function renderSearch(){
-  var res=sessions.filter(function(s){return matches(s,searchQ);});
-  res.sort(function(a,b){return (a.status==='in_lot'?0:1)-(b.status==='in_lot'?0:1)||(b.updatedAt||0)-(a.updatedAt||0);});
-  var h='<div class="hint">Kết quả cho “'+esc(searchQ)+'”: '+res.length+' lượt xe</div>';
-  if(!res.length)return h+'<div class="empty">Không tìm thấy xe phù hợp.</div>';
-  return h+res.slice(0,100).map(itemHTML).join('');
-}
-
-/* ---- Unassigned card ---- */
-function unCardHTML(){
-  return '<div class="card" id="unCard"><h3>⚠️ Xe chưa xếp vị trí (<span id="unCnt">0</span>)</h3>'+
-    '<input id="unQ" placeholder="Lọc nhanh biển số / VIN / dòng xe..." value="'+esc(unQ)+'" oninput="unQ=this.value;renderUn()" autocomplete="off">'+
-    '<div class="hint">Bấm vào xe để gán nhanh vào ô trống.</div><div id="unList" class="chips"></div></div>';
-}
-function renderUn(){
-  var box=$('unList');if(!box)return;
-  var un=sessions.filter(function(s){return s.status==='in_lot'&&!s.viTri;});
-  $('unCnt').textContent=un.length;
-  var f=unQ.trim()?un.filter(function(s){return matches(s,unQ);}):un;
-  box.innerHTML=f.length?f.map(function(s){return '<button class="chip '+s.loai+'" onclick="openPicker(\''+s.id+'\','+(openDay||0)+')">'+esc(cellKey(s))+(s.dongXe?' · '+esc(s.dongXe):'')+'</button>';}).join(''):'<span class="hint">'+(un.length?'Không có xe khớp.':'Tất cả xe đã có vị trí. 👍')+'</span>';
-}
-
-/* ---- Overview (compact day cards) ---- */
-function dayStats(d){
-  var occ=occMap(),n=0,cu=0,mo=0;
-  Object.keys(occ).forEach(function(k){if(slotDay(k)===d){n++;if(occ[k].loai==='moi')mo++;else cu++;}});
-  return {n:n,cu:cu,mo:mo,total:COLS.length*ROWS};
-}
-function renderOverview(){
-  var inLot=sessions.filter(function(s){return s.status==='in_lot';});
-  var td=today();
-  var nIn=sessions.filter(function(s){return s.ngayVao===td;}).length;
-  var nOut=sessions.filter(function(s){return s.status==='exited'&&s.ngayRa===td;}).length;
-  var h='<div class="stats"><div class="stat"><b>'+inLot.length+'</b><span>Tồn bãi</span></div><div class="stat"><b>'+nIn+'</b><span>Nhập hôm nay</span></div><div class="stat"><b>'+nOut+'</b><span>Xuất hôm nay</span></div></div>';
-  h+='<button class="btn block" style="margin-bottom:14px" onclick="openForm({})">➕ Nhập xe mới</button>';
-  h+=unCardHTML();
-  h+='<div class="dcards">'+appCfg.days.map(function(d){
-    var st=dayStats(d),pc=Math.round(st.n*100/st.total);
-    return '<button class="dcard" onclick="openDay='+d+';render();window.scrollTo(0,0)"><b>Dãy '+d+'</b><div class="sub">'+st.total+' vị trí</div>'+
-      '<div class="bar"><i class="'+(pc>=90?'hi':'')+'" style="width:'+pc+'%"></i></div>'+
-      '<div class="sub"><b style="display:inline;font-size:15px;color:var(--blue)">'+st.n+'</b> xe · '+(st.total-st.n)+' trống ('+pc+'%)</div>'+
-      '<div class="sub">Cũ '+st.cu+' · Mới '+st.mo+'</div></button>';
-  }).join('')+'</div>';
-  h+='<div class="row"><button class="btn sec" onclick="addDay()">＋ Thêm dãy</button><button class="btn red" onclick="openDelDay()">🗑️ Xóa dãy</button></div>';
-  return h;
-}
-function addDay(){
-  var n=Math.max.apply(null,appCfg.days)+1;
-  if(!confirm('Thêm Dãy '+n+' ('+(COLS.length*ROWS)+' vị trí)?'))return;
-  appCfg.days.push(n);saveConfig();render();toast('Đã thêm Dãy '+n);
-}
-function openDelDay(){
-  var h='<div class="hint">Chọn dãy cần xóa. Dãy đang có xe sẽ có cảnh báo chuyển xe về danh sách chưa xếp vị trí.</div>';
-  h+=appCfg.days.map(function(d){var st=dayStats(d);return '<div class="lrow"><span>Dãy '+d+' — '+st.n+' xe đang đỗ</span><button style="width:auto;padding:0 14px;font-weight:800;color:var(--bad)" onclick="delDay('+d+')">Xóa</button></div>';}).join('');
-  openModal('Xóa dãy',h);
-}
-function delDay(d){
-  if(appCfg.days.length<=1){toast('Phải còn ít nhất 1 dãy');return;}
-  var occ=occMap(),cars=[];
-  Object.keys(occ).forEach(function(k){if(slotDay(k)===d)cars.push(occ[k]);});
-  var msg=cars.length?('Dãy '+d+' đang có '+cars.length+' xe. Chuyển các xe này về danh sách "chưa xếp vị trí" rồi xóa dãy?'):('Xóa Dãy '+d+'?');
-  if(!confirm(msg))return;
-  cars.forEach(function(s){var c=Object.assign({},s);c.viTri='';c.updatedAt=Date.now();var i=sessions.findIndex(function(x){return x.id===c.id;});sessions[i]=c;pushOne(c);});
-  appCfg.days=appCfg.days.filter(function(x){return x!==d;});
-  saveConfig();saveLocal();
-  if(openDay===d)openDay=null;
-  closeModal();render();toast('Đã xóa Dãy '+d);
-}
-
-/* ---- Day detail grid ---- */
-function renderDay(d){
-  var occ=occMap(),st=dayStats(d);
-  var idx=appCfg.days.indexOf(d),prev=appCfg.days[idx-1],next=appCfg.days[idx+1];
-  var h='<div class="row" style="align-items:center;margin-bottom:10px"><button class="btn sec" style="flex:0 0 auto;padding:0 14px" onclick="openDay=null;render();window.scrollTo(0,0)">← Các dãy</button>'+
-    '<div style="flex:1;text-align:center;font-weight:900;font-size:19px;color:var(--navy)">Dãy '+d+'<div class="hint" style="margin:0;font-weight:600">'+st.n+'/'+st.total+' xe</div></div>'+
-    '<button class="btn sec" style="flex:0 0 46px;padding:0" '+(prev?'onclick="openDay='+prev+';render();window.scrollTo(0,0)"':'disabled style="opacity:.3;flex:0 0 46px;padding:0"')+'>‹</button>'+
-    '<button class="btn sec" style="flex:0 0 46px;padding:0" '+(next?'onclick="openDay='+next+';render();window.scrollTo(0,0)"':'disabled style="opacity:.3;flex:0 0 46px;padding:0"')+'>›</button></div>';
-  h+=unCardHTML();
-  h+='<div class="legend"><span><s style="background:#f7f9fc;border:1.5px dashed #c4d1e2"></s>Ô trống</span><span><s style="background:#e3eeff;border:1.5px solid #1e6fe0"></s>Xe cũ</span><span><s style="background:#dff6e6;border:1.5px solid #15a34a"></s>Xe mới</span></div>';
-  h+='<div class="hint">💡 Giữ ngón tay ~0,4 giây lên xe rồi kéo sang ô trống để chuyển ô.</div>';
-  h+='<div class="colhd"><span>T</span><span>TLD</span><i></i><span>PLD</span><span>P</span></div><div class="lot">';
-  for(var r=1;r<=ROWS;r++){
-    COLS.forEach(function(c,ci){
-      if(ci===2)h+='<div class="aisle"></div>';
-      var id=slotId(d,r,c),s=occ[id];
-      if(s)h+='<button class="cell occ '+s.loai+'" data-slot="'+id+'" data-id="'+s.id+'" onclick="cellClick(\''+id+'\')"><span class="sl">'+id+'</span><span class="pl">'+esc(cellKey(s))+'</span><span class="md">'+esc(s.dongXe)+'</span></button>';
-      else h+='<button class="cell" data-slot="'+id+'" onclick="cellClick(\''+id+'\')"><span class="sl">'+id+'</span></button>';
-    });
+function exportExcel(){const rows=liveVehicles().map(v=>({ViTriDo:position(v),LoaiXe:v.vehicleType,MaXe_ID:v.id,DongXe:v.model,MauXe:v.color,NgayNhap:fmtDate(entryDate(v)),SoNgayTon:ageDays(entryDate(v))===null?'>31':ageDays(entryDate(v)),TenBoPhan:currentCycle(v).entryStaff||'',GhiChu:currentCycle(v).note||v.note||''}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'TonBai');XLSX.writeFile(wb,'BAI_XE_34_TON_BAI.xlsx')}
+document.getElementById('excelBtn').onclick=exportExcel;
+function exportBackup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});downloadBlob(blob,'BAI_XE_34_BACKUP.json')}
+function downloadBlob(blob,name){const a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+function importBackup(file){const reader=new FileReader();reader.onload=()=>{try{const x=JSON.parse(reader.result);if(!Array.isArray(x.vehicles))throw Error('File không có mảng vehicles');state={vehicles:x.vehicles,catalogs:{...DEFAULT_CATALOGS,...(x.catalogs||{})}};saveState();render();showToast('Đã khôi phục dữ liệu JSON')}catch(e){showToast('File JSON không hợp lệ: '+e.message,'error')}};reader.readAsText(file)}
+function importExcel(file){const reader=new FileReader();reader.onload=()=>{try{const wb=XLSX.read(reader.result,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(ws);rows.forEach(r=>{const id=String(r.MaXe_ID||r.BienSo||r.VIN||'').trim();if(!id)return;let v=state.vehicles.find(x=>normId(x.id)===normId(id));if(!v){v={id,cycles:[],vehicleType:r.LoaiXe||'',model:r.DongXe||'',color:r.MauXe||'',position:r.ViTriDo||''};state.vehicles.push(v)}const d=r.NgayNhap||r.entryDate||'';if(!v.cycles.length)v.cycles.push({entryDate:d,entryStaff:r.TenBoPhan||'',note:r.GhiChu||''});const first=(v.cycles||[])[0]||{};v.missingInitialEntryDate=!(first.entryDate||first.dateIn||v.initialEntryDate||v.entryDate);v.status='Đang trong bãi';if(r.ViTriDo)v.position=r.ViTriDo});saveState();render();showToast('Đã nhập dữ liệu Excel; ngày nhập lấy từ file nguồn')}catch(e){showToast('Không đọc được Excel: '+e.message,'error')}};reader.readAsArrayBuffer(file)}
+function openSettings(){openModal(`<h3>⚙️ Cài đặt hệ thống</h3><div class="field"><label>URL Google Apps Script Web App</label><input id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec" value="${esc(localStorage.getItem(URL_KEY)||'')}"></div><div class="actions"><button class="btn primary" id="saveTest">Lưu & kiểm tra kết nối</button><button class="btn green" id="pushAll">Đẩy toàn bộ lên Sheet</button><button class="btn" id="pullAll">Tải dữ liệu từ Sheet</button></div><hr class="my-4"><h3 class="text-base">Sao lưu & phục hồi</h3><div class="actions"><button class="btn" id="backupJson">Xuất backup JSON</button><button class="btn" id="backupXlsx">Xuất Excel tổng hợp</button></div><div class="field mt-3"><label>Nhập file JSON hoặc Excel</label><input type="file" id="restoreFile" accept=".json,.xlsx,.xls"></div><hr class="my-4"><h3 class="text-base text-red-700">Khôi phục cài đặt gốc</h3><p class="text-xs muted">Xóa dữ liệu ứng dụng trên trình duyệt hiện tại. Không xóa dữ liệu đã lưu trên Google Sheets.</p><div class="actions"><button class="btn red" id="resetLocal">Xóa dữ liệu trên máy</button><button class="btn gray" onclick="closeModal()">Đóng</button></div>`,false);
+ document.getElementById('saveTest').onclick=async()=>{const u=document.getElementById('gasUrl').value.trim();localStorage.setItem(URL_KEY,u);try{const r=await gasGet('ping');if(r.status!=='ok')throw Error(r.message||'Không phản hồi');setSync('ok','Đã kết nối');showToast(r.message||'Kết nối thành công')}catch(e){setSync('err','Lỗi kết nối');showToast('Kết nối thất bại: '+e.message,'error')}};
+ document.getElementById('pushAll').onclick=async()=>{await pushToGoogleSheet();};
+ document.getElementById('pullAll').onclick=async()=>{try{await pullFromGoogleSheet();closeModal();render();showToast('Đã tải dữ liệu từ Sheet')}catch(e){showToast(e.message,'error')}};
+ document.getElementById('backupJson').onclick=exportBackup;document.getElementById('backupXlsx').onclick=()=>{const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(state.vehicles),'HoSoXe');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(state.catalogs.models.map(x=>({DongXe:x}))), 'DongXe');XLSX.writeFile(wb,'BAI_XE_34_BACKUP.xlsx')};
+ document.getElementById('restoreFile').onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.name.toLowerCase().endsWith('.json'))importBackup(f);else importExcel(f)};
+ document.getElementById('resetLocal').onclick=()=>{openModal(`<h3>Xác nhận xóa dữ liệu?</h3><p>Toàn bộ dữ liệu trên trình duyệt này sẽ bị xóa vĩnh viễn.</p><div class="actions"><button class="btn red" id="resetYes">Xóa toàn bộ</button><button class="btn gray" onclick="closeModal()">Hủy</button></div>`);document.getElementById('resetYes').onclick=()=>{state={vehicles:[],catalogs:structuredCloneSafe(DEFAULT_CATALOGS)};saveState();closeModal();closeModal();render();showToast('Đã xóa dữ liệu trên thiết bị','warn')}}}
+document.getElementById('settingsBtn').onclick=openSettings;
+function scheduleSync(){if(!localStorage.getItem(URL_KEY))return;clearTimeout(syncTimer);syncTimer=setTimeout(pushToGoogleSheet,850)}
+function gasGet(action){const url=localStorage.getItem(URL_KEY);if(!url)return Promise.reject(Error('Chưa cấu hình URL Web App'));return new Promise((resolve,reject)=>{const cb='__bxcb'+Date.now()+Math.floor(Math.random()*10000),s=document.createElement('script'),t=setTimeout(()=>finish(Error('Hết thời gian chờ')),20000);function finish(err,data){clearTimeout(t);delete window[cb];s.remove();err?reject(err):resolve(data)}window[cb]=d=>finish(null,d);s.onerror=()=>finish(Error('Không truy cập được Apps Script. Kiểm tra URL/Anyone.'));const u=new URL(url);u.searchParams.set('action',action);u.searchParams.set('callback',cb);u.searchParams.set('_',Date.now());s.src=u.toString();document.head.appendChild(s)})}
+function verifyRemoteState(remote,local){
+ const rv=remote.vehicles||remote.records||[],lv=local.vehicles||[];
+ if(rv.length!==lv.length)throw Error(`Đồng bộ chưa đủ hồ sơ: máy ${lv.length}, Sheet ${rv.length}`);
+ const key=x=>normId(x.id||x.vehicleId||x.MaXe_ID||'');
+ const remoteMap=new Map(rv.map(v=>[key(v),v]));
+ for(const v of lv){const r=remoteMap.get(key(v));if(!r)throw Error('Google Sheets thiếu hồ sơ '+(v.id||''));
+  if((v.cycles||[]).length!==(r.cycles||[]).length)throw Error('Lịch sử chu kỳ chưa khớp tại hồ sơ '+v.id);
+  const fields=[['vehicleType',vehicleTypeOf(v),vehicleTypeOf(r)],['model',v.model||'',r.model||''],['color',v.color||'',r.color||''],['position',position(v)==='Chờ gán vị trí'?'':position(v),position(r)==='Chờ gán vị trí'?'':position(r)],['status',v.status||'',r.status||''],['missingInitialEntryDate',!!v.missingInitialEntryDate,!!r.missingInitialEntryDate]];
+  const mismatch=fields.find(x=>String(x[1])!==String(x[2]));
+  if(mismatch)throw Error('Trường '+mismatch[0]+' chưa khớp tại hồ sơ '+v.id);
+  const cycleFields=['entryDate','entryStaff','exitDate','exitStaff','note'];
+  for(let i=0;i<(v.cycles||[]).length;i++){
+   for(const field of cycleFields){const a=(v.cycles[i]||{})[field]||'',b=(r.cycles[i]||{})[field]||'';if(String(a)!==String(b))throw Error('Chu kỳ '+(i+1)+' / '+field+' chưa khớp tại hồ sơ '+v.id)}
+   const aReason=(v.cycles[i]||{}).exitReason||(v.cycles[i]||{}).reason||'',bReason=(r.cycles[i]||{}).exitReason||(r.cycles[i]||{}).reason||'';
+   if(String(aReason)!==String(bReason))throw Error('Chu kỳ '+(i+1)+' / reason chưa khớp tại hồ sơ '+v.id);
   }
-  return h+'</div>';
+ }
+ for(const k of ['models','colors','staffDepts','reasons']){
+  const a=[...(local.catalogs?.[k]||[])].map(String).sort(),b=[...(remote.catalogs?.[k]||[])].map(String).sort();
+  if(JSON.stringify(a)!==JSON.stringify(b))throw Error('Danh mục '+k+' chưa đồng bộ đầy đủ');
+ }
+ return true;
 }
-function cellClick(slot){
-  if(drag.suppress)return;
-  var s=occMap()[slot];
-  if(s)openDetail(s.id);else openEmpty(slot);
+async function pushToGoogleSheet(){
+ if(syncing)return;const url=localStorage.getItem(URL_KEY);if(!url){setSync('err','Offline');return}
+ syncing=true;setSync('busy','Đang đồng bộ');
+ try{
+  // text/plain là CORS-safelisted; no-cors cho phép gửi POST đơn giản từ GitHub Pages.
+  // Phản hồi POST là opaque nên bắt buộc đọc lại getAll và đối chiếu dữ liệu thực tế.
+  await fetch(url,{method:'POST',mode:'no-cors',redirect:'follow',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({action:'syncFull',data:state})});
+  const check=await gasGet('getAll');if(check.status!=='ok')throw Error(check.message||'Không đọc được dữ liệu sau đồng bộ');
+  verifyRemoteState(check,state);setSync('ok','Đã đồng bộ và xác minh');
+ }catch(e){setSync('err','Đồng bộ chưa xác minh');showToast(e.message||'Lỗi đồng bộ Google Sheets','error');console.error(e)}finally{syncing=false}
 }
-
-/* ---- Touch drag & drop (long-press) ---- */
-var drag={timer:null,on:false,id:null,ghost:null,sx:0,sy:0,suppress:false,tgt:null};
-function dragEnd(){
-  clearTimeout(drag.timer);
-  if(drag.ghost){drag.ghost.remove();drag.ghost=null;}
-  if(drag.tgt){drag.tgt.classList.remove('target');drag.tgt=null;}
-  if(drag.on){drag.on=false;drag.suppress=true;setTimeout(function(){drag.suppress=false;},450);}
+async function pullFromGoogleSheet(){const remote=await gasGet('getAll');if(remote.status!=='ok')throw Error(remote.message||'Lỗi tải dữ liệu');state={vehicles:remote.vehicles||remote.records||[],catalogs:{...DEFAULT_CATALOGS,...(remote.catalogs||{})}};localStorage.setItem(DB_KEY,JSON.stringify(state));render();setSync('ok','Đã tải dữ liệu')}
+function parseDateValue(x){
+ if(!x)return null;
+ if(/^\d{4}-\d\d-\d\d$/.test(String(x)))return new Date(String(x)+'T00:00:00');
+ const m=String(x).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+ const d=m?new Date(+m[3],+m[2]-1,+m[1]):new Date(x);
+ return isNaN(d)?null:new Date(d.getFullYear(),d.getMonth(),d.getDate());
 }
-document.addEventListener('touchstart',function(e){
-  var c=e.target.closest&&e.target.closest('.cell.occ[data-id]');
-  if(!c||e.touches.length!==1)return;
-  var t=e.touches[0];drag.sx=t.clientX;drag.sy=t.clientY;
-  clearTimeout(drag.timer);
-  drag.timer=setTimeout(function(){
-    drag.on=true;drag.id=c.getAttribute('data-id');
-    var g=document.createElement('div');g.className='ghost';g.textContent=c.querySelector('.pl').textContent;
-    document.body.appendChild(g);drag.ghost=g;g.style.left=drag.sx+'px';g.style.top=drag.sy+'px';
-    if(navigator.vibrate)navigator.vibrate(30);
-  },380);
-},{passive:true});
-document.addEventListener('touchmove',function(e){
-  var t=e.touches[0];
-  if(!drag.on){if(Math.abs(t.clientX-drag.sx)>10||Math.abs(t.clientY-drag.sy)>10)clearTimeout(drag.timer);return;}
-  e.preventDefault();
-  drag.ghost.style.left=t.clientX+'px';drag.ghost.style.top=t.clientY+'px';
-  var el=document.elementFromPoint(t.clientX,t.clientY),c=el&&el.closest?el.closest('.cell[data-slot]:not(.occ)'):null;
-  if(drag.tgt&&drag.tgt!==c)drag.tgt.classList.remove('target');
-  if(c)c.classList.add('target');
-  drag.tgt=c;
-},{passive:false});
-document.addEventListener('touchend',function(e){
-  if(!drag.on){clearTimeout(drag.timer);return;}
-  var t=e.changedTouches[0],id=drag.id;
-  var el=document.elementFromPoint(t.clientX,t.clientY);
-  var c=el&&el.closest?el.closest('.cell[data-slot]:not(.occ)'):null;
-  var un=el&&el.closest?el.closest('#unCard'):null;
-  dragEnd();
-  if(c)assignSlot(id,c.getAttribute('data-slot'),true);
-  else if(un){var s=findS(id);if(s){s.viTri='';upsert(s);toast('Đã đưa về danh sách chưa xếp');}}
-},{passive:true});
-document.addEventListener('touchcancel',dragEnd,{passive:true});
-document.addEventListener('contextmenu',function(e){if(e.target.closest&&e.target.closest('.cell'))e.preventDefault();});
-
-/* ---- List view ---- */
-function renderList(){
-  var inLot=sessions.filter(function(s){return s.status==='in_lot';});
-  var ex=sessions.filter(function(s){return s.status==='exited';});
-  inLot.sort(function(a,b){return (dateKey(b.ngayVao)||'0').localeCompare(dateKey(a.ngayVao)||'0')||dispKey(a).localeCompare(dispKey(b));});
-  ex.sort(function(a,b){return (dateKey(b.ngayRa)||'0').localeCompare(dateKey(a.ngayRa)||'0')||(b.updatedAt||0)-(a.updatedAt||0);});
-  var arr=listTab==='in'?inLot:ex;
-  var h='<div class="tabs"><button class="'+(listTab==='in'?'on':'')+'" onclick="listTab=\'in\';render()">Xe tồn ('+inLot.length+')</button><button class="'+(listTab==='out'?'on':'')+'" onclick="listTab=\'out\';render()">Lịch sử xuất ('+ex.length+')</button></div>';
-  if(!arr.length)return h+'<div class="empty">Chưa có dữ liệu.</div>';
-  return h+arr.slice(0,400).map(itemHTML).join('');
+function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function dateLabel(d){return new Intl.DateTimeFormat('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}).format(d)}
+function reportAgeDate(v){
+ const first=(v.cycles||[])[0]||{};
+ const original=first.entryDate||first.dateIn||v.initialEntryDate||v.entryDate||'';
+ if(v.missingInitialEntryDate===true||(!original&&v.cycles&&v.cycles.length&&!(first.entryDate||first.dateIn)))return '';
+ return entryDate(v)||original||'';
 }
-
-/* ================= SETTINGS ================= */
-function renderSettings(){
-  var c=loadFb();
-  var h='<div class="card"><h3>☁️ Firebase Realtime Database <span id="cfgStatus" class="pill"></span></h3>';
-  h+='<div class="hint">Dữ liệu luôn lưu trên máy trước (dùng được khi mất mạng), tự đồng bộ 2 chiều khi có mạng. Danh mục và số dãy cũng được đồng bộ.</div>';
-  h+='<div class="hint" id="fbDiag" style="font-weight:700"></div>';
-  h+='<label>Project ID</label><input id="c_pid" value="'+esc(c.projectId)+'">';
-  h+='<label>Database URL</label><input id="c_url" value="'+esc(c.databaseURL)+'" autocapitalize="off">';
-  h+='<label>API Key</label><input id="c_key" value="'+esc(c.apiKey)+'" autocapitalize="off" placeholder="AIza...">';
-  h+='<label>Auth Domain</label><input id="c_auth" value="'+esc(c.authDomain)+'" autocapitalize="off">';
-  h+='<label>App ID</label><input id="c_app" value="'+esc(c.appId)+'" autocapitalize="off">';
-  h+='<div class="row" style="margin-top:14px"><button class="btn" onclick="saveFb()">💾 Lưu &amp; kết nối</button><button class="btn sec" onclick="testFb()">🔍 Kiểm tra</button></div>';
-  h+='<button class="btn red block" style="margin-top:8px" onclick="resetFb()">↺ Khôi phục mặc định</button>';
-  h+='<div class="row" style="margin-top:8px"><button class="btn grn" onclick="syncNow()">🔄 Đồng bộ ngay</button><button class="btn sec" onclick="reloadFromCloud()">☁️ Tải lại từ Cloud</button></div></div>';
-  Object.keys(LIST_NAMES).forEach(function(k){
-    h+='<div class="card"><h3>🗂️ Danh mục: '+LIST_NAMES[k]+'</h3>';
-    h+=appCfg.lists[k].map(function(x,i){return '<div class="lrow"><span>'+esc(x)+'</span><button onclick="lstEdit(\''+k+'\','+i+')">✏️</button><button onclick="lstDel(\''+k+'\','+i+')">🗑️</button></div>';}).join('');
-    h+='<div class="addrow"><input id="lst_'+k+'" placeholder="Thêm mục mới..." autocomplete="off"><button class="btn" onclick="lstAdd(\''+k+'\')">＋</button></div></div>';
+function reportAgeDays(value,asOf){
+ const d=parseDateValue(value);if(!d)return null;
+ return Math.max(0,Math.floor((new Date(asOf.getFullYear(),asOf.getMonth(),asOf.getDate())-d)/86400000));
+}
+function reportSnapshot(day){
+ const today=parseDateValue(todayISO());
+ return state.vehicles.filter(v=>{
+  if(dateKey(day)===dateKey(today)&&inYard(v))return true;
+  const cycles=v.cycles||[];
+  if(!cycles.length)return false;
+  return cycles.some(c=>{
+   const start=parseDateValue(c.entryDate||c.dateIn),finish=parseDateValue(c.exitDate||c.dateOut);
+   return !!start&&start<=day&&(!finish||finish>day);
   });
-  h+='<div class="hint">Đổi tên/xóa mục chỉ áp dụng cho danh sách chọn; dữ liệu xe đã nhập trước đó giữ nguyên.</div>';
-  h+='<div class="card"><h3>💾 Sao lưu JSON</h3><div class="hint">File QLBX34_backup.json tương thích dữ liệu cũ.</div>';
-  h+='<div class="row"><button class="btn sec" onclick="exportJson()">⬇️ Xuất JSON</button><button class="btn sec" onclick="pickFile(\'json\')">⬆️ Nhập JSON</button></div></div>';
-  h+='<div class="card"><h3>ℹ️ Thông tin</h3><div class="kv"><span>Tổng lượt xe</span><b>'+sessions.length+'</b></div><div class="kv"><span>Số dãy</span><b>'+appCfg.days.length+'</b></div><div class="kv"><span>Ngày hôm nay</span><b>'+today()+'</b></div></div>';
-  return h;
+ });
 }
-function lstAdd(k){
-  var inp=$('lst_'+k),v=inp.value.trim();if(!v)return;
-  if(!addToList(k,v)){toast('Mục này đã có');return;}
-  saveConfig();render();toast('Đã thêm');
+function getReportRange(){
+ const mode=document.getElementById('reportPeriodMode')?.value||'week';
+ let from,to,label;
+ if(mode==='day'){
+  from=parseDateValue(document.getElementById('reportDay').value);to=from;
+  label='Ngày · '+dateLabel(from);
+ }else if(mode==='month'){
+  const val=document.getElementById('reportMonth').value||todayISO().slice(0,7),parts=val.split('-').map(Number);
+  from=new Date(parts[0],parts[1]-1,1);to=new Date(parts[0],parts[1],0);
+  label='Tháng · '+String(parts[1]).padStart(2,'0')+'/'+parts[0];
+ }else{
+  from=parseDateValue(document.getElementById('reportFrom').value);to=parseDateValue(document.getElementById('reportTo').value);
+  if(from>to){const t=from;from=to;to=t}
+  label='Tuần · '+dateLabel(from)+' – '+dateLabel(to);
+ }
+ return {mode,from,to,label};
 }
-function lstEdit(k,i){
-  var old=appCfg.lists[k][i],n=prompt('Sửa tên mục:',old);
-  if(n==null)return;n=n.trim();if(!n||n===old)return;
-  if(appCfg.lists[k].some(function(x,j){return j!==i&&x.toLowerCase()===n.toLowerCase();})){toast('Tên này đã tồn tại');return;}
-  appCfg.lists[k][i]=n;saveConfig();render();toast('Đã sửa');
+function reportPeriodDates(range){
+ const total=Math.max(1,Math.round((range.to-range.from)/86400000)+1),count=range.mode==='day'?1:7,dates=[];
+ for(let i=0;i<count;i++){
+  const offset=count===1?0:Math.round(i*(total-1)/(count-1));
+  const d=new Date(range.from);d.setDate(d.getDate()+offset);dates.push(d);
+ }
+ return dates;
 }
-function lstDel(k,i){
-  if(appCfg.lists[k].length<=1){toast('Phải còn ít nhất 1 mục');return;}
-  if(!confirm('Xóa mục "'+appCfg.lists[k][i]+'" khỏi danh mục?'))return;
-  appCfg.lists[k].splice(i,1);saveConfig();render();toast('Đã xóa');
+function reportBuildHtml(range,special){
+ const end=range.to,live=reportSnapshot(end),old=live.filter(v=>vehicleTypeOf(v)==='Xe cũ').length,nw=live.length-old;
+ const age=live.map(v=>({v,days:reportAgeDays(reportAgeDate(v),end)}));
+ const groups=[age.filter(x=>x.days!==null&&x.days<=10),age.filter(x=>x.days!==null&&x.days>=11&&x.days<=20),age.filter(x=>x.days!==null&&x.days>=21&&x.days<=31),age.filter(x=>x.days===null||x.days>31)];
+ const fromTime=range.from.getTime(),toTime=range.to.getTime()+86400000-1;
+ const cycleIn=c=>{const d=parseDateValue(c.entryDate||c.dateIn);return d&&d.getTime()>=fromTime&&d.getTime()<=toTime};
+ const cycleOut=c=>{const d=parseDateValue(c.exitDate||c.dateOut);return d&&d.getTime()>=fromTime&&d.getTime()<=toTime};
+ const entries=state.vehicles.reduce((n,v)=>n+(v.cycles||[]).filter(cycleIn).length,0);
+ const exits=state.vehicles.reduce((n,v)=>n+(v.cycles||[]).filter(cycleOut).length,0);
+ const newExited=state.vehicles.reduce((n,v)=>n+(vehicleTypeOf(v)!=='Xe cũ'?(v.cycles||[]).filter(cycleOut).length:0),0);
+ const dates=reportPeriodDates(range),snaps=dates.map(d=>({date:d,vehicles:reportSnapshot(d)}));
+ const maxOld=Math.max(1,...snaps.map(x=>x.vehicles.filter(v=>vehicleTypeOf(v)==='Xe cũ').length));
+ const maxNew=Math.max(1,...snaps.map(x=>x.vehicles.filter(v=>vehicleTypeOf(v)!=='Xe cũ').length));
+ const trend=snaps.map(x=>{
+  const a=x.vehicles.filter(v=>vehicleTypeOf(v)==='Xe cũ').length,b=x.vehicles.length-a;
+  const label=range.mode==='month'?String(x.date.getDate()):String(x.date.getDate());
+  return `<div class="trend-day"><div class="trend-bars"><div class="trend-bar old" style="height:${Math.max(2,a/maxOld*125)}px"><span class="trend-val">${a}</span></div><div class="trend-bar new" style="height:${Math.max(2,b/maxNew*125)}px"><span class="trend-val">${b}</span></div></div><small>${label}</small></div>`;
+ }).join('');
+ const maxAge=Math.max(1,...groups.map(g=>g.length));
+ const ageRows=[['0–10 ngày',groups[0].length,'#e9ad18'],['11–20 ngày',groups[1].length,'#e9ad18'],['21–31 ngày',groups[2].length,'#f5822b'],['>31 ngày (kể cả thiếu ngày nhập)',groups[3].length,'#e33c49']].map(([label,count,color])=>`<div class="age-row"><span>${label}</span><div class="age-track"><div class="age-fill" style="width:${count/maxAge*100}%;background:${color}"></div></div><b>${count}</b></div>`).join('');
+ const specialBlock=special.trim()?`<div class="reportbox report-special"><h2>DIỄN BIẾN ĐẶC BIỆT</h2><div class="special-content">${esc(special).replace(/\n/g,'<br>')}</div></div>`:'';
+ const missing=groups[3].filter(x=>x.days===null).length;
+ return `<div class="report" id="reportCanvas"><div class="report-banner"><h1>BÁO CÁO TỔNG QUAN BÃI XE</h1><p>${esc(range.label)}</p></div><div class="reportcards"><div class="reportcard"><span>TỔNG XE TỒN BÃI</span><strong>${live.length}</strong></div><div class="reportcard"><span>XE CŨ CÓ BIỂN</span><strong>${old}</strong></div><div class="reportcard"><span>XE MỚI CHƯA BIỂN</span><strong>${nw}</strong></div><div class="reportcard"><span>XE TỒN TỪ 11 NGÀY</span><strong>${age.filter(x=>x.days===null||x.days>=11).length}</strong></div></div><div class="report-mid"><div class="reportbox"><h2>DIỄN BIẾN XE TỒN BÃI TRONG KỲ</h2><div class="report-sub">Số xe còn tại bãi cuối mỗi mốc ngày - So sánh xe cũ và xe mới</div><div class="trend-chart">${trend}</div><div class="trend-legend"><i style="background:#1684c9"></i>Xe cũ　 <i style="background:#16a56d"></i>Xe mới</div></div><div class="reportbox"><h2>CHỈ TIÊU TRONG KỲ</h2><div class="report-metrics"><div class="metric-row"><span>Lượt xe vào</span><b>${entries}</b></div><div class="metric-row"><span>Lượt xe ra</span><b>${exits}</b></div><div class="metric-row"><span>Xe mới xuất bãi</span><b>${newExited}</b></div></div></div></div><div class="reportbox report-age"><h2>CẢNH BÁO XE TỒN BÃI THEO THỜI GIAN NHẬP</h2><div class="report-sub">Nhóm 0–10 ngày: ${groups[0].length} xe</div>${ageRows}</div>${specialBlock}<div class="report-foot">Mốc tồn đã kiểm: ${dateLabel(end)} (${live.length} xe đang ở bãi). Hồ sơ thiếu ngày vào: ${missing}; số liệu ngày nhập lấy từ dữ liệu hồ sơ / file Excel / JSON; hồ sơ thiếu ngày nhập được xếp vào nhóm trên 31 ngày.</div></div>`;
 }
-
-/* ================= MODAL ================= */
-function openModal(title,html){
-  $('sheet').innerHTML='<div class="hd"><h2>'+title+'</h2><button class="x" onclick="closeModal()">✕</button></div>'+html;
-  $('modal').classList.add('show');$('sheet').scrollTop=0;
+function refreshReportPreview(){
+ const range=getReportRange(),special=document.getElementById('reportSpecialInput').value||'';
+ const preview=document.getElementById('reportPreviewContent');
+ preview.innerHTML=reportBuildHtml(range,special);
 }
-function closeModal(){$('modal').classList.remove('show');}
-
-function openDetail(id){
-  var s=findS(id);if(!s)return;
-  var out=s.status==='exited';
-  var h='<div style="font-size:30px;font-weight:900;margin:6px 0;letter-spacing:1px">'+esc(dispKey(s))+' '+(s.loai==='moi'?'<span class="badge m">Xe mới</span>':'<span class="badge">Xe cũ</span>')+'</div>';
-  h+='<div class="kv"><span>Dòng xe</span><b>'+esc(s.dongXe||'—')+'</b></div>';
-  if(s.loai==='moi'){h+='<div class="kv"><span>Màu xe</span><b>'+esc(s.mauXe||'—')+'</b></div><div class="kv"><span>Số chìa khóa</span><b>'+esc(s.soChia||'—')+'</b></div>';}
-  h+='<div class="kv"><span>Vị trí</span><b>'+esc(s.viTri?slotLabel(s.viTri):'Chưa xếp')+'</b></div>';
-  h+='<div class="kv"><span>Tên / Bộ phận</span><b>'+esc(s.tenBoPhan||'—')+'</b></div>';
-  h+='<div class="kv"><span>Trạng thái vào</span><b>'+esc(s.trangThaiVao||'—')+'</b></div>';
-  h+='<div class="kv"><span>Ngày vào</span><b>'+esc(dispDate(s.ngayVao))+'</b></div>';
-  if(out){h+='<div class="kv"><span>Ngày xuất</span><b>'+esc(s.ngayRa||'—')+'</b></div><div class="kv"><span>Trạng thái xuất</span><b>'+esc(s.trangThaiRa||'—')+'</b></div>';}
-  h+='<div class="kv"><span>Ghi chú</span><b>'+esc(s.ghiChu||'—')+'</b></div>';
-  h+='<div style="display:grid;gap:8px;margin-top:16px">';
-  if(!out){
-    h+='<button class="btn block" onclick="openExit(\''+id+'\')">🚪 Xuất bãi</button>';
-    h+='<button class="btn sec block" onclick="openPicker(\''+id+'\','+(slotDay(s.viTri)||openDay||0)+')">🔀 '+(s.viTri?'Đổi vị trí':'Gán vị trí')+'</button>';
-    if(s.viTri)h+='<button class="btn sec block" onclick="unassign(\''+id+'\')">↩️ Đưa về danh sách chưa xếp vị trí</button>';
-  }else{
-    h+='<button class="btn grn block" onclick="reenter(\''+id+'\')">↩️ Đưa lại vào bãi</button>';
-  }
-  h+='<div class="row"><button class="btn sec" onclick="openForm({id:\''+id+'\'})">✏️ Sửa</button><button class="btn red" onclick="delSession(\''+id+'\')">🗑️ Xoá</button></div></div>';
-  openModal('Chi tiết xe',h);
-}
-function unassign(id){var s=findS(id);if(!s)return;s.viTri='';upsert(s);closeModal();toast('Đã đưa về danh sách chưa xếp');}
-function delSession(id){
-  var s=findS(id);if(!s)return;
-  if(!confirm('Xoá hẳn lượt xe '+dispKey(s)+'? Không thể hoàn tác.'))return;
-  removeSession(id);closeModal();toast('Đã xoá');
-}
-function reenter(id){
-  var s=findS(id);if(!s)return;
-  if(sessions.some(function(x){return x.status==='in_lot'&&sKey(x)===sKey(s)&&x.id!==id;})){toast('Xe này đang ở trong bãi!');return;}
-  s.status='in_lot';s.ngayRa='';s.trangThaiRa='';s.viTri='';upsert(s);closeModal();toast('Đã đưa lại vào bãi (chưa xếp vị trí)');
-}
-function openEmpty(slot){
-  var un=sessions.filter(function(s){return s.status==='in_lot'&&!s.viTri;});
-  var h='<div class="hint">Ô trống: <b>'+esc(slotLabel(slot))+'</b></div>';
-  h+='<button class="btn block" style="margin:8px 0" onclick="openForm({viTri:\''+slot+'\'})">➕ Nhập xe mới vào ô này</button>';
-  if(un.length){
-    h+='<label>Hoặc chọn xe chưa xếp vị trí</label>'+un.map(function(s){return '<button class="item" onclick="assignSlot(\''+s.id+'\',\''+slot+'\')"><span class="plate" style="font-size:18px">'+esc(dispKey(s))+'</span> <span class="meta">'+esc(s.dongXe)+'</span></button>';}).join('');
-  }
-  openModal('Ô '+esc(slot),h);
-}
-function assignSlot(id,slot,silent){
-  var s=findS(id);if(!s)return;
-  if(s.status!=='in_lot'){toast('Xe đã xuất bãi');return;}
-  var o=occMap()[slot];
-  if(o&&o.id!==id){toast('Ô này đã có xe!');return;}
-  s.viTri=slot;upsert(s);closeModal();toast('Đã gán '+dispKey(s)+' → '+slot);
-}
-function openPicker(id,day){
-  var s=findS(id);if(!s)return;
-  if(!day||appCfg.days.indexOf(day)<0)day=appCfg.days[0];
-  var occ=occMap();
-  var h='<div class="hint">Chọn ô trống cho <b>'+esc(dispKey(s))+'</b> (ô xanh = trống)</div><div class="tabs" style="margin-top:8px">';
-  appCfg.days.forEach(function(d){h+='<button class="'+(d===day?'on':'')+'" onclick="openPicker(\''+id+'\','+d+')" style="padding:10px 2px">Dãy '+d+'</button>';});
-  h+='</div><div class="colhd" style="top:0;background:#fff"><span>T</span><span>TLD</span><i></i><span>PLD</span><span>P</span></div><div class="lot">';
-  for(var r=1;r<=ROWS;r++)COLS.forEach(function(c,ci){
-    if(ci===2)h+='<div class="aisle"></div>';
-    var sid=slotId(day,r,c),o=occ[sid];
-    if(o&&o.id!==id)h+='<button class="cell pk occ '+o.loai+' dis"><span class="sl">'+sid+'</span><span class="md">'+esc(cellKey(o))+'</span></button>';
-    else h+='<button class="cell pk free'+(o?' hl':'')+'" onclick="assignSlot(\''+id+'\',\''+sid+'\')"><span class="sl" style="color:#12a150">'+sid+'</span>'+(o?'<span class="md" style="color:#12a150">Hiện tại</span>':'')+'</button>';
-  });
-  h+='</div>';
-  openModal('Chọn vị trí',h);
-}
-
-/* ---- Exit ---- */
-function openExit(id){
-  var s=findS(id);if(!s)return;
-  var h='<div style="font-size:24px;font-weight:900;margin:4px 0">'+esc(dispKey(s))+'</div>';
-  h+='<div class="hint">Ngày vào: '+esc(dispDate(s.ngayVao))+'</div>';
-  h+='<label>Ngày xuất (DD/MM/YYYY)</label><input id="e_nr" inputmode="numeric" maxlength="10" oninput="fmtDate(this)" value="'+today()+'">';
-  h+='<label>Trạng thái khi xuất bãi</label>'+ddHTML('e_tr','ttRa',s.trangThaiRa);
-  h+='<label>Diễn biến đặc biệt / Ghi chú</label><textarea id="e_gc">'+esc(s.ghiChu)+'</textarea>';
-  h+='<button class="btn block" style="margin-top:16px" onclick="confirmExit(\''+id+'\')">✔ Xác nhận xuất bãi</button>';
-  openModal('Xuất bãi',h);
-}
-function confirmExit(id){
-  var s=findS(id);if(!s)return;
-  if(s.status!=='in_lot'||!(s.bienSo||s.vin6)){toast('Xe chưa có lịch sử nhập bãi hợp lệ nên không thể xuất');return;}
-  var nr=$('e_nr').value.trim()||today();
-  if(!validDate(nr)){toast('Ngày xuất không hợp lệ (DD/MM/YYYY)');return;}
-  if(s.ngayVao&&validDate(s.ngayVao)&&dateKey(nr)<dateKey(s.ngayVao)){toast('Ngày xuất không được trước ngày vào ('+s.ngayVao+')');return;}
-  s.status='exited';s.ngayRa=nr;s.trangThaiRa=$('e_tr').value.trim();s.ghiChu=$('e_gc').value.trim();
-  upsert(s);closeModal();toast('Đã xuất bãi '+dispKey(s));
-}
-
-/* ---- Entry / edit form ---- */
-function setType(t){
-  formType=t;
-  $('grpCu').style.display=t==='cu'?'block':'none';
-  $('grpMoi').style.display=t==='moi'?'block':'none';
-  $('tCu').className=t==='cu'?'on':'';
-  $('tMoi').className=t==='moi'?'on m':'';
-}
-function fillSlots(sel,editId){
-  var d=+$('f_day').value,el=$('f_vt');
-  if(!d){el.innerHTML='<option value="">—</option>';el.disabled=true;return;}
-  el.disabled=false;
-  var occ=occMap(),h='<option value="">— Chọn ô —</option>';
-  for(var r=1;r<=ROWS;r++)COLS.forEach(function(c){
-    var id=slotId(d,r,c),oc=occ[id];
-    if(oc&&oc.id!==editId)return;
-    h+='<option value="'+id+'"'+(sel===id?' selected':'')+'>'+id+'</option>';
-  });
-  el.innerHTML=h;
-}
-function openForm(o){
-  var s=o.id?findS(o.id):null,edit=!!s;
-  var v=s||{loai:'cu',bienSo:'',vin6:'',mauXe:'',soChia:'',dongXe:'',viTri:o.viTri||'',tenBoPhan:'',trangThaiVao:'',ngayVao:today(),trangThaiRa:'',ngayRa:'',ghiChu:'',status:'in_lot'};
-  var exited=edit&&v.status==='exited';
-  var h='<label>Loại xe</label><div class="seg"><button type="button" id="tCu" onclick="setType(\'cu\')">🚗 Xe cũ có biển</button><button type="button" id="tMoi" onclick="setType(\'moi\')">🆕 Xe mới chưa biển</button></div>';
-  h+='<div id="grpCu"><label>Biển số xe <span class="req">*</span></label><input id="f_bs" value="'+esc(v.bienSo)+'" placeholder="VD: 51K12345" oninput="this.value=normPlate(this.value)" autocapitalize="characters" autocomplete="off"></div>';
-  h+='<div id="grpMoi"><label>6 số cuối khung VIN <span class="req">*</span></label><input id="f_vin" value="'+esc(v.vin6)+'" maxlength="6" placeholder="VD: 123456" oninput="this.value=normVin(this.value)" autocapitalize="characters" autocomplete="off">'+
-    '<div class="row"><div><label>Màu xe</label><input id="f_mau" value="'+esc(v.mauXe)+'" placeholder="VD: Trắng"></div><div><label>Số chìa khóa</label><input id="f_chia" value="'+esc(v.soChia)+'" placeholder="VD: 2"></div></div></div>';
-  h+='<label>Dòng xe VinFast</label>'+ddHTML('f_model','dongXe',v.dongXe);
-  h+='<label>Tên / Bộ phận</label>'+ddHTML('f_bp','boPhan',v.tenBoPhan);
-  h+='<label>Trạng thái khi vào</label>'+ddHTML('f_tt','ttVao',v.trangThaiVao);
-  h+='<label>Ngày vào (DD/MM/YYYY)</label><input id="f_nv" inputmode="numeric" maxlength="10" oninput="fmtDate(this)" value="'+esc(v.ngayVao)+'">';
-  if(!exited){
-    var dv=slotDay(v.viTri);
-    h+='<label>Vị trí đỗ</label><div class="row"><select id="f_day" onchange="fillSlots(\'\',\''+(edit?v.id:'')+'\')"><option value="">— Chưa xếp —</option>'+
-      appCfg.days.map(function(d){return '<option value="'+d+'"'+(d===dv?' selected':'')+'>Dãy '+d+'</option>';}).join('')+'</select><select id="f_vt"></select></div>';
-  }else{
-    h+='<label>Ngày xuất (DD/MM/YYYY)</label><input id="f_nr" inputmode="numeric" maxlength="10" oninput="fmtDate(this)" value="'+esc(v.ngayRa)+'">';
-    h+='<label>Trạng thái khi xuất bãi</label>'+ddHTML('f_tr','ttRa',v.trangThaiRa);
-  }
-  h+='<label>Diễn biến đặc biệt / Ghi chú</label><textarea id="f_gc">'+esc(v.ghiChu)+'</textarea>';
-  h+='<button class="btn block" style="margin-top:18px" onclick="saveForm(\''+(edit?v.id:'')+'\')">💾 '+(edit?'Lưu thay đổi':'Lưu xe vào bãi')+'</button>';
-  openModal(edit?'Sửa thông tin xe':'Nhập xe mới',h);
-  setType(v.loai);
-  if(!exited)fillSlots(v.viTri,edit?v.id:'');
-}
-function saveForm(id){
-  var s=id?findS(id):null, exited=s&&s.status==='exited';
-  var loai=formType, bs='', vin='';
-  if(loai==='cu'){
-    bs=normPlate($('f_bs').value);
-    if(!bs){toast('Vui lòng nhập biển số');$('f_bs').focus();return;}
-  }else{
-    vin=normVin($('f_vin').value);
-    if(vin.length!==6){toast('Nhập đủ 6 số cuối khung VIN');$('f_vin').focus();return;}
-  }
-  var key=loai==='moi'?('VIN:'+vin):bs;
-  if(!exited&&sessions.some(function(x){return x.status==='in_lot'&&sKey(x)===key&&x.id!==id;})){toast('Xe '+(loai==='moi'?'VIN '+vin:bs)+' đang có trong bãi, chưa xuất!');return;}
-  var nv=$('f_nv').value.trim();
-  if(!nv&&!id)nv=today();
-  if(nv&&!validDate(nv)){toast('Ngày vào không hợp lệ (DD/MM/YYYY)');return;}
-  var vt=s?s.viTri:'';
-  if(!exited){
-    vt=$('f_vt').value;
-    if($('f_day').value&&!vt)vt='';
-    if(vt){var oc=occMap()[vt];if(oc&&oc.id!==id){toast('Ô '+vt+' đã có xe');return;}}
-  }
-  var obj=s?Object.assign({},s):{id:genId(),status:'in_lot',trangThaiRa:'',ngayRa:''};
-  obj.loai=loai;obj.bienSo=bs;obj.vin6=vin;
-  obj.mauXe=loai==='moi'?$('f_mau').value.trim():'';
-  obj.soChia=loai==='moi'?$('f_chia').value.trim():'';
-  obj.dongXe=$('f_model').value.trim();obj.tenBoPhan=$('f_bp').value.trim();obj.trangThaiVao=$('f_tt').value.trim();
-  obj.ngayVao=nv;obj.viTri=vt;obj.ghiChu=$('f_gc').value.trim();
-  if(exited){
-    var nr=$('f_nr').value.trim();
-    if(nr&&!validDate(nr)){toast('Ngày xuất không hợp lệ');return;}
-    obj.ngayRa=nr;obj.trangThaiRa=$('f_tr').value.trim();
-  }
-  upsert(obj);closeModal();toast(id?'Đã cập nhật':'Đã nhập xe '+(loai==='moi'?'VIN '+vin:bs));
-}
-
-/* ================= REPORT (landscape dashboard) ================= */
-function repPeriod(){
-  var a=parseD(rep.anchor),st,en,label;
-  if(rep.mode==='tuychon'){
-    st=parseD(rep.from);en=parseD(rep.to);
-    if(isNaN(st)||isNaN(en)||en<st||(en-st)/DAY_MS>61)return null;
-    label='Tùy chọn • '+strD(st)+' - '+strD(en);
-  }else{
-    if(isNaN(a))return null;
-    if(rep.mode==='ngay'){st=en=a;label='Ngày • '+strD(a);}
-    else if(rep.mode==='tuan'){var dow=(new Date(a).getUTCDay()+6)%7;st=a-dow*DAY_MS;en=st+6*DAY_MS;label='Tuần • '+strD(st)+' - '+strD(en);}
-    else{var d=new Date(a);st=Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),1);en=Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0);label='Tháng • '+pad(d.getUTCMonth()+1)+'/'+d.getUTCFullYear()+' ('+strD(st)+' - '+strD(en)+')';}
-  }
-  return {start:st,end:en,label:label,sk:dateKey(strD(st)),ek:dateKey(strD(en))};
-}
-function inPeriod(ds,p){var k=dateKey(ds);return !!k&&k>=p.sk&&k<=p.ek;}
-function repCandidates(p){
-  return sessions.filter(function(s){return s.ghiChu&&(inPeriod(s.ngayVao,p)||inPeriod(s.ngayRa,p));});
-}
-function repData(){
-  var p=repPeriod();if(!p)return null;
-  var t=parseD(today()),inLot=sessions.filter(function(s){return s.status==='in_lot';});
-  var cu=inLot.filter(function(s){return s.loai!=='moi';}).length,mo=inLot.length-cu;
-  var ages=[0,0,0,0],missIn=0;
-  inLot.forEach(function(s){
-    var a=parseD(s.ngayVao);
-    if(isNaN(a)){missIn++;ages[3]++;return;}
-    var d=Math.round((t-a)/DAY_MS);if(d<0)d=0;
-    ages[d<=10?0:d<=20?1:d<=31?2:3]++;
-  });
-  var bars=[];
-  for(var ms=p.start;ms<=p.end;ms+=DAY_MS){
-    if(ms>t){bars.push({ms:ms,future:true});continue;}
-    var k=dateKey(strD(ms)),c=0,m=0;
-    sessions.forEach(function(s){
-      var vk=dateKey(s.ngayVao);if(vk&&vk>k)return;
-      var rk=dateKey(s.ngayRa);
-      if(!(s.status==='in_lot'||(rk&&rk>k)))return;
-      if(s.loai==='moi')m++;else c++;
-    });
-    bars.push({ms:ms,c:c,m:m});
-  }
-  var exitedIn=sessions.filter(function(s){return s.status==='exited'&&inPeriod(s.ngayRa,p);});
-  var notes=[];
-  repCandidates(p).forEach(function(s){if(rep.sel[s.id])notes.push('• '+dispKey(s)+': '+s.ghiChu);});
-  if(rep.text.trim())notes.unshift(rep.text.trim());
-  return {p:p,total:inLot.length,cu:cu,mo:mo,old11:ages[1]+ages[2]+ages[3],ages:ages,missIn:missIn,
-    missOut:sessions.filter(function(s){return s.status==='exited'&&!validDate(s.ngayRa);}).length,
-    bars:bars,vao:sessions.filter(function(s){return inPeriod(s.ngayVao,p);}).length,
-    ra:exitedIn.length,moiRa:exitedIn.filter(function(s){return s.loai==='moi';}).length,notes:notes};
-}
-function buildReportHTML(d){
-  var max=1;d.bars.forEach(function(b){if(!b.future)max=Math.max(max,b.c,b.m);});
-  var ticks=[0,1,2,3].map(function(i){return Math.round(max*i/3);});
-  var gl=ticks.map(function(v,i){return '<div class="gl" style="bottom:calc((100% - 16px)*'+(i/3)+')"><span>'+v+'</span></div>';}).join('');
-  var cols=d.bars.map(function(b){
-    if(b.future)return '<div class="col"></div>';
-    return '<div class="col"><div class="bw"><span class="bv" style="color:#2563eb">'+b.c+'</span><div class="b" style="background:#2563eb;height:calc((100% - 16px)*'+(b.c/max)+')"></div></div>'+
-      '<div class="bw"><span class="bv" style="color:#16a34a">'+b.m+'</span><div class="b" style="background:#16a34a;height:calc((100% - 16px)*'+(b.m/max)+')"></div></div></div>';
-  }).join('');
-  var xl=d.bars.map(function(b){return '<span>'+pad(new Date(b.ms).getUTCDate())+'</span>';}).join('');
-  var tot=Math.max(d.total,1);
-  var groups=[['0–10 ngày','#16a34a'],['11–20 ngày','#f59e0b'],['21–31 ngày','#ea580c'],['>31 ngày (kể cả thiếu ngày)','#dc2626']];
-  var age=groups.map(function(g,i){return '<div>'+g[0]+'</div><div class="tr"><i style="width:'+(d.ages[i]*100/tot)+'%;background:'+g[1]+'"></i></div><b>'+d.ages[i]+'</b>';}).join('');
-  var h='<div class="rpd"><div class="hb"><h1>BÁO CÁO TỔNG QUAN BÃI XE</h1><p>'+esc(d.p.label)+'</p></div>';
-  h+='<div class="kpis"><div class="kp"><div class="l">TỔNG XE TỒN BÃI</div><div class="n" style="color:#2563eb">'+d.total+'</div></div>'+
-     '<div class="kp" style="border-top-color:#0d9488"><div class="l">XE CŨ CÓ BIỂN</div><div class="n" style="color:#0d9488">'+d.cu+'</div></div>'+
-     '<div class="kp" style="border-top-color:#16a34a"><div class="l">XE MỚI CHƯA BIỂN</div><div class="n" style="color:#16a34a">'+d.mo+'</div></div>'+
-     '<div class="kp" style="border-top-color:#dc2626"><div class="l">XE TỒN TỪ 11 NGÀY</div><div class="n" style="color:#dc2626">'+d.old11+'</div></div></div>';
-  h+='<div class="mid"><div class="cd"><h2>Diễn biến xe tồn bãi trong kỳ</h2><div class="sub">Số xe còn tại bãi cuối mỗi ngày · So sánh xe cũ và xe mới</div>'+
-     '<div class="chart">'+gl+'<div class="cols">'+cols+'</div></div><div class="xl">'+xl+'</div>'+
-     '<div class="lg"><span><i style="background:#2563eb"></i>Xe cũ</span><span><i style="background:#16a34a"></i>Xe mới</span></div></div>'+
-     '<div class="cd"><h2>Chỉ tiêu trong kỳ</h2><div style="margin-top:6px">'+
-     '<div class="ind"><span>Lượt xe vào</span><b>'+d.vao+'</b></div><div class="ind"><span>Lượt xe ra</span><b>'+d.ra+'</b></div><div class="ind"><span>Xe mới xuất bãi</span><b>'+d.moiRa+'</b></div></div></div></div>';
-  h+='<div class="cd" style="margin-top:12px"><h2>Cảnh báo xe tồn bãi theo thời gian nhập</h2><div class="sub">Nhóm 0–10 ngày: '+d.ages[0]+' xe</div><div class="age">'+age+'</div></div>';
-  h+='<div class="cd" style="margin-top:12px"><h2>Diễn biến đặc biệt</h2>'+(d.notes.length?'<div class="nb">'+esc(d.notes.join('\n'))+'</div>':'<div class="nb none">Không có diễn biến đặc biệt được chọn cho kỳ này</div>')+'</div>';
-  h+='<div class="ft">Mốc tồn đã kiểm: '+today()+' ('+d.total+' xe đang ở bãi). Hồ sơ thiếu ngày vào được tính tồn trên 31 ngày, không tự gán ngày. Xe thiếu ngày vào: '+d.missIn+', lượt xuất thiếu ngày: '+d.missOut+'.</div></div>';
-  return h;
-}
-function repSet(k,v){
-  rep[k]=v;
-  if((k==='anchor'||k==='from'||k==='to')&&v&&!validDate(v))toast('Ngày không hợp lệ (DD/MM/YYYY)');
-  render();
-}
-function repSetText(v){rep.text=v;try{localStorage.setItem(LS_REPTXT,v);}catch(e){}}
-function repToggle(id,on){if(on)rep.sel[id]=true;else delete rep.sel[id];}
-function renderReportView(){
-  if(!rep.anchor)rep.anchor=today();
-  if(!rep.from)rep.from=today();
-  if(!rep.to)rep.to=today();
-  var modes=[['ngay','Ngày'],['tuan','Tuần'],['thang','Tháng'],['tuychon','Tùy chọn']];
-  var h='<div class="card"><h3>🖼️ Báo cáo dashboard (PNG khổ ngang)</h3><label style="margin-top:0">Kỳ báo cáo</label><div class="tabs" style="margin-bottom:8px">'+
-    modes.map(function(m){return '<button class="'+(rep.mode===m[0]?'on':'')+'" onclick="repSet(\'mode\',\''+m[0]+'\')">'+m[1]+'</button>';}).join('')+'</div>';
-  if(rep.mode==='tuychon'){
-    h+='<div class="row"><div><label>Từ ngày</label><input inputmode="numeric" maxlength="10" value="'+esc(rep.from)+'" oninput="fmtDate(this)" onchange="repSet(\'from\',this.value)"></div><div><label>Đến ngày</label><input inputmode="numeric" maxlength="10" value="'+esc(rep.to)+'" oninput="fmtDate(this)" onchange="repSet(\'to\',this.value)"></div></div>';
-  }else{
-    h+='<label>Chọn một ngày trong '+(rep.mode==='ngay'?'ngày cần báo cáo':rep.mode==='tuan'?'tuần':'tháng')+' (DD/MM/YYYY)</label><input inputmode="numeric" maxlength="10" value="'+esc(rep.anchor)+'" oninput="fmtDate(this)" onchange="repSet(\'anchor\',this.value)">';
-  }
-  var p=repPeriod();
-  if(!p){h+='<div class="hint" style="color:var(--bad)">Kỳ báo cáo không hợp lệ (tối đa 62 ngày, ngày đúng định dạng DD/MM/YYYY).</div></div>';return h+excelCard();}
-  h+='<div class="hint"><b>'+esc(p.label)+'</b></div>';
-  var cand=repCandidates(p);
-  h+='<label>Diễn biến đặc biệt đưa vào báo cáo</label>';
-  if(cand.length)h+=cand.map(function(s){return '<label class="chk" style="margin-top:8px;font-size:14px"><input type="checkbox" '+(rep.sel[s.id]?'checked':'')+' onchange="repToggle(\''+s.id+'\',this.checked)"><span><b>'+esc(dispKey(s))+'</b> ('+esc(s.status==='exited'?'xuất '+(s.ngayRa||'?'):'vào '+(s.ngayVao||'?'))+'): '+esc(s.ghiChu)+'</span></label>';}).join('');
-  else h+='<div class="hint">Không có ghi chú xe nào trong kỳ này.</div>';
-  h+='<textarea placeholder="Nhập thêm diễn biến đặc biệt (không bắt buộc)..." style="margin-top:10px" oninput="repSetText(this.value)">'+esc(rep.text)+'</textarea>';
-  h+='<button class="btn block" style="margin-top:12px" onclick="makeReport()">📸 Tạo ảnh báo cáo</button><div id="prevWrap"></div></div>';
-  return h+excelCard();
-}
-function excelCard(){
-  return '<div class="card"><h3>📊 Excel (.xlsx)</h3><div class="hint">Cột: Biển số, Dòng xe, Vị trí, Tên/Bộ phận, Ngày vào, Trạng thái vào, Ngày xuất, Trạng thái xuất, Ghi chú, Loại xe, 6 số cuối VIN, Màu xe, Số chìa khóa.</div>'+
-    '<div class="row"><button class="btn sec" onclick="exportXlsx()">⬇️ Xuất Excel</button><button class="btn sec" onclick="pickFile(\'xlsx\')">⬆️ Nhập Excel</button></div></div>';
-}
-async function makeReport(){
-  var d=repData();
-  if(!d){toast('Kỳ báo cáo không hợp lệ');return;}
-  showLoading('Đang tạo ảnh báo cáo...');
+function exportCurrentReport(){
+ const range=getReportRange(),special=document.getElementById('reportSpecialInput').value||'';
+ const host=document.getElementById('reportHost');host.className='';host.innerHTML=reportBuildHtml(range,special);
+ const report=host.querySelector('#reportCanvas');
+ requestAnimationFrame(()=>requestAnimationFrame(async()=>{
   try{
-    if(typeof html2canvas==='undefined')throw new Error('Thiếu thư viện html2canvas (cần mạng lần đầu)');
-    var host=$('reportHost');
-    host.innerHTML=buildReportHTML(d);
-    await new Promise(function(r){setTimeout(r,150);});
-    var el=host.firstElementChild;
-    var scale=Math.min(2,14000/Math.max(el.offsetHeight,1));
-    var canvas=await html2canvas(el,{scale:scale,useCORS:true,backgroundColor:'#f0f4f9',logging:false,windowWidth:1200});
-    var blob=await new Promise(function(res){canvas.toBlob(res,'image/png');});
-    if(!blob)throw new Error('Không tạo được ảnh');
-    reportBlob=blob;
-    var url=URL.createObjectURL(blob);
-    var canShare=!!(navigator.canShare&&navigator.canShare({files:[new File([blob],'QLBX34_Bao_Cao.png',{type:'image/png'})]}));
-    $('prevWrap').innerHTML='<img id="prevImg" src="'+url+'" alt="Báo cáo" onclick="viewBig(this.src)"><div class="hint">Chạm vào ảnh để xem cỡ lớn.</div><div class="row" style="margin-top:8px"><button class="btn sec" onclick="downloadReport()">⬇️ Tải PNG</button>'+(canShare?'<button class="btn grn" onclick="shareReport()">📤 Chia sẻ (Zalo)</button>':'')+'</div>';
-    downloadReport();
-    toast('Đã tạo ảnh báo cáo ✔');
-  }catch(e){toast('Lỗi tạo ảnh: '+(e&&e.message||e));}
-  finally{hideLoading();$('reportHost').innerHTML='';}
+   const canvas=await html2canvas(report,{scale:3,useCORS:true,backgroundColor:'#ffffff',width:1400,height:report.scrollHeight,windowWidth:1400,scrollX:0,scrollY:0,logging:false});
+   const url=canvas.toDataURL('image/png');
+   openModal(`<h3>Xem trước ảnh báo cáo PNG</h3><div style="max-height:65dvh;overflow:auto;border:1px solid #dbe5ef;border-radius:10px"><img src="${url}" style="display:block;width:100%;height:auto"></div><div class="actions"><button class="btn primary" id="downloadPng">Tải ảnh PNG</button><button class="btn gray" onclick="openReportPreview()">Quay lại chỉnh báo cáo</button></div>`,true);
+   document.getElementById('downloadPng').onclick=()=>{const a=document.createElement('a');a.href=url;a.download='BAI_XE_34_BAO_CAO_'+dateKey(range.to)+'.png';a.click()};
+  }catch(e){showToast('Không tạo được ảnh: '+e.message,'error')}
+  finally{host.className='hidden'}
+ }));
 }
-function viewBig(src){openModal('Báo cáo','<div style="overflow:auto;max-height:78vh;border:1px solid var(--line);border-radius:10px"><img src="'+src+'" style="width:1000px;max-width:none;display:block"></div>');}
-function downloadReport(){if(reportBlob)download(reportBlob,'QLBX34_Bao_Cao.png');}
-async function shareReport(){
-  if(!reportBlob)return;
-  try{
-    var f=new File([reportBlob],'QLBX34_Bao_Cao.png',{type:'image/png'});
-    await navigator.share({files:[f],title:'Báo cáo tổng quan bãi xe 34 - '+today()});
-  }catch(e){if(e&&e.name!=='AbortError')toast('Không chia sẻ được, hãy dùng Tải PNG');}
+function openReportPreview(){
+ const now=todayISO(),d=parseDateValue(now),weekday=d.getDay(),monday=new Date(d);monday.setDate(d.getDate()-(weekday===0?6:weekday-1));const sunday=new Date(monday);sunday.setDate(monday.getDate()+6);
+ openModal(`<h3>Thiết lập & xem trước báo cáo</h3><div class="formgrid"><div class="field"><label>Kỳ báo cáo</label><select id="reportPeriodMode"><option value="day">Báo cáo ngày</option><option value="week" selected>Báo cáo tuần</option><option value="month">Báo cáo tháng</option></select></div><div class="field" id="reportDayWrap"><label>Chọn ngày</label><input type="date" id="reportDay" value="${now}"></div><div class="field" id="reportFromWrap"><label>Từ ngày</label><input type="date" id="reportFrom" value="${dateKey(monday)}"></div><div class="field" id="reportToWrap"><label>Đến ngày</label><input type="date" id="reportTo" value="${dateKey(sunday)}"></div><div class="field full hidden" id="reportMonthWrap"><label>Chọn tháng / năm</label><input type="month" id="reportMonth" value="${now.slice(0,7)}"></div><div class="field full"><label>Diễn biến đặc biệt (không bắt buộc)</label><textarea id="reportSpecialInput" placeholder="Ví dụ: Xe bàn giao gấp, xe chờ phụ tùng, điều chuyển lô lớn..." rows="3"></textarea></div></div><div class="actions"><button class="btn primary" id="createReportPng">Xuất ảnh PNG độ nét cao</button><button class="btn gray" onclick="closeModal()">Đóng</button></div><div class="report-preview-title">XEM TRƯỚC BỐ CỤC BÁO CÁO</div><div class="report-preview-window" id="reportPreviewContent"></div>` ,true);
+ const mode=document.getElementById('reportPeriodMode');
+ const updateMode=()=>{const m=mode.value;document.getElementById('reportDayWrap').classList.toggle('hidden',m!=='day');document.getElementById('reportFromWrap').classList.toggle('hidden',m!=='week');document.getElementById('reportToWrap').classList.toggle('hidden',m!=='week');document.getElementById('reportMonthWrap').classList.toggle('hidden',m!=='month');refreshReportPreview()};
+ mode.addEventListener('change',updateMode);
+ ['reportDay','reportFrom','reportTo','reportMonth','reportSpecialInput'].forEach(id=>document.getElementById(id).addEventListener('input',refreshReportPreview));
+ document.getElementById('createReportPng').onclick=exportCurrentReport;
+ updateMode();
 }
-
-/* ================= EXCEL / JSON ================= */
-function exportXlsx(){
-  try{
-    if(typeof XLSX==='undefined')throw new Error('Thiếu thư viện SheetJS (cần mạng lần đầu)');
-    var rows=sessions.map(function(s){return {
-      'Biển số':s.bienSo,'Dòng xe':s.dongXe,'Vị trí':s.viTri,'Tên/Bộ phận':s.tenBoPhan,
-      'Ngày vào':s.ngayVao,'Trạng thái vào':s.trangThaiVao,'Ngày xuất':s.ngayRa,'Trạng thái xuất':s.trangThaiRa,'Ghi chú':s.ghiChu,
-      'Loại xe':s.loai==='moi'?'Xe mới':'Xe cũ','6 số cuối VIN':s.vin6,'Màu xe':s.mauXe,'Số chìa khóa':s.soChia};});
-    var hdr=['Biển số','Dòng xe','Vị trí','Tên/Bộ phận','Ngày vào','Trạng thái vào','Ngày xuất','Trạng thái xuất','Ghi chú','Loại xe','6 số cuối VIN','Màu xe','Số chìa khóa'];
-    var ws=XLSX.utils.json_to_sheet(rows,{header:hdr});
-    ws['!cols']=[{wch:14},{wch:14},{wch:12},{wch:22},{wch:12},{wch:16},{wch:12},{wch:16},{wch:30},{wch:10},{wch:14},{wch:12},{wch:14}];
-    var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'QLBX34');
-    var out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-    download(new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),'QLBX34_'+dateKey(today())+'.xlsx');
-    toast('Đã xuất Excel ('+rows.length+' dòng)');
-  }catch(e){toast('Lỗi xuất Excel: '+(e&&e.message||e));}
-}
-function exportJson(){
-  var data={app:'QLBX34',version:3,exportedAt:new Date().toISOString(),config:appCfg,sessions:sessions};
-  download(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),'QLBX34_backup.json');
-  toast('Đã xuất JSON');
-}
-function pickFile(kind){
-  var f=$('fileIn');f.value='';
-  f.accept=kind==='xlsx'?'.xlsx,.xls':'.json,application/json';
-  f.onchange=function(){if(f.files&&f.files[0])importFile(kind,f.files[0]);};
-  f.click();
-}
-/* Chuyển đổi bản sao lưu Firebase dạng qlbx34/data/vehicles sang từng lượt xe của ứng dụng.
-   Mỗi phần tử sessions[] được giữ thành một lượt riêng để không mất lịch sử vào/ra. */
-function convertFirebaseVehicleJson(root){
-  var node=root&&root.qlbx34?root.qlbx34:root;
-  var data=node&&node.data?node.data:null;
-  var vehicles=data&&data.vehicles;
-  if(!Array.isArray(vehicles))return null;
-  var out=[];
-  vehicles.forEach(function(v,vi){
-    if(!v||typeof v!=='object')return;
-    var ident=String(v.ident!=null?v.ident:'').trim();
-    var isNew=String(v.type||'').toLowerCase()==='new';
-    if(!ident)return;
-    var visits=Array.isArray(v.sessions)?v.sessions:[];
-    visits.forEach(function(it,si){
-      it=it||{};
-      var en=it.entry||{},ex=it.exit||{};
-      var hasExit=!!(it.exit&&typeof it.exit==='object'&&Object.keys(it.exit).length);
-      var isCurrent=!hasExit&&String(v.currentStatus||'').toLowerCase()==='in'&&si===visits.length-1;
-      var notes=[en.note,ex.note].map(function(x){return String(x||'').trim();}).filter(Boolean);
-      var sourceId=String(v.id||((isNew?'new|':'old|')+ident));
-      var safeId=sourceId.replace(/[^A-Za-z0-9_-]/g,'_');
-      var slot=it.slot||((isCurrent)?v.currentSlot:'')||'';
-      out.push({
-        id:'json_'+safeId+'_visit_'+String(it.sessionId!=null?it.sessionId:(si+1)),
-        loai:isNew?'moi':'cu',bienSo:isNew?'':ident,vin6:isNew?ident:'',
-        dongXe:String(v.model||''),mauXe:String(v.color||''),
-        viTri:isCurrent?slot:'',tenBoPhan:String(en.person||''),
-        ngayVao:en.entryDate||en.time||'',trangThaiVao:String(en.condition||''),
-        ngayRa:ex.time||ex.exitDate||'',trangThaiRa:String(ex.condition||''),
-        ghiChu:notes.join(' | '),status:isCurrent?'in_lot':'exited',
-        updatedAt:Date.now()
-      });
-    });
-  });
-  return out;
-}
-function mergeImported(list){
-  var occ=occMap(),added=0,skipped=0,cfgCh=false;
-  list.forEach(function(o){
-    var s=normSession(o);
-    if(!(s.bienSo||s.vin6)){skipped++;return;}
-    var existing=o.id?findS(s.id):null;
-    var dup=sessions.some(function(x){return sKey(x)===sKey(s)&&x.ngayVao===s.ngayVao&&x.status===s.status&&x.ngayRa===s.ngayRa&&x.id!==s.id;});
-    if(!existing&&dup){skipped++;return;}
-    if(s.status==='in_lot'){
-      if(!existing&&sessions.some(function(x){return x.status==='in_lot'&&sKey(x)===sKey(s)&&x.id!==s.id;})){skipped++;return;}
-      if(s.viTri&&occ[s.viTri]&&occ[s.viTri].id!==s.id)s.viTri='';
-      if(s.viTri)occ[s.viTri]=s;
-    }else s.viTri='';
-    var dd=slotDay(s.viTri);if(dd&&ensureDay(dd))cfgCh=true;
-    if(addToList('dongXe',s.dongXe))cfgCh=true;
-    if(addToList('boPhan',s.tenBoPhan))cfgCh=true;
-    if(addToList('ttVao',s.trangThaiVao))cfgCh=true;
-    if(addToList('ttRa',s.trangThaiRa))cfgCh=true;
-    s.updatedAt=Date.now();
-    var i=sessions.findIndex(function(x){return x.id===s.id;});
-    if(i>=0)sessions[i]=s;else sessions.push(s);
-    delete tombstones[s.id];
-    added++;
-  });
-  if(cfgCh)saveConfig();
-  saveLocal();pushAll();render();
-  toast('Nhập '+added+' lượt xe'+(skipped?', bỏ qua '+skipped+' dòng trùng/lỗi':''));
-}
-function importFile(kind,file){
-  showLoading('Đang đọc file...');
-  var rd=new FileReader();
-  rd.onerror=function(){hideLoading();toast('Không đọc được file');};
-  rd.onload=function(){
-    try{
-      var list;
-      if(kind==='json'){
-        var j=JSON.parse(rd.result);
-        var firebaseVehicles=convertFirebaseVehicleJson(j);
-        var importConfig=j&&j.qlbx34&&j.qlbx34.config?j.qlbx34.config:(j&&j.config?j.config:null);
-        if(importConfig&&!Array.isArray(j)){
-          var c=normCfg(importConfig),ch=false;
-          c.days.forEach(function(d){if(ensureDay(d))ch=true;});
-          Object.keys(DEF_LISTS).forEach(function(k){c.lists[k].forEach(function(v){if(addToList(k,v))ch=true;});});
-          if(ch)saveConfig();
-        }
-        if(firebaseVehicles){
-          list=firebaseVehicles;
-        }else{
-          list=Array.isArray(j)?j:(j.sessions||j.vehicles||j.data||[]);
-          if(!Array.isArray(list))list=Object.keys(list).map(function(k){return Object.assign({id:k},list[k]);});
-        }
-      }else{
-        if(typeof XLSX==='undefined')throw new Error('Thiếu thư viện SheetJS');
-        var wb=XLSX.read(rd.result,{type:'array',cellDates:true});
-        var ws=wb.Sheets[wb.SheetNames[0]];
-        list=XLSX.utils.sheet_to_json(ws,{defval:''}).map(function(r){return {
-          bienSo:r['Biển số'],dongXe:r['Dòng xe'],viTri:r['Vị trí'],tenBoPhan:r['Tên/Bộ phận'],
-          ngayVao:r['Ngày vào'],trangThaiVao:r['Trạng thái vào'],ngayRa:r['Ngày xuất'],trangThaiRa:r['Trạng thái xuất'],ghiChu:r['Ghi chú'],
-          loai:r['Loại xe'],vin6:r['6 số cuối VIN'],mauXe:r['Màu xe'],soChia:r['Số chìa khóa']};});
-      }
-      mergeImported(list);
-    }catch(e){toast('File không hợp lệ: '+(e&&e.message||e));}
-    hideLoading();
-  };
-  if(kind==='json')rd.readAsText(file,'utf-8');else rd.readAsArrayBuffer(file);
-}
-
-/* ================= BOOT ================= */
-window.addEventListener('online',function(){if(fbConfigured)restPoll(true);});
-window.addEventListener('offline',function(){fbConnected=false;updateDot();});
-document.addEventListener('visibilitychange',function(){if(!document.hidden&&fbRef&&navigator.onLine){try{firebase.database().goOnline();}catch(e){}}});
-try{rep.text=localStorage.getItem(LS_REPTXT)||'';}catch(e){}
-loadAppCfg();
-loadData();
-sessions.forEach(function(s){var d=slotDay(s.viTri);if(d)ensureDay(d);});
+document.getElementById('reportBtn').onclick=openReportPreview;
 render();
-initFirebase();
+if(localStorage.getItem(URL_KEY)){setSync('busy','Đã lưu URL');}
 </script>
-</body>
-</html>
+</body></html>
