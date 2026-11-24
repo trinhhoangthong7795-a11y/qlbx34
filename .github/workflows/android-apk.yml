@@ -67,7 +67,7 @@ jobs:
           # when the soft keyboard opens.
           if "android:windowSoftInputMode=" not in xml:
               xml, count = re.subn(
-                  r"<activity\\b([^>]*)>",
+                  r"<activity\b([^>]*)>",
                   lambda m: '<activity' + m.group(1) +
                             ' android:windowSoftInputMode="adjustResize">',
                   xml,
