@@ -46,8 +46,18 @@ jobs:
       - name: Create Capacitor Android project
         run: |
           npm init -y
-          npm install --save-exact @capacitor/core@7 @capacitor/android@7
+          npm install --save-exact @capacitor/core@7 @capacitor/android@7 @capacitor/filesystem@7 @capacitor/share@7 html2canvas@1.4.1
           npm install --save-dev --save-exact @capacitor/cli@7
+          cp node_modules/html2canvas/dist/html2canvas.min.js www/html2canvas.min.js
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("www/index.html")
+          s = p.read_text(encoding="utf-8")
+          old = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+          if old not in s:
+              raise SystemExit("Could not find html2canvas CDN reference in index.html")
+          p.write_text(s.replace(old, "./html2canvas.min.js"), encoding="utf-8")
+          PY
           npx cap init "Bãi Xe 34" "vn.qlbx.erp" --web-dir www
           npx cap add android
           npx cap sync android
@@ -62,12 +72,10 @@ jobs:
           manifest = Path("android/app/src/main/AndroidManifest.xml")
           xml = manifest.read_text(encoding="utf-8")
 
-          # Keep the Android status/notification bar visible. Capacitor's
-          # default theme is not fullscreen; ensure the activity resizes
-          # when the soft keyboard opens.
+          # Keep system bars visible and keep the WebView below the status bar.
           if "android:windowSoftInputMode=" not in xml:
               xml, count = re.subn(
-                  r"<activity\b([^>]*)>",
+                  r"<activity\\b([^>]*)>",
                   lambda m: '<activity' + m.group(1) +
                             ' android:windowSoftInputMode="adjustResize">',
                   xml,
@@ -77,6 +85,41 @@ jobs:
                   raise SystemExit("Could not locate the Android activity in AndroidManifest.xml")
           xml = re.sub(r'android:label="[^"]*"', 'android:label="Bãi Xe 34"', xml, count=1)
           manifest.write_text(xml, encoding="utf-8")
+
+          # API 35 enforces edge-to-edge. This sideloaded APK uses API 34 so Android
+          # reserves the notification/status-bar area instead of drawing the app behind it.
+          gradle = Path("android/variables.gradle")
+          if not gradle.exists():
+              raise SystemExit("android/variables.gradle was not generated")
+          gs = gradle.read_text(encoding="utf-8")
+          gs2, count = re.subn(r"targetSdkVersion\\s*=\\s*\\d+", "targetSdkVersion = 34", gs, count=1)
+          if count != 1:
+              raise SystemExit("Could not safely set targetSdkVersion to 34")
+          gradle.write_text(gs2, encoding="utf-8")
+
+          # Explicitly set a visible light status bar and disable fullscreen.
+          import glob
+          theme_files = glob.glob("android/app/src/main/res/values*/styles.xml") + glob.glob("android/app/src/main/res/values*/themes.xml")
+          patched = 0
+          for name in theme_files:
+              p = Path(name)
+              src = p.read_text(encoding="utf-8")
+              pat = r'(<style\\s+name="AppTheme"[^>]*>)(.*?)(</style>)'
+              def fix(m):
+                  body = m.group(2)
+                  for key in ("android:windowFullscreen", "android:statusBarColor", "android:windowLightStatusBar", "android:windowDrawsSystemBarBackgrounds"):
+                      body = re.sub(r'<item\\s+name="' + re.escape(key) + r'">.*?</item>', '', body, flags=re.S)
+                  body += ('\\n        <item name="android:windowFullscreen">false</item>'
+                           '\\n        <item name="android:statusBarColor">#FFFFFF</item>'
+                           '\\n        <item name="android:windowLightStatusBar">true</item>'
+                           '\\n        <item name="android:windowDrawsSystemBarBackgrounds">true</item>\\n    ')
+                  return m.group(1) + body + m.group(3)
+              out, n = re.subn(pat, fix, src, count=1, flags=re.S)
+              if n:
+                  p.write_text(out, encoding="utf-8")
+                  patched += 1
+          if not patched:
+              raise SystemExit("Could not find AppTheme in generated Android resources")
           PY
 
       - name: Build debug APK
