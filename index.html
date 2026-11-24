@@ -57,17 +57,34 @@ table.t tr.clickable:hover td{background:#eff6ff}
 .msg{animation:fadeIn .25s}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
 [contenteditable]:focus{outline:2px solid #1E62D0;outline-offset:4px;border-radius:6px}
+/* Tìm xe / kéo thả trên sơ đồ */
+.cell:not(.empty),.wchip{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.cell.hl{outline:3px solid #facc15;outline-offset:1px;background:#16a34a!important;color:#fff!important;animation:hlpulse 1s ease-in-out infinite;position:relative;z-index:2}
+@keyframes hlpulse{50%{box-shadow:0 0 0 6px rgba(250,204,21,.45)}}
+.cell.dragging,.wchip.dragging{opacity:.35}
+.drop-ok{outline:3px solid #16a34a!important;outline-offset:1px;background:#bbf7d0!important;color:#14532d!important}
+#dragGhost{position:fixed;z-index:90;pointer-events:none;padding:6px 12px;border-radius:10px;background:#13294B;color:#fff;font-weight:700;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,.3);transform:translate(-50%,-130%)}
+/* Thanh điều hướng dưới (điện thoại) */
+.qchip{padding:9px 14px;border-radius:999px;border:1.5px solid #cfd8e3;background:#fff;font-size:14px;font-weight:600;color:#1f2937;cursor:pointer}
+.qchip:hover{background:#eff6ff}
+.qchip.on{background:#13294B;border-color:#13294B;color:#fff}
+.qchip.go{background:#1E62D0;border-color:#1E62D0;color:#fff}
+.bn-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 2px 7px;font-size:11px;color:#64748b;background:none;border:0}
+.bn-btn span:first-child{font-size:20px;line-height:1.1}
+.bn-btn.active{color:#1E62D0;font-weight:700}
+@media(max-width:1023px){#toast{bottom:140px}}
 </style>
 </head>
 <body>
 <!-- MÀN HÌNH ĐĂNG NHẬP ẢO -->
-<div id="authScreen" class="fixed inset-0 z-50 bg-gradient-to-br from-navy via-[#1b3b6f] to-vf flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8">
+<div id="authScreen" class="fixed inset-0 z-50 bg-gradient-to-br from-navy via-[#1b3b6f] to-vf flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 relative">
+    <button type="button" onclick="closeAdminLogin()" class="absolute right-4 top-3 text-xl text-slate-400 hover:text-slate-700" title="Đóng">✕</button>
     <div class="flex items-center gap-3 mb-6">
       <div class="w-12 h-12 rounded-xl bg-vf text-white flex items-center justify-center text-2xl shadow">🚗</div>
       <div>
-        <div class="text-xl font-extrabold text-navy">Chat ERP Bãi Xe 34</div>
-        <div class="text-xs text-slate-500">Hệ thống quản lý bãi xe nội bộ</div>
+        <div class="text-xl font-extrabold text-navy">Đăng nhập Quản trị viên</div>
+        <div class="text-xs text-slate-500">Chat ERP Bãi Xe 34 · Dành cho Admin</div>
       </div>
     </div>
     <form id="loginForm" class="space-y-4">
@@ -83,7 +100,8 @@ table.t tr.clickable:hover td{background:#eff6ff}
         </div>
       </div>
       <div id="loginErr" class="hidden text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2"></div>
-      <button type="submit" class="btn btn-primary w-full py-2.5 text-base shadow-sm">🔐 Đăng nhập</button>
+      <button type="submit" class="btn btn-primary w-full py-2.5 text-base shadow-sm">🔐 Đăng nhập Admin</button>
+      <button type="button" onclick="closeAdminLogin()" class="btn w-full">Tiếp tục xem với tư cách Người xem</button>
     </form>
   </div>
 </div>
@@ -118,7 +136,7 @@ table.t tr.clickable:hover td{background:#eff6ff}
         <div id="authUserLabel" class="font-bold text-white truncate">—</div>
         <div id="authRoleBadge" class="text-[11px] text-blue-200">—</div>
       </div>
-      <button type="button" onclick="logoutAuth()" class="py-1.5 px-2.5 rounded-lg bg-red-500/20 hover:bg-red-500/35 text-red-200 font-semibold flex-none" title="Đăng xuất">🚪 Thoát</button>
+      <button type="button" id="btnAuthAction" onclick="authAction()" class="py-1.5 px-2.5 rounded-lg bg-blue-500/30 hover:bg-blue-500/50 text-blue-100 font-semibold flex-none">🔐 Admin</button>
     </div>
   </aside>
 
@@ -138,6 +156,7 @@ table.t tr.clickable:hover td{background:#eff6ff}
           <span id="hdrSyncIcon">🔄</span><span class="hidden md:inline">Đồng bộ</span>
         </button>
       </div>
+      <button type="button" id="hdrAuthBtn" onclick="authAction()" class="flex items-center gap-1 border border-slate-300 rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold bg-white hover:bg-slate-100">🔐 <span id="hdrAuthLabel">Đăng nhập Admin</span></button>
       <div class="hidden lg:flex items-center gap-2 border border-slate-200 rounded-full px-4 py-2 text-sm font-semibold">🏢 Bãi Xe 34</div>
     </header>
 
@@ -146,13 +165,9 @@ table.t tr.clickable:hover td{background:#eff6ff}
       <section id="tab-chat" class="absolute inset-0 flex flex-col">
         <div id="chatLog" class="flex-1 overflow-auto px-3 sm:px-8 py-5 space-y-5"></div>
         <div class="px-3 sm:px-8 pb-3 pt-1 relative flex-none">
-          <div id="quickMenu" class="hidden absolute bottom-full left-3 sm:left-8 mb-2 bg-white border border-slate-200 rounded-2xl shadow-lg p-2 w-72 z-20">
-            <div class="text-xs text-slate-500 px-2 py-1">Lệnh nhanh</div>
-            <div class="grid gap-1" id="quickList"></div>
-          </div>
           <div class="bg-white border border-slate-200 rounded-2xl p-2 flex items-center gap-2 shadow-sm">
-            <button id="plusBtn" class="w-10 h-10 rounded-full border border-slate-200 text-xl flex-none">+</button>
-            <input id="chatInput" class="flex-1 min-w-0 bg-slate-50 border border-slate-200 rounded-full px-4 py-2.5 outline-none text-[15px]" placeholder="Nhập lệnh hoặc đặt câu hỏi..." autocomplete="off">
+            <button id="camBtn" class="w-10 h-10 rounded-full bg-vf text-white text-xl flex-none" title="Chụp biển số / VIN">📷</button>
+            <input id="chatInput" class="flex-1 min-w-0 bg-slate-50 border border-slate-200 rounded-full px-4 py-2.5 outline-none text-[16px]" placeholder="Gõ biển số / VIN hoặc bấm 📷…" autocomplete="off" autocapitalize="characters">
             <button id="micBtn" class="w-10 h-10 rounded-full text-slate-500 flex-none text-lg">🎤</button>
             <button id="sendBtn" class="w-11 h-11 rounded-xl bg-vf text-white flex-none text-lg">➤</button>
           </div>
@@ -170,6 +185,14 @@ table.t tr.clickable:hover td{background:#eff6ff}
       <!-- SETTINGS -->
       <section id="tab-settings" class="absolute inset-0 overflow-auto p-3 sm:p-6 hidden"><div id="settingsBox"></div></section>
     </main>
+    <nav id="bottomNav" class="lg:hidden flex-none flex bg-white border-t border-slate-200" style="padding-bottom:env(safe-area-inset-bottom)">
+      <button type="button" class="bn-btn" data-btab="chat"><span>💬</span><span>Chat</span></button>
+      <button type="button" class="bn-btn" data-btab="dash"><span>🗺️</span><span>Sơ đồ</span></button>
+      <button type="button" class="bn-btn" data-btab="yard"><span>🚘</span><span>Xe</span></button>
+      <button type="button" class="bn-btn" data-btab="hist"><span>🕘</span><span>Lịch sử</span></button>
+      <button type="button" class="bn-btn" data-btab="report"><span>📈</span><span>Báo cáo</span></button>
+      <button type="button" class="bn-btn" onclick="toggleSidebar(true)"><span>☰</span><span>Thêm</span></button>
+    </nav>
   </div>
 </div>
 
@@ -179,6 +202,7 @@ table.t tr.clickable:hover td{background:#eff6ff}
 <div id="toast"></div>
 <input type="file" id="fileJson" accept=".json,application/json" class="hidden">
 <input type="file" id="fileXlsx" accept=".xlsx" class="hidden">
+<input type="file" id="fileCam" accept="image/*" capture="environment" class="hidden">
 
 <script>
 /* ================== TIỆN ÍCH ================== */
@@ -818,6 +842,7 @@ function setTab(t){
   TAB=t;
   ['chat','dash','yard','hist','report','settings'].forEach(x=>$('#tab-'+x).classList.toggle('hidden',x!==t));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  document.querySelectorAll('.bn-btn[data-btab]').forEach(b=>b.classList.toggle('active',b.dataset.btab===t));
   $('#pgTitle').textContent=TITLES[t][0];$('#pgSub').innerHTML=TITLES[t][1];
   toggleSidebar(false);refresh();
   if(t==='chat')setTimeout(()=>{const l=$('#chatLog');l.scrollTop=l.scrollHeight;},50);
@@ -826,6 +851,7 @@ function refresh(){
   if(TAB==='dash')renderDash();else if(TAB==='yard')renderYard();else if(TAB==='hist')renderHist();else if(TAB==='report')renderReport();else if(TAB==='settings')renderSettings();
 }
 document.querySelectorAll('.nav-btn').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+document.querySelectorAll('.bn-btn[data-btab]').forEach(b=>b.onclick=()=>setTab(b.dataset.btab));
 
 /* ================== MODAL ================== */
 function showModal(h){$('#modalBody').innerHTML=h;$('#modal').classList.remove('hidden');$('#modal').classList.add('flex');}
@@ -986,8 +1012,148 @@ function noPosCmd(){
   botSay(l.length?`📍 Có <b>${l.length}</b> xe chưa có vị trí: ${l.map(v=>`<b>${esc(v.key)}</b>`).join(', ')}`:'✅ Tất cả xe trong bãi đã có vị trí.');
 }
 function helpMsg(){
-  botSay(`Xin chào! Tôi có thể giúp bạn:<ul class="list-disc ml-5 mt-1 text-sm"><li><b>Nhập xe 50H12345</b> – nhập xe vào bãi</li><li><b>Xuất xe 50H12345</b> – xuất xe khỏi bãi</li><li><b>Tìm 50H12345</b> – tra cứu hồ sơ</li><li><b>Báo cáo</b> – tóm tắt nhanh</li><li><b>Xe tồn trên 30 ngày</b> · <b>Xe chưa có vị trí</b></li></ul><div class="text-xs text-slate-500 mt-1">Biển số viết liền, không dấu gạch/chấm. Có thể dùng micro để đọc lệnh.</div>`);
+  botSay('Gõ biển số / VIN (hoặc bấm 📷) để nhập hoặc xuất xe.');
 }
+
+/* ================== NHẬP / XUẤT NHANH (1 Ô DUY NHẤT) ================== */
+const LAST_LS='erp_bai_xe_34_last_v1';
+const lastPrefs=()=>{try{return JSON.parse(localStorage.getItem(LAST_LS))||{};}catch(e){return {};}};
+const savePrefs=o=>{try{localStorage.setItem(LAST_LS,JSON.stringify(Object.assign(lastPrefs(),o)));}catch(e){}};
+function recentParties(n){
+  const m=[];
+  S.visits.slice().sort((a,b)=>b.id-a.id).forEach(v=>{if(v.party&&!m.includes(v.party))m.push(v.party);});
+  const lp=lastPrefs().party;
+  if(lp){const i=m.indexOf(lp);if(i>=0)m.splice(i,1);m.unshift(lp);}
+  return m.slice(0,6);
+}
+function qchips(uid,field,opts,sel){
+  return `<div class="flex flex-wrap gap-2" id="${uid}_c_${field}">${opts.map(o=>`<button type="button" class="qchip ${o===sel?'on':''}" data-v="${esc(o)}" onclick="pickQ('${uid}','${field}',this)">${esc(o)}</button>`).join('')}</div>`;
+}
+function pickQ(uid,field,btn){
+  FORMS[uid][field]=btn.dataset.v;
+  btn.parentElement.querySelectorAll('.qchip').forEach(b=>b.classList.toggle('on',b===btn));
+  if(field==='party'){const i=document.getElementById(uid+'_party');if(i)i.value=btn.dataset.v;}
+}
+function smartId(id){
+  const v=findVeh(id);
+  if(v&&activeOf(v.key))quickExport(v.key);else quickImport(id);
+}
+function quickImport(id){
+  const v=findVeh(id);
+  if(v&&activeOf(v.key)){startImport(id);return;}
+  const uid='f'+(++uidc),isNew=!v,lp=lastPrefs();
+  const stIn=S.settings.statusIn,mods=S.settings.models;
+  const selSt=stIn.includes(lp.statusIn)?lp.statusIn:stIn[0];
+  const selMd=mods.includes(lp.model)?lp.model:mods[0];
+  const parties=recentParties(6),selParty=lp.party||'';
+  FORMS[uid]={kind:'qin',key:v?v.key:id,isNew,statusIn:selSt,model:selMd,party:selParty};
+  const vs=v?visitsOf(v.key).length:0;
+  botSay(`<div id="${uid}_wrap" class="space-y-3">
+    <div class="flex items-center justify-between gap-2"><div><span class="text-xl font-extrabold">${esc(v?v.key:id)}</span> <span class="badge ${isNew?'bg-amber-100 text-amber-800':'bg-green-100 text-green-700'}">${isNew?'Xe mới':'Xe cũ · lần '+(vs+1)}</span>${v&&v.model?` <span class="text-xs text-slate-500">${esc(v.model)}</span>`:''}</div><div class="text-xs text-slate-500">Nhập hôm nay ${fmt(todayISO())}</div></div>
+    ${isNew?`<div><div class="text-xs font-semibold text-slate-500 mb-1">Dòng xe</div>${qchips(uid,'model',mods,selMd)}</div>`:''}
+    <div><div class="text-xs font-semibold text-slate-500 mb-1">Tình trạng vào</div>${qchips(uid,'statusIn',stIn,selSt)}</div>
+    <div><div class="text-xs font-semibold text-slate-500 mb-1">Người gửi</div>${parties.length?qchips(uid,'party',parties,selParty)+'<div class="h-2"></div>':''}<input id="${uid}_party" class="inp" style="font-size:16px" placeholder="Tên/Bộ phận gửi xe" value="${esc(selParty)}"></div>
+    <div id="${uid}_act" class="flex flex-wrap gap-2"><button class="qchip go" onclick="confirmQuickIn('${uid}')">✓ Nhập xe</button><button class="qchip" onclick="startImport('${esc(id)}')">Chi tiết…</button><button class="qchip" onclick="cancelForm('${uid}')">✕ Hủy</button></div>
+  </div>`);
+}
+function confirmQuickIn(uid){
+  const f=FORMS[uid],party=document.getElementById(uid+'_party').value.trim(),st=f.statusIn;
+  if(!party){toast('Chọn hoặc gõ người gửi');document.getElementById(uid+'_party').focus();return;}
+  let v=findVeh(f.key);
+  if(v&&activeOf(v.key)){toast('Xe đã trong bãi');return;}
+  if(!v){S.vehicles[f.key]={key:f.key,plate:isPlate(f.key)?f.key:'',vin:isPlate(f.key)?'':f.key,model:f.model||'',color:''};v=S.vehicles[f.key];}
+  const date=todayISO();
+  S.visits.push({id:nextId(),key:v.key,inDate:date,pos:'',party,statusIn:st,noteIn:'',done:false,outDate:null,statusOut:'',receiver:'',noteOut:'',created:Date.now()});
+  savePrefs({party,statusIn:st,model:f.model||lastPrefs().model});
+  lockForm(uid,{ok:1,t:'✔ Đã nhập'});
+  save();
+  botSay(`✅ Đã nhập <b>${esc(v.key)}</b>${v.model?' ('+esc(v.model)+')':''} · ${esc(st)} · ${esc(party)} · lần ${visitsOf(v.key).length}. <span class="text-xs text-slate-500">Chưa có vị trí — kéo vào sơ đồ ở tab Sơ đồ.</span>`);
+}
+function quickExport(id){
+  const v=findVeh(id),a=v&&activeOf(v.key);
+  if(!a){startExport(id);return;}
+  const uid='f'+(++uidc);FORMS[uid]={kind:'qout',key:v.key};
+  const ag=age(a);
+  botSay(`<div id="${uid}_wrap" class="space-y-3">
+    <div class="flex items-center justify-between gap-2"><div><span class="text-xl font-extrabold">${esc(v.key)}</span> <span class="badge bg-orange-100 text-orange-700">Đang trong bãi</span> ${ageBadge(a)}</div><div class="text-xs text-slate-500">Xuất hôm nay ${fmt(todayISO())}</div></div>
+    <div class="text-xs text-slate-500">${esc(v.model||'—')} · ${esc(posLabel(a.pos))} · ${esc(statIn(a))}</div>
+    <div><div class="text-xs font-semibold text-slate-500 mb-1">Chạm tình trạng ra để xuất ngay</div><div class="flex flex-wrap gap-2">${S.settings.statusOut.map(s=>`<button type="button" class="qchip go" data-v="${esc(s)}" onclick="confirmQuickOut('${uid}',this.dataset.v)">${esc(s)}</button>`).join('')}</div></div>
+    <input id="${uid}_recv" class="inp" style="font-size:16px" placeholder="Người nhận (không bắt buộc)">
+    <div id="${uid}_act" class="flex flex-wrap gap-2"><button class="qchip" onclick="startExport('${esc(v.key)}')">Chi tiết…</button><button class="qchip" onclick="cancelForm('${uid}')">✕ Hủy</button></div>
+  </div>`);
+}
+function confirmQuickOut(uid,st){
+  const f=FORMS[uid],a=activeOf(f.key);
+  if(!a){toast('Xe không còn trong bãi');return;}
+  const date=todayISO();
+  if(isValidInDate(a.inDate)&&date<a.inDate){toast('Ngày xuất không được trước ngày nhập');return;}
+  const recv=(document.getElementById(uid+'_recv')||{value:''}).value.trim();
+  Object.assign(a,{done:true,outDate:date,statusOut:st,receiver:recv,noteOut:''});
+  lockForm(uid,{ok:1,t:'✔ Đã xuất'});save();
+  const days=isValidInDate(a.inDate)?diff(a.inDate,date):null;
+  botSay(`✅ Đã xuất <b>${esc(f.key)}</b> · ${esc(st)}${days!==null?` · lượt này ${days} ngày`:''}. Vị trí ${esc(posLabel(a.pos))} đã giải phóng.`);
+}
+
+/* ================== CHỤP ẢNH → ĐỌC BIỂN SỐ/VIN (OCR chạy trên máy, KHÔNG lưu ảnh) ================== */
+let ocrLoading=null,ocrWorker=null;
+function loadTesseract(){
+  if(window.Tesseract)return Promise.resolve();
+  if(ocrLoading)return ocrLoading;
+  ocrLoading=new Promise((res,rej)=>{
+    const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    s.onload=res;s.onerror=()=>{ocrLoading=null;rej(new Error('Chưa tải được bộ đọc chữ (cần mạng lần đầu)'));};
+    document.head.appendChild(s);
+  });
+  return ocrLoading;
+}
+async function imgToCanvas(file){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error('Không mở được ảnh'));i.src=url;});
+    const sc=Math.min(1,1400/Math.max(img.width,img.height));
+    const c=document.createElement('canvas');c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);
+    const g=c.getContext('2d');g.drawImage(img,0,0,c.width,c.height);
+    const d=g.getImageData(0,0,c.width,c.height),p=d.data;
+    for(let i=0;i<p.length;i+=4){let y=0.3*p[i]+0.59*p[i+1]+0.11*p[i+2];y=Math.max(0,Math.min(255,(y-110)*1.5+128));p[i]=p[i+1]=p[i+2]=y;}
+    g.putImageData(d,0,0);
+    return c;
+  }finally{URL.revokeObjectURL(url);}
+}
+function plateCandidates(text){
+  const out=[];const add=x=>{if(x&&!out.includes(x))out.push(x);};
+  const up=String(text||'').toUpperCase();
+  const lines=up.split(/\n+/).map(l=>l.replace(/[^A-Z0-9]/g,'')).filter(Boolean);
+  const pools=[...lines,lines.join('')];
+  pools.forEach(t=>{for(const m of t.matchAll(/\d{2}[A-Z]{1,2}\d{4,6}/g))add(m[0]);});
+  pools.forEach(t=>{for(const m of t.matchAll(/[A-HJ-NPR-Z0-9]{17}/g))if(/\d/.test(m[0])&&/[A-Z]/.test(m[0]))add(m[0]);});
+  pools.forEach(t=>{for(const m of t.matchAll(/\d{6}/g))add(m[0]);});
+  return out.slice(0,5);
+}
+async function scanPhoto(file){
+  if(TAB!=='chat')setTab('chat');
+  userSay('📷 Quét ảnh…');
+  const wait=botSay('⏳ Đang đọc biển số/VIN… (lần đầu có thể mất 10–20 giây để tải bộ đọc chữ)');
+  try{
+    await loadTesseract();
+    const canvas=await imgToCanvas(file);
+    if(!ocrWorker){
+      ocrWorker=await Tesseract.createWorker('eng');
+      await ocrWorker.setParameters({tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-. ',tessedit_pageseg_mode:'11'});
+    }
+    const {data}=await ocrWorker.recognize(canvas);
+    canvas.width=canvas.height=0; // bỏ ảnh khỏi bộ nhớ, không lưu ở đâu cả
+    wait.remove();
+    const c=plateCandidates(data.text);
+    if(!c.length){botSay('😕 Không đọc được biển số/VIN. Hãy chụp gần hơn, đủ sáng, thẳng góc — hoặc gõ tay.');return;}
+    if(c.length===1){botSay(`📷 Đọc được <b>${esc(c[0])}</b> — kiểm tra đúng chưa rồi xác nhận bên dưới (sai thì bấm Hủy và gõ tay).`);smartId(c[0]);return;}
+    botSay(`📷 Đọc được nhiều kết quả, chọn đúng xe:<div class="flex flex-wrap gap-2 mt-2">${c.map(x=>`<button class="qchip go" onclick="runCmd('${esc(x)}')">${esc(x)}</button>`).join('')}</div>`);
+  }catch(err){
+    wait.remove();
+    botSay('⚠️ '+esc(err.message||'Không đọc được ảnh')+'. Bạn có thể gõ biển số trực tiếp.');
+  }
+}
+$('#camBtn').onclick=()=>$('#fileCam').click();
+$('#fileCam').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)scanPhoto(f);};
 function idFrom(s){
   const toks=s.split(/\s+/).filter(Boolean);
   const t=toks.find(x=>/\d/.test(x)&&x.replace(/[^a-z0-9]/g,'').length>=5)||toks.join('');
@@ -1009,25 +1175,21 @@ function handle(raw){
   if((m=n.match(/^(nhap|xuat|tim|tra cuu|kiem tra)\s*(?:xe)?\s*(.*)$/))){
     const id=idFrom(m[2]);
     if(!id){botSay('Vui lòng nhập kèm biển số/VIN. Ví dụ: <b>'+(m[1]==='nhap'?'Nhập xe 50H12345':m[1]==='xuat'?'Xuất xe 50H12345':'Tìm 50H12345')+'</b>');return;}
-    if(m[1]==='nhap')startImport(id);else if(m[1]==='xuat')startExport(id);else searchCmd(id);
+    if(m[1]==='nhap')quickImport(id);else if(m[1]==='xuat')quickExport(id);else searchCmd(id);
     return;
   }
   const id=idFrom(n);
   if(id&&/\d/.test(id)&&id.length>=5){
-    if(/(nhap|vao bai|gui xe)/.test(n)){startImport(id);return;}
-    if(/(xuat|ra bai|giao xe|tra xe)/.test(n)){startExport(id);return;}
-    searchCmd(id);return;
+    if(/(nhap|vao bai|gui xe)/.test(n)){quickImport(id);return;}
+    if(/(xuat|ra bai|giao xe|tra xe)/.test(n)){quickExport(id);return;}
+    smartId(id);return;
   }
   helpMsg();
 }
 function runCmd(t){if(TAB!=='chat')setTab('chat');userSay(t);setTimeout(()=>handle(t),150);}
-function sendChat(){const i=$('#chatInput'),t=i.value.trim();if(!t)return;i.value='';$('#quickMenu').classList.add('hidden');userSay(t);setTimeout(()=>handle(t),200);}
+function sendChat(){const i=$('#chatInput'),t=i.value.trim();if(!t)return;i.value='';userSay(t);setTimeout(()=>handle(t),200);}
 $('#sendBtn').onclick=sendChat;
 $('#chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
-const QUICK=[['📥 Nhập xe …','Nhập xe ',0],['📤 Xuất xe …','Xuất xe ',0],['🔎 Tìm …','Tìm ',0],['📊 Báo cáo','Báo cáo',1],['⏳ Xe tồn trên 30 ngày','Xe tồn trên 30 ngày',1],['📍 Xe chưa có vị trí','Xe chưa có vị trí',1]];
-$('#quickList').innerHTML=QUICK.map((q,i)=>`<button class="btn" style="justify-content:flex-start" data-q="${i}">${q[0]}</button>`).join('');
-$('#quickList').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;const q=QUICK[b.dataset.q];$('#quickMenu').classList.add('hidden');if(q[2])runCmd(q[1]);else{$('#chatInput').value=q[1];$('#chatInput').focus();}});
-$('#plusBtn').onclick=()=>$('#quickMenu').classList.toggle('hidden');
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 $('#micBtn').onclick=()=>{
   if(!SR){toast('Trình duyệt không hỗ trợ nhận diện giọng nói');return;}
@@ -1060,13 +1222,17 @@ function renderDash(){
   if(selectedWaitId && !waitList.some(v=>v.id===selectedWaitId)) selectedWaitId=null;
   const selObj=selectedWaitId ? waitList.find(v=>v.id===selectedWaitId) : null;
 
-  let h=`<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+  let h=`<div class="card p-3 mb-4">
+     <input id="dashSearch" class="inp" style="font-size:16px" placeholder="🔎 Tìm xe nhanh: gõ biển số hoặc VIN (VD: 12345)…" autocomplete="off" oninput="dashSearch(this.value)">
+     <div id="dashSearchRes" class="flex flex-wrap gap-2 mt-2"></div>
+   </div>
+   <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
    ${[['Tổng vị trí',total,'text-slate-800'],['Đang có xe',used,'text-vf'],['Còn trống',total-used,'text-green-600'],['Xe chưa có vị trí',waitList.length,'text-orange-600']].map(x=>`<div class="card p-4"><div class="text-xs text-slate-500 uppercase font-semibold">${x[0]}</div><div class="text-3xl font-extrabold ${x[2]}">${x[1]}</div></div>`).join('')}</div>
 
-   <div class="card p-3 sm:p-4 mb-4" style="background:#fffbeb;border:1.5px dashed #f59e0b">
+   <div class="card p-3 sm:p-4 mb-4" data-drop="wait" style="background:#fffbeb;border:1.5px dashed #f59e0b">
      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
        <div class="font-bold text-amber-900 text-sm">📍 Danh sách xe chưa có vị trí (${waitList.length} xe)</div>
-       <div class="text-xs text-amber-800">${selObj ? `Đang chọn <b>${esc(selObj.key)}</b> — chạm vào ô trống bất kỳ bên dưới để xếp vị trí` : 'Chạm vào xe bên dưới rồi chạm ô trống trên sơ đồ để xếp vị trí'}</div>
+       <div class="text-xs text-amber-800">${selObj ? `Đang chọn <b>${esc(selObj.key)}</b> — chạm vào ô trống bất kỳ bên dưới để xếp vị trí` : 'Kéo xe thả vào ô trống (hoặc chạm xe rồi chạm ô trống). Kéo xe từ sơ đồ về đây để bỏ vị trí'}</div>
      </div>
      <div class="flex flex-wrap gap-2">
        ${waitList.length ? waitList.map(v=>{
@@ -1107,7 +1273,100 @@ function renderDash(){
   $('#dashBox').innerHTML=h+'</div>';
 }
 
+/* ---- Tìm xe nhanh trên sơ đồ ---- */
+function dashSearch(q){
+  const box=$('#dashSearchRes');if(!box)return;
+  document.querySelectorAll('#dashBox .cell.hl').forEach(c=>c.classList.remove('hl'));
+  const k=cleanId(q);
+  if(!k){box.innerHTML='';return;}
+  const hits=active().filter(v=>v.key.includes(k)).slice(0,10);
+  if(!hits.length){box.innerHTML=`<span class="text-xs text-slate-500">Không có xe nào đang trong bãi khớp "${esc(q)}"</span>`;return;}
+  box.innerHTML=hits.map(v=>`<button type="button" class="wchip ${isNewV(veh(v.key))?'v-vin':'v-plate'}" data-find="${v.id}">${esc(v.key)} · ${v.pos?esc(posLabel(v.pos)):'Chưa có vị trí'}</button>`).join('');
+  let first=null;
+  hits.forEach(v=>{if(v.pos){const el=document.querySelector(`#dashBox .cell[data-pos="${v.pos}"]`);if(el){el.classList.add('hl');first=first||el;}}});
+  if(first&&hits.length<=3)first.scrollIntoView({block:'center',inline:'center',behavior:'smooth'});
+}
+
+/* ---- Kéo thả xe trên sơ đồ (chuột + cảm ứng: giữ ~0,3 giây rồi kéo) ---- */
+function moveVisit(id,pos){
+  const v=S.visits.find(x=>x.id===id&&!x.done);if(!v)return;
+  if(!pos){assignPos(id,'');return;}
+  if(v.pos===pos)return;
+  const other=active().find(x=>x.pos===pos&&x.id!==id);
+  if(other){
+    other.pos=v.pos||'';v.pos=pos;selectedWaitId=null;save();
+    toast(other.pos?`Đã hoán đổi vị trí ${v.key} ⇄ ${other.key}`:`Đã xếp ${v.key} vào ${posLabel(pos)}; ${other.key} về danh sách chưa có vị trí`);
+    return;
+  }
+  assignPos(id,pos);
+}
+let DRAG=null,dragSuppress=false,dragGhost=null,dragOver=null;
+function dropTargetAt(x,y){const el=document.elementFromPoint(x,y);return el?el.closest('#dashBox [data-pos], #dashBox [data-drop]'):null;}
+function startDrag(st,x,y){
+  st.started=true;st.src.classList.add('dragging');
+  dragGhost=document.createElement('div');dragGhost.id='dragGhost';dragGhost.textContent=st.label;
+  document.body.appendChild(dragGhost);moveGhost(x,y);
+  if(navigator.vibrate)try{navigator.vibrate(15);}catch(e){}
+}
+function moveGhost(x,y){
+  if(!dragGhost)return;
+  dragGhost.style.left=x+'px';dragGhost.style.top=y+'px';
+  const t=dropTargetAt(x,y);
+  if(t!==dragOver){if(dragOver)dragOver.classList.remove('drop-ok');dragOver=t;if(t)t.classList.add('drop-ok');}
+}
+function endDragUI(st){
+  if(dragGhost){dragGhost.remove();dragGhost=null;}
+  if(dragOver){dragOver.classList.remove('drop-ok');dragOver=null;}
+  if(st&&st.src)st.src.classList.remove('dragging');
+}
+$('#dashBox').addEventListener('pointerdown',e=>{
+  if(e.button>0)return;
+  if(!AUTH_USER||AUTH_USER.role!=='admin')return;
+  const src=e.target.closest('.cell:not(.empty), [data-wait-id]');if(!src)return;
+  let id,label;
+  if(src.dataset.waitId){id=+src.dataset.waitId;label=src.textContent.trim();}
+  else{const v=active().find(x=>x.pos===src.dataset.pos);if(!v)return;id=v.id;label=v.key;}
+  const st={id,label,src,x:e.clientX,y:e.clientY,pid:e.pointerId,touch:e.pointerType==='touch',started:false,timer:null};
+  DRAG=st;
+  if(st.touch)st.timer=setTimeout(()=>{if(DRAG===st)startDrag(st,st.x,st.y);},320);
+});
+document.addEventListener('pointermove',e=>{
+  const st=DRAG;if(!st||e.pointerId!==st.pid)return;
+  if(!st.started){
+    const moved=Math.hypot(e.clientX-st.x,e.clientY-st.y);
+    if(st.touch){if(moved>10){clearTimeout(st.timer);DRAG=null;}return;}
+    if(moved<=6)return;
+    startDrag(st,e.clientX,e.clientY);
+  }
+  moveGhost(e.clientX,e.clientY);
+});
+document.addEventListener('pointerup',e=>{
+  const st=DRAG;if(!st||e.pointerId!==st.pid)return;
+  clearTimeout(st.timer);DRAG=null;
+  if(!st.started)return;
+  const t=dropTargetAt(e.clientX,e.clientY);
+  endDragUI(st);
+  dragSuppress=true;setTimeout(()=>{dragSuppress=false;},120);
+  if(!t)return;
+  if(t.dataset.drop==='wait')moveVisit(st.id,'');
+  else if(t.dataset.pos)moveVisit(st.id,t.dataset.pos);
+});
+document.addEventListener('pointercancel',e=>{
+  const st=DRAG;if(!st||e.pointerId!==st.pid)return;
+  clearTimeout(st.timer);DRAG=null;endDragUI(st);
+});
+document.addEventListener('touchmove',e=>{if(DRAG&&DRAG.started&&e.cancelable)e.preventDefault();},{passive:false});
+$('#dashBox').addEventListener('contextmenu',e=>{if(DRAG&&DRAG.touch)e.preventDefault();});
+$('#dashBox').addEventListener('click',e=>{if(dragSuppress){e.stopImmediatePropagation();e.preventDefault();}},true);
+
 $('#dashBox').addEventListener('click',e=>{
+  const fBtn=e.target.closest('[data-find]');
+  if(fBtn){
+    const v=active().find(x=>x.id===+fBtn.dataset.find);
+    if(v&&v.pos){const el=document.querySelector(`#dashBox .cell[data-pos="${v.pos}"]`);if(el){el.scrollIntoView({block:'center',inline:'center',behavior:'smooth'});el.classList.add('hl');}}
+    else if(v)toast(`Xe ${v.key} chưa có vị trí — kéo xe từ danh sách chờ vào ô trống`);
+    return;
+  }
   const wBtn=e.target.closest('[data-wait-id]');
   if(wBtn){
     const id=+wBtn.dataset.waitId;
@@ -1823,22 +2082,45 @@ $('#fileXlsx').onchange=async e=>{
 /* ================== ĐĂNG NHẬP ẢO & PHÂN QUYỀN ================== */
 const AUTH_LS='erp_bai_xe_34_auth_v1';
 const AUTH_ACCOUNTS=[
-  {email:'hoangthong@qlbx.com',pass:'Nghi1990@',role:'admin',label:'Quản trị viên (Admin)'},
-  {email:'nguoixem@qlbx.com',pass:'123456789',role:'viewer',label:'Người xem (Viewer)'}
+  {email:'hoangthong@qlbx.com',pass:'Nghi1990@',role:'admin',label:'Quản trị viên (Admin)'}
 ];
+/* Mặc định mở link luôn ở chế độ Người xem (không cần mật khẩu) */
+const VIEWER_USER={email:'Khách',role:'viewer',label:'Người xem (Viewer)'};
 let AUTH_USER=null, APP_BOOTED=false;
+function openAdminLogin(){
+  closeModal();toggleSidebar(false);
+  $('#loginErr').classList.add('hidden');
+  $('#authScreen').classList.remove('hidden');
+  setTimeout(()=>$('#loginUser').focus(),50);
+}
+function closeAdminLogin(){$('#authScreen').classList.add('hidden');$('#loginPass').value='';}
+function authAction(){
+  if(AUTH_USER && AUTH_USER.role==='admin'){ if(confirm('Đăng xuất Admin và quay về chế độ Người xem?')) logoutAuth(); }
+  else openAdminLogin();
+}
 
 function applyRolePermissions(){
   if(!AUTH_USER) return;
   const isViewer=AUTH_USER.role==='viewer';
   $('#authUserLabel').textContent=AUTH_USER.email;
   $('#authRoleBadge').textContent=AUTH_USER.label;
+  const btnA=$('#btnAuthAction'), hdrL=$('#hdrAuthLabel');
+  if(btnA){
+    btnA.textContent=isViewer?'🔐 Admin':'🚪 Thoát';
+    btnA.className='py-1.5 px-2.5 rounded-lg font-semibold flex-none '+(isViewer?'bg-blue-500/30 hover:bg-blue-500/50 text-blue-100':'bg-red-500/20 hover:bg-red-500/35 text-red-200');
+  }
+  if(hdrL) hdrL.textContent=isViewer?'Đăng nhập Admin':'Admin · Đăng xuất';
 
   // Ẩn/hiện các tab theo quyền: Viewer chỉ dùng được Chat (ERP) và Lịch sử giao dịch
   document.querySelectorAll('#nav .nav-btn').forEach(btn=>{
     const t=btn.dataset.tab;
     const allow=!isViewer || t==='chat' || t==='hist';
     btn.classList.toggle('hidden', !allow);
+  });
+
+  document.querySelectorAll('.bn-btn[data-btab]').forEach(btn=>{
+    const t=btn.dataset.btab;
+    btn.classList.toggle('hidden', isViewer && t!=='chat' && t!=='hist');
   });
 
   // Ẩn nút "Cấu hình" trên sidebar đối với Viewer để tránh nhảy sang tab Cài đặt
@@ -1848,26 +2130,25 @@ function applyRolePermissions(){
 
 function enterAppWithUser(acc){
   AUTH_USER=acc;
-  try{sessionStorage.setItem(AUTH_LS, JSON.stringify(acc));}catch(e){}
-  $('#authScreen').classList.add('hidden');
+  try{
+    if(acc.role==='admin') sessionStorage.setItem(AUTH_LS, JSON.stringify({email:acc.email}));
+    else sessionStorage.removeItem(AUTH_LS);
+  }catch(e){}
+  closeAdminLogin();
   $('#appShell').classList.remove('hidden');
   applyRolePermissions();
   if(!APP_BOOTED){
     APP_BOOTED=true;
-    botSay(`Xin chào <b>${esc(acc.email)}</b> (${esc(acc.label)})! Tôi là trợ lý <b>Chat ERP Bãi Xe 34</b>. Gõ lệnh như <b>Nhập xe 50H12345</b>, <b>Xuất xe 50H12345</b>, <b>Tìm 50H12345</b>, <b>Báo cáo</b>, <b>Xe tồn trên 30 ngày</b> hoặc bấm nút <b>+</b> để chọn lệnh nhanh.<div class="mt-2 flex flex-wrap gap-2"><button class="btn btn-sm" onclick="runCmd('Báo cáo')">📊 Báo cáo</button><button class="btn btn-sm" onclick="runCmd('Xe tồn trên 30 ngày')">⏳ Xe tồn &gt;30 ngày</button><button class="btn btn-sm" onclick="runCmd('Nhập xe 50H12345')">Thử: Nhập xe 50H12345</button></div>`);
+    botSay(`Xin chào! Gõ <b>biển số / VIN</b> hoặc bấm <b>📷</b> để nhập hoặc xuất xe ngay.`);
   }
   setTab('chat');
 }
 
 function logoutAuth(){
-  AUTH_USER=null;
   try{sessionStorage.removeItem(AUTH_LS);}catch(e){}
   closeModal();
-  $('#appShell').classList.add('hidden');
-  $('#authScreen').classList.remove('hidden');
-  $('#loginPass').value='';
-  $('#loginErr').classList.add('hidden');
-  toast('Đã đăng xuất');
+  enterAppWithUser(VIEWER_USER);
+  toast('Đã đăng xuất — quay về chế độ Người xem');
 }
 
 $('#loginForm').addEventListener('submit', e=>{
@@ -1891,11 +2172,13 @@ load();
 document.body.appendChild(colorDL);
 try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}
 updateCloudBadges();
+let bootUser=VIEWER_USER;
 try{
   const savedAuth=JSON.parse(sessionStorage.getItem(AUTH_LS)||'null');
-  const validSaved=savedAuth && AUTH_ACCOUNTS.find(a=>a.email===savedAuth.email && a.pass===savedAuth.pass);
-  if(validSaved) enterAppWithUser(validSaved);
+  const validSaved=savedAuth && AUTH_ACCOUNTS.find(a=>a.email===savedAuth.email);
+  if(validSaved) bootUser=validSaved;
 }catch(e){}
+enterAppWithUser(bootUser);
 </script>
 </body>
 </html>
