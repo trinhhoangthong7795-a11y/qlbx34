@@ -77,7 +77,7 @@ table.t tr.clickable:hover td{background:#eff6ff}
 </head>
 <body>
 <!-- MÀN HÌNH ĐĂNG NHẬP ẢO -->
-<div id="authScreen" class="fixed inset-0 z-50 bg-gradient-to-br from-navy via-[#1b3b6f] to-vf flex items-center justify-center p-4 hidden">
+<div id="authScreen" class="fixed inset-0 z-[90] bg-gradient-to-br from-navy via-[#1b3b6f] to-vf flex items-center justify-center p-4 hidden">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 relative">
     <button type="button" onclick="closeAdminLogin()" class="absolute right-4 top-3 text-xl text-slate-400 hover:text-slate-700" title="Đóng">✕</button>
     <div class="flex items-center gap-3 mb-6">
@@ -128,7 +128,7 @@ table.t tr.clickable:hover td{background:#eff6ff}
       </div>
       <div class="flex items-center gap-1.5">
         <button type="button" id="btnToggleCloudSide" onclick="toggleCloudMode()" class="flex-1 py-1.5 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold text-left truncate">🔌 Online: TẮT</button>
-        <button type="button" id="btnSyncNowSide" onclick="syncAllNow()" class="py-1.5 px-2.5 rounded-lg bg-vf hover:bg-blue-500 text-white font-semibold" title="Đồng bộ dữ liệu ngay">🔄</button>
+        <button type="button" id="btnSyncNowSide" onclick="syncAllNow()" class="py-1.5 px-2.5 rounded-lg bg-vf hover:bg-blue-500 text-white font-semibold" title="Đẩy dữ liệu lên Google Sheets">🔄</button>
       </div>
     </div>
     <div class="px-4 py-3 border-t border-white/10 bg-black/15 text-xs flex items-center justify-between gap-2">
@@ -152,7 +152,7 @@ table.t tr.clickable:hover td{background:#eff6ff}
           <span id="hdrCloudDot" class="w-2.5 h-2.5 rounded-full bg-slate-400 inline-block"></span>
           <span id="hdrCloudLabel">Offline</span>
         </button>
-        <button type="button" id="hdrSyncBtn" onclick="syncAllNow()" class="flex items-center gap-1 border border-blue-200 bg-blue-50 text-vf hover:bg-blue-100 rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold" title="Đồng bộ lên/xuống Google Sheet & Firebase">
+        <button type="button" id="hdrSyncBtn" onclick="syncAllNow()" class="flex items-center gap-1 border border-blue-200 bg-blue-50 text-vf hover:bg-blue-100 rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold" title="Admin chủ động đẩy dữ liệu lên Google Sheets">
           <span id="hdrSyncIcon">🔄</span><span class="hidden md:inline">Đồng bộ</span>
         </button>
       </div>
@@ -198,6 +198,18 @@ table.t tr.clickable:hover td{background:#eff6ff}
 
 <div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-3">
   <div class="bg-white rounded-2xl w-full max-w-xl max-h-[92vh] overflow-auto shadow-2xl" id="modalBody"></div>
+</div>
+<div id="viewerGate" class="fixed inset-0 z-[80] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 text-center">
+    <div class="w-14 h-14 rounded-2xl bg-blue-50 text-vf text-3xl flex items-center justify-center mx-auto mb-3">📋</div>
+    <h2 class="text-xl font-extrabold text-navy">Kiểm tra dữ liệu mới</h2>
+    <p class="text-sm text-slate-500 mt-2">Viewer phải kiểm tra dữ liệu trước khi xem Lịch sử giao dịch.</p>
+    <div id="viewerGateStatus" class="mt-4 rounded-xl bg-slate-50 border border-slate-200 p-3 text-sm text-slate-600">Sẵn sàng kiểm tra dữ liệu từ Google Sheets.</div>
+    <button id="viewerCheckBtn" type="button" class="btn btn-primary w-full mt-4 py-3" onclick="viewerCheckData()">🔄 Kiểm tra dữ liệu</button>
+    <div class="flex items-center gap-3 my-4"><div class="h-px bg-slate-200 flex-1"></div><span class="text-[11px] text-slate-400">HOẶC</span><div class="h-px bg-slate-200 flex-1"></div></div>
+    <button type="button" class="btn w-full py-3 border border-blue-200 text-vf bg-blue-50 hover:bg-blue-100" onclick="openAdminLogin()">🔐 Đăng nhập Admin</button>
+    <div class="text-[11px] text-slate-400 mt-3">Viewer cần kiểm tra dữ liệu mỗi lần mở ứng dụng. Admin đăng nhập để quản trị và chủ động đẩy dữ liệu.</div>
+  </div>
 </div>
 <div id="toast"></div>
 <input type="file" id="fileJson" accept=".json,application/json" class="hidden">
@@ -323,24 +335,18 @@ const LS='erp_bai_xe_34_v1';
 let S;
 const PRESET_CLOUD={
   gsUrl:'https://script.google.com/macros/s/AKfycby8v61Wu8tLmf4m78cvyxkeOEmAXHmbrMYIneVe8A2FSb4to6m3fIdo1D-cxeb6z3s/exec',
-  fbProjectId:'new-erp-608f6',
-  fbDbUrl:'https://new-erp-608f6-default-rtdb.asia-southeast1.firebasedatabase.app',
-  fbApiKey:'AIzaSyDrMV8t3UTbanAsX5kvbvd6ft6kMxcTS6s'
+  gsSheetName:'NhatKyBaiXe34'
 };
 const DEF_CLOUD=()=>({
   onlineEnabled:false,
-  autoSync:true,
+  autoSync:false,
   gsEnabled:true,
   gsUrl:PRESET_CLOUD.gsUrl,
-  gsSheetName:'NhatKyBaiXe34',
-  fbEnabled:true,
-  fbProjectId:PRESET_CLOUD.fbProjectId,
-  fbDbUrl:PRESET_CLOUD.fbDbUrl,
-  fbApiKey:PRESET_CLOUD.fbApiKey,
-  fbNode:'baixe34_erp',
-  fbAuthToken:'',
+  gsSheetName:PRESET_CLOUD.gsSheetName,
+  gsLastVersion:'',
+  gsAdminToken:'',
   lastSync:'',
-  lastSyncStatus:'Sẵn sàng đồng bộ'
+  lastSyncStatus:'Chưa đồng bộ'
 });
 const DEF_SETTINGS=()=>({
   statusIn:['Chờ sửa chữa','Chờ giao GSM','Lưu kho','CSM gửi','Xe mới lưu kho'],
@@ -353,16 +359,8 @@ function ensureCloudCfg(){
   if(!S.settings) S.settings=DEF_SETTINGS();
   const prev=S.settings.cloud||{};
   const merged=Object.assign(DEF_CLOUD(), prev);
-  if(!merged.gsUrl || !merged.gsUrl.trim()){
-    merged.gsUrl=PRESET_CLOUD.gsUrl;
-    merged.gsEnabled=true;
-  }
-  if(!merged.fbDbUrl || !merged.fbDbUrl.trim() || merged.fbDbUrl==='https://new-erp-608f6-default-rtdb.firebaseio.com'){
-    merged.fbDbUrl=PRESET_CLOUD.fbDbUrl;
-    merged.fbProjectId=PRESET_CLOUD.fbProjectId;
-    merged.fbApiKey=PRESET_CLOUD.fbApiKey;
-    merged.fbEnabled=true;
-  }
+  merged.autoSync=false; // Chính sách: chỉ Admin chủ động đẩy dữ liệu
+  merged.gsEnabled=true;
   S.settings.cloud=merged;
   return S.settings.cloud;
 }
@@ -376,10 +374,7 @@ function save(skipAutoPush){
   try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){toast('Không lưu được localStorage');}
   updateCloudBadges();
   refresh();
-  const c=ensureCloudCfg();
-  if(!skipAutoPush && c.onlineEnabled && c.autoSync && (c.gsEnabled || c.fbEnabled)){
-    scheduleAutoPush();
-  }
+  // Không tự động tải lên. Chỉ Admin chủ động bấm “Đẩy dữ liệu lên Google Sheets”.
 }
 
 const veh=k=>S.vehicles[k]||{key:k,plate:k,vin:'',model:'',color:''};
@@ -485,320 +480,255 @@ function sample(){
 }
 
 
-/* ================== ĐỒNG BỘ ONLINE (GOOGLE SHEET & FIREBASE CONSOLE) ================== */
-let cloudSyncing=false, autoPushTimer=null;
-
+/* ================== GOOGLE SHEETS: ADMIN ĐẨY THỦ CÔNG / VIEWER KIỂM TRA ================== */
+let cloudSyncing=false;
 function updateCloudBadges(){
   const c=ensureCloudCfg();
-  const hasTarget=(c.gsEnabled && c.gsUrl.trim()) || (c.fbEnabled && c.fbDbUrl.trim());
-  const activeOnline=c.onlineEnabled && hasTarget;
-  const dot=$('#hdrCloudDot'), lbl=$('#hdrCloudLabel'), sideBtn=$('#btnToggleCloudSide'), sideSt=$('#sidebarStatus');
-  if(dot && lbl){
-    if(cloudSyncing){
-      dot.className='w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse inline-block';
-      lbl.textContent='Đang đồng bộ...';
-    }else if(activeOnline){
-      dot.className='w-2.5 h-2.5 rounded-full bg-green-500 inline-block';
-      lbl.textContent='Online: BẬT';
-    }else if(c.onlineEnabled && !hasTarget){
-      dot.className='w-2.5 h-2.5 rounded-full bg-amber-500 inline-block';
-      lbl.textContent='Chưa gắn link';
-    }else{
-      dot.className='w-2.5 h-2.5 rounded-full bg-slate-400 inline-block';
-      lbl.textContent='Offline';
-    }
-  }
-  if(sideBtn){
-    sideBtn.innerHTML=c.onlineEnabled ? '🟢 Online: <b>BẬT</b>' : '🔌 Online: <b>TẮT</b>';
-    sideBtn.className=c.onlineEnabled
-      ? 'flex-1 py-1.5 px-2 rounded-lg bg-green-600/30 border border-green-400/40 hover:bg-green-600/40 text-green-200 font-semibold text-left truncate'
-      : 'flex-1 py-1.5 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold text-left truncate';
-  }
-  if(sideSt){
-    if(cloudSyncing) sideSt.innerHTML='<span class="text-amber-300">● Đang đồng bộ...</span>';
-    else if(activeOnline) sideSt.innerHTML='<span class="text-green-300">● Online + Offline OK</span>';
-    else sideSt.innerHTML='<span class="text-green-300">● Offline sẵn sàng</span>';
-  }
-  if(TAB==='chat'){
-    const sub=$('#pgSub');
-    if(sub){
-      sub.innerHTML=activeOnline
-        ? `<span class="text-green-600">●</span> Lưu Offline + Đồng bộ Online (${[c.gsEnabled&&c.gsUrl?'Google Sheet':'',c.fbEnabled&&c.fbDbUrl?'Firebase':''].filter(Boolean).join(' & ')})`
-        : `<span class="text-slate-500">●</span> Chế độ Offline (dữ liệu lưu trên máy)`;
-    }
-  }
+  const activeOnline=!!(c.gsUrl||'').trim();
+  const dot=$('#hdrCloudDot'), lbl=$('#hdrCloudLabel');
+  if(dot&&lbl){dot.className='w-2.5 h-2.5 rounded-full '+(cloudSyncing?'bg-amber-500':'bg-green-500')+' inline-block';lbl.textContent=cloudSyncing?'Đang xử lý...':(activeOnline?'Google Sheets':'Chưa cấu hình');}
+  ['hdrCloudToggle','btnToggleCloudSide'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});
+  const sideSt=$('#sidebarStatus');if(sideSt)sideSt.textContent=cloudSyncing?'● Đang xử lý...':(activeOnline?'● Google Sheets':'● Chưa cấu hình Sheet');
+  const sub=$('#pgSub');if(sub&&TAB==='chat')sub.textContent='Lưu Offline trên thiết bị · Google Sheets chỉ cập nhật khi Admin chủ động đẩy';
 }
-
-function toggleCloudMode(forceVal){
-  const c=ensureCloudCfg();
-  c.onlineEnabled=(typeof forceVal==='boolean') ? forceVal : !c.onlineEnabled;
-  save(true);
-  if(c.onlineEnabled){
-    const hasTarget=(c.gsEnabled && c.gsUrl.trim()) || (c.fbEnabled && c.fbDbUrl.trim());
-    if(!hasTarget){
-      toast('Đã bật Online — hãy dán link Google Sheet hoặc Firebase trong Cài đặt');
-      setTab('settings');
-      return;
-    }
-    toast('Đã BẬT chế độ Online — đang đồng bộ dữ liệu...');
-    syncAllNow('both');
-  }else{
-    toast('Đã TẮT chế độ Online — chỉ lưu Offline trên máy');
-  }
-}
-
-function scheduleAutoPush(){
-  clearTimeout(autoPushTimer);
-  autoPushTimer=setTimeout(()=>{ pushCloudSilent(); }, 1200);
-}
-
+function toggleCloudMode(){toast('Đã khóa bật/tắt Online. Admin sử dụng nút Đẩy dữ liệu lên Google Sheets khi cần.');}
+function scheduleAutoPush(){/* cố ý vô hiệu hóa tự động tải lên */}
 function buildCloudPayload(){
-  const c=ensureCloudCfg();
   const cleanSettings=JSON.parse(JSON.stringify(S.settings));
-  // Không ghi đè cấu hình kết nối cục bộ của thiết bị khác nếu không cần, chỉ gửi danh mục & layout
   delete cleanSettings.cloud;
   const rows=S.visits.slice().sort((a,b)=>a.id-b.id).map(v=>{
     const x=veh(v.key);
-    return {
-      id:v.id,
-      key:v.key,
-      plate:x.plate||'',
-      vin:x.vin||'',
-      model:x.model||'',
-      color:x.color||'',
-      inDate:isValidInDate(v.inDate)?v.inDate:'0',
-      pos:v.pos||'',
-      posLabel:v.pos?posLabel(v.pos):'Chưa có vị trí',
-      party:v.party||'',
-      statusIn:v.statusIn||'',
-      noteIn:v.noteIn||'',
-      done:!!v.done,
-      outDate:v.outDate||'',
-      statusOut:v.statusOut||'',
-      receiver:v.receiver||'',
-      noteOut:v.noteOut||''
-    };
+    return {id:v.id,key:v.key,plate:x.plate||'',vin:x.vin||'',model:x.model||'',color:x.color||'',inDate:isValidInDate(v.inDate)?v.inDate:'0',pos:v.pos||'',posLabel:v.pos?posLabel(v.pos):'Chưa có vị trí',party:v.party||'',statusIn:v.statusIn||'',noteIn:v.noteIn||'',done:!!v.done,outDate:v.outDate||'',statusOut:v.statusOut||'',receiver:v.receiver||'',noteOut:v.noteOut||''};
   });
-  return {
-    app:'ChatERP_BaiXe34',
-    updatedAt:S.updatedAt||Date.now(),
-    sheetName:c.gsSheetName||'NhatKyBaiXe34',
-    vehicles:S.vehicles,
-    visits:S.visits,
-    notes:S.notes||{},
-    seq:S.seq||0,
-    settings:cleanSettings,
-    flatRows:rows
-  };
+  return {app:'ChatERP_BaiXe34',updatedAt:S.updatedAt||Date.now(),sheetName:ensureCloudCfg().gsSheetName||'NhatKyBaiXe34',vehicles:S.vehicles,visits:S.visits,notes:S.notes||{},seq:S.seq||0,settings:cleanSettings,flatRows:rows};
 }
-
-function applyRemoteSnapshot(remote){
-  if(!remote || !remote.vehicles || !remote.visits) return false;
-  const keepCloud=Object.assign({}, ensureCloudCfg());
-  S.vehicles=remote.vehicles;
-  S.visits=remote.visits;
-  S.notes=remote.notes||{};
+function applyRemoteSnapshot(remote,persist=true){
+  if(!remote||!remote.vehicles||!remote.visits) return false;
+  const keepCloud=Object.assign({},ensureCloudCfg());
+  S.vehicles=remote.vehicles;S.visits=remote.visits;S.notes=remote.notes||{};
   S.seq=remote.seq||Math.max(0,...S.visits.map(v=>v.id||0));
-  if(remote.settings){
-    S.settings=Object.assign(DEF_SETTINGS(), remote.settings, {cloud:keepCloud});
-  }else{
-    S.settings.cloud=keepCloud;
-  }
+  if(remote.settings) S.settings=Object.assign(DEF_SETTINGS(),remote.settings,{cloud:keepCloud});
+  else S.settings.cloud=keepCloud;
   S.updatedAt=remote.updatedAt||Date.now();
-  try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}
+  if(persist){try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}}
   return true;
 }
-
-function normalizeFbUrl(c){
-  let u=(c.fbDbUrl||'').trim().replace(/\/+$/,'');
-  if(!u && c.fbProjectId) u=PRESET_CLOUD.fbDbUrl;
-  if(!u) return '';
-  const node=(c.fbNode||'baixe34_erp').trim().replace(/^\/+|\/+$/g,'');
-  const q=c.fbAuthToken && c.fbAuthToken.trim() ? `?auth=${encodeURIComponent(c.fbAuthToken.trim())}` : '';
-  return `${u}/${node}.json${q}`;
-}
-
-async function fbPull(){
-  const c=ensureCloudCfg();
-  const url=normalizeFbUrl(c);
-  if(!url) throw new Error('Chưa nhập Firebase Database URL');
-  const res=await fetch(url,{method:'GET'});
-  if(!res.ok) throw new Error('Firebase HTTP '+res.status+' (kiểm tra Rules hoặc URL)');
-  return await res.json();
-}
-
-async function fbPush(payload){
-  const c=ensureCloudCfg();
-  const url=normalizeFbUrl(c);
-  if(!url) throw new Error('Chưa nhập Firebase Database URL');
-  const res=await fetch(url,{
-    method:'PUT',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(payload)
-  });
-  if(!res.ok) throw new Error('Firebase HTTP '+res.status+' (kiểm tra Rules hoặc URL)');
-  return await res.json();
-}
-
-async function gsPull(){
-  const c=ensureCloudCfg();
-  const base=(c.gsUrl||'').trim();
-  if(!base) throw new Error('Chưa nhập URL Google Apps Script');
-  const sep=base.includes('?')?'&':'?';
-  const res=await fetch(`${base}${sep}action=pull&sheet=${encodeURIComponent(c.gsSheetName||'NhatKyBaiXe34')}`,{method:'GET'});
-  if(!res.ok) throw new Error('Google Sheet HTTP '+res.status);
-  const data=await res.json();
-  if(data && data.error) throw new Error(data.error);
-  return data && data.payload ? data.payload : data;
-}
-
-async function gsPush(payload){
-  const c=ensureCloudCfg();
-  const base=(c.gsUrl||'').trim();
-  if(!base) throw new Error('Chưa nhập URL Google Apps Script');
-  // Dùng text/plain để tránh preflight CORS trên Google Apps Script Web App
-  const res=await fetch(base,{
-    method:'POST',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify({action:'push',payload})
-  });
-  if(!res.ok) throw new Error('Google Sheet HTTP '+res.status);
-  let data=null;
-  try{data=await res.json();}catch(e){}
-  if(data && data.error) throw new Error(data.error);
+async function gsRequest(action,extra={}){
+  const c=ensureCloudCfg(),base=(c.gsUrl||'').trim();
+  if(!base)throw new Error('Chưa cấu hình URL Web App Google Apps Script trong Cài đặt.');
+  const url=new URL(base);url.searchParams.set('action',action);
+  Object.entries(extra).forEach(([k,v])=>url.searchParams.set(k,String(v)));
+  const res=await fetch(url.toString(),{method:'GET',cache:'no-store'});
+  if(!res.ok)throw new Error('Google Sheets HTTP '+res.status);
+  const data=await res.json();if(data&&data.error)throw new Error(data.error);
   return data;
 }
-
-async function pushCloudSilent(){
-  const c=ensureCloudCfg();
-  if(!c.onlineEnabled || cloudSyncing) return;
-  cloudSyncing=true;updateCloudBadges();
-  const payload=buildCloudPayload();
-  const errs=[];
+async function gsPull(version){
+  const data=await gsRequest('pull',{version});
+  return data&&data.payload?data.payload:data;
+}
+async function gsPush(payload){
+  const c=ensureCloudCfg(),base=(c.gsUrl||'').trim();
+  if(!base)throw new Error('Chưa nhập URL Google Apps Script');
+  const res=await fetch(base,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'push',token:c.gsAdminToken||'',payload})});
+  if(!res.ok)throw new Error('Google Sheets HTTP '+res.status);
+  const data=await res.json();if(data&&data.error)throw new Error(data.error);return data;
+}
+async function syncAllNow(mode='push'){
+  if(!AUTH_USER||AUTH_USER.role!=='admin'){toast('Chỉ Admin mới được đẩy dữ liệu.');return;}
+  if(mode!=='push'){toast('Đã tắt chức năng đồng bộ hai chiều.');return;}
+  const c=ensureCloudCfg();if(!c.gsUrl.trim()){toast('Vui lòng cấu hình URL Google Apps Script.');setTab('settings');return;}
+  if(!String(c.gsAdminToken||'').trim()){toast('Bạn đã đăng nhập Admin, nhưng chưa nhập Mã bảo vệ kết nối Google Sheets. Hãy vào Cài đặt.');setTab('settings');setTimeout(()=>$('#cl_gsAdminToken')?.focus(),150);return;}
+  if(!navigator.onLine){toast('Mất Internet — dữ liệu vẫn được lưu Offline trên thiết bị.');return;}
+  if(cloudSyncing)return;
+  cloudSyncing=true;updateCloudBadges();toast('Đang đẩy dữ liệu lên Google Sheets...');
   try{
-    if(c.fbEnabled && c.fbDbUrl.trim()){
-      try{await fbPush(payload);}catch(e){errs.push('Firebase: '+e.message);}
-    }
-    if(c.gsEnabled && c.gsUrl.trim()){
-      try{await gsPush(payload);}catch(e){errs.push('Sheet: '+e.message);}
-    }
-    c.lastSync=timeNow()+' '+fmt(todayISO());
-    c.lastSyncStatus=errs.length ? 'Lỗi: '+errs.join(' | ') : 'Đã đẩy lên Cloud OK';
+    const result=await gsPush(buildCloudPayload());
+    c.gsLastVersion=result.version||'';c.lastSync=timeNow()+' '+fmt(todayISO());
+    c.lastSyncStatus='Đã đẩy thành công · '+(result.chunkCount||0)+' phần dữ liệu';
     try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}
-  }finally{
-    cloudSyncing=false;updateCloudBadges();
-    if(TAB==='settings') renderSettings();
+    toast('Đã đẩy dữ liệu lên Google Sheets thành công.');
+  }catch(e){
+    const msg=String(e&&e.message||e);
+    c.lastSyncStatus='Lỗi đẩy dữ liệu: '+msg;
+    if(/mã Admin không hợp lệ|mã admin không hợp lệ|ADMIN_TOKEN/i.test(msg)){
+      toast('Mã bảo vệ Google Sheets không khớp. Mã này khác mật khẩu đăng nhập Admin. Hãy kiểm tra Cài đặt và Script Properties.');
+      setTab('settings');setTimeout(()=>$('#cl_gsAdminToken')?.focus(),150);
+    }else toast('Đẩy dữ liệu thất bại: '+msg);
   }
+  finally{cloudSyncing=false;updateCloudBadges();if(TAB==='settings')renderSettings();}
+}
+const VIEWER_CACHE_LS='erp_bai_xe_34_viewer_snapshot_v1';
+let viewerVerified=false;
+let viewerLastCheckedAt=0;
+async function viewerCheckData(){
+  if(cloudSyncing)return;
+  const btn=$('#viewerCheckBtn'),status=$('#viewerGateStatus');
+  if(!navigator.onLine){status.textContent='Không có Internet. Không thể xác nhận dữ liệu mới nhất; hãy kết nối mạng rồi thử lại.';return;}
+  cloudSyncing=true;if(btn){btn.disabled=true;btn.textContent='Đang kiểm tra...';}status.textContent='Đang kiểm tra phiên bản dữ liệu trên Google Sheets...';
+  try{
+    const meta=await gsRequest('check');
+    if(!meta||!meta.version)throw new Error('Google Sheets chưa có bản dữ liệu được Admin đẩy lên.');
+    const c=ensureCloudCfg();
+    let cached=null;try{cached=JSON.parse(localStorage.getItem(VIEWER_CACHE_LS)||'null');}catch(e){}
+    if(!cached||cached.version!==meta.version||!cached.payload){
+      status.textContent='Phát hiện phiên bản mới hoặc chưa có bản lưu Viewer. Đang tải dữ liệu...';
+      const remote=await gsPull(meta.version);
+      if(!remote||!remote.vehicles||!remote.visits)throw new Error('Dữ liệu tải về không hợp lệ.');
+      cached={version:meta.version,payload:remote};
+      try{localStorage.setItem(VIEWER_CACHE_LS,JSON.stringify(cached));}catch(e){}
+      status.textContent='Đã tải dữ liệu mới nhất · '+new Date(Number(meta.updatedAt)||Date.now()).toLocaleString('vi-VN');
+    }else{
+      status.textContent='Phiên bản trên thiết bị trùng với Google Sheets. Đang mở bản dữ liệu đã xác nhận...';
+    }
+    if(!applyRemoteSnapshot(cached.payload,false))throw new Error('Không thể áp dụng dữ liệu Viewer đã tải.');
+    c.gsLastVersion=meta.version;
+    viewerLastCheckedAt=Date.now();
+    viewerVerified=true;
+    setTimeout(()=>{$('#viewerGate').classList.add('hidden');setTab('hist');toast('Đã xác nhận dữ liệu mới nhất.');},450);
+  }catch(e){status.textContent='Không thể kiểm tra dữ liệu: '+e.message;viewerVerified=false;}
+  finally{cloudSyncing=false;if(btn){btn.disabled=false;btn.textContent='🔄 Kiểm tra lại dữ liệu';}updateCloudBadges();}
 }
 
-async function syncAllNow(mode='both'){
-  const c=ensureCloudCfg();
-  const useFb=c.fbEnabled && c.fbDbUrl.trim();
-  const useGs=c.gsEnabled && c.gsUrl.trim();
-  if(!useFb && !useGs){
-    toast('Chưa bật hoặc chưa nhập link Google Sheet / Firebase trong Cài đặt');
-    setTab('settings');
-    return;
-  }
-  if(!navigator.onLine){
-    toast('Thiết bị đang mất mạng — dữ liệu vẫn an toàn ở bộ nhớ Offline');
-    return;
-  }
-  if(cloudSyncing) return;
-  cloudSyncing=true;updateCloudBadges();
-  toast('Đang đồng bộ dữ liệu...');
-  const logs=[];
+// Viewer đã vào màn hình tra cứu có thể chủ động làm mới ngay tại đây.
+// Chỉ tải JSON khi phiên bản trên Google Sheets thay đổi hoặc thiết bị chưa có cache hợp lệ.
+async function viewerRefreshData(){
+  if(!AUTH_USER||AUTH_USER.role!=='viewer'||!viewerVerified){toast('Viewer cần xác nhận dữ liệu trước khi làm mới.');return;}
+  if(cloudSyncing)return;
+  if(!navigator.onLine){toast('Không có Internet. Dữ liệu đang hiển thị vẫn được giữ nguyên; hãy kết nối mạng rồi thử lại.');return;}
+  const btn=$('#viewerRefreshBtn'),label=$('#viewerRefreshStatus');
+  cloudSyncing=true;
+  if(btn){btn.disabled=true;btn.textContent='⏳ Đang làm mới...';}
+  if(label)label.textContent='Đang kiểm tra phiên bản dữ liệu trên Google Sheets...';
+  updateCloudBadges();
   try{
-    if(mode==='pull' || mode==='both'){
-      let remote=null;
-      if(useFb){
-        try{
-          const r=await fbPull();
-          if(r && r.visits) remote=r;
-        }catch(e){logs.push('Tải Firebase lỗi: '+e.message);}
-      }
-      if(!remote && useGs){
-        try{
-          const r=await gsPull();
-          if(r && r.visits) remote=r;
-        }catch(e){logs.push('Tải Sheet lỗi: '+e.message);}
-      }
-      if(mode==='pull'){
-        if(remote){
-          applyRemoteSnapshot(remote);
-          logs.push('Đã tải dữ liệu từ Cloud về máy');
-        }else if(!logs.length){
-          logs.push('Trên Cloud chưa có dữ liệu');
-        }
-      }else if(mode==='both' && remote && (remote.updatedAt||0) > (S.updatedAt||0) && S.visits.length===0){
-        applyRemoteSnapshot(remote);
-        logs.push('Đã nhận dữ liệu mới từ Cloud');
-      }
+    const meta=await gsRequest('check');
+    if(!meta||!meta.version)throw new Error('Google Sheets chưa có bản dữ liệu được Admin đẩy lên.');
+    let cached=null;
+    try{cached=JSON.parse(localStorage.getItem(VIEWER_CACHE_LS)||'null');}catch(e){}
+    const changed=!cached||cached.version!==meta.version||!cached.payload;
+    if(changed){
+      if(label)label.textContent='Có dữ liệu mới. Đang tải bản cập nhật...';
+      const remote=await gsPull(meta.version);
+      if(!remote||!remote.vehicles||!remote.visits)throw new Error('Dữ liệu tải về không hợp lệ.');
+      cached={version:meta.version,payload:remote};
+      try{localStorage.setItem(VIEWER_CACHE_LS,JSON.stringify(cached));}catch(e){}
     }
-
-    if(mode==='push' || mode==='both'){
-      const payload=buildCloudPayload();
-      if(useFb){
-        try{await fbPush(payload);logs.push('Firebase OK');}catch(e){logs.push('Firebase lỗi: '+e.message);}
-      }
-      if(useGs){
-        try{await gsPush(payload);logs.push('Google Sheet OK');}catch(e){logs.push('Sheet lỗi: '+e.message);}
-      }
-    }
-
-    c.lastSync=timeNow()+' '+fmt(todayISO());
-    c.lastSyncStatus=logs.join(' · ')||'Hoàn tất';
-    try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}
-    refresh();
-    toast(c.lastSyncStatus);
+    if(!applyRemoteSnapshot(cached.payload,false))throw new Error('Không thể áp dụng dữ liệu mới.');
+    ensureCloudCfg().gsLastVersion=meta.version;
+    viewerLastCheckedAt=Date.now();
+    viewerVerified=true;
+    if(TAB==='hist')renderHist();
+    const msg=changed?'Đã cập nhật dữ liệu mới nhất.':'Dữ liệu đã mới nhất, không cần tải lại.';
+    const status=$('#viewerRefreshStatus');
+    if(status)status.textContent=msg+' · '+new Date(viewerLastCheckedAt).toLocaleTimeString('vi-VN');
+    toast(msg);
+  }catch(e){
+    const status=$('#viewerRefreshStatus');
+    if(status)status.textContent='Làm mới thất bại: '+e.message;
+    toast('Không thể làm mới dữ liệu: '+e.message);
   }finally{
-    cloudSyncing=false;updateCloudBadges();
-    if(TAB==='settings') renderSettings();
+    cloudSyncing=false;
+    const b=$('#viewerRefreshBtn');if(b){b.disabled=false;b.textContent='🔄 Làm mới dữ liệu';}
+    updateCloudBadges();
   }
 }
 
 function showGasCodeModal(){
-  const code=`// Dán mã này vào Tiện ích mở rộng > Apps Script trong Google Sheet của bạn
-// Sau đó chọn Triển khai > Triển khai mới > Ứng dụng web (Ai cũng có quyền truy cập)
+  const code=`// Google Apps Script cho Bãi Xe 34
+// Lưu snapshot JSON thành nhiều phần <= 40.000 ký tự/phần để tránh giới hạn 50.000 ký tự/ô.
+// 1) Đổi chuỗi bí mật bên dưới, chạy setupAdminToken() đúng 1 lần.
+// 2) Nhập cùng chuỗi vào ô Mã bảo vệ Admin trong Cài đặt của app.
+// 3) Triển khai > Ứng dụng web > Execute as: Me > Who has access: Anyone.
+
+function setupAdminToken() {
+  PropertiesService.getScriptProperties().setProperty('ADMIN_TOKEN', 'THAY_BANG_CHUOI_BI_MAT_DAI_IT_NHAT_32_KY_TU');
+}
+
+const DATA_SHEET = '_ERP_JSON';
+const META_SHEET = '_ERP_META';
+const CHUNK_SIZE = 40000;
 
 function doGet(e) {
   try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var meta = ss.getSheetByName('_ERP_JSON');
-    if (!meta) return jsonOut({ ok: true, payload: null });
-    var raw = meta.getRange('A1').getValue();
-    return jsonOut({ ok: true, payload: raw ? JSON.parse(raw) : null });
-  } catch (err) {
-    return jsonOut({ error: err.message });
-  }
+    const action = (e && e.parameter && e.parameter.action) || 'check';
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const metaSh = ss.getSheetByName(META_SHEET);
+    if (action === 'check') {
+      if (!metaSh || metaSh.getLastRow() < 2) return jsonOut({ok:true, version:'', message:'Chưa có dữ liệu'});
+      const m = metaSh.getRange(2,1,1,4).getValues()[0];
+      return jsonOut({ok:true, version:String(m[0]||''), updatedAt:Number(m[1]||0), chunkCount:Number(m[2]||0), recordCount:Number(m[3]||0)});
+    }
+    if (action === 'pull') {
+      const version = String((e.parameter && e.parameter.version) || '');
+      if (!version) throw new Error('Thiếu version cần tải');
+      const sh = ss.getSheetByName(DATA_SHEET);
+      if (!sh || sh.getLastRow() < 2) throw new Error('Chưa có dữ liệu');
+      const values = sh.getRange(2,1,sh.getLastRow()-1,3).getValues();
+      const parts = values.filter(r => String(r[0]) === version).sort((a,b)=>Number(a[1])-Number(b[1]));
+      if (!parts.length) throw new Error('Không tìm thấy phiên bản dữ liệu yêu cầu');
+      const raw = parts.map(r=>String(r[2]||'')).join('');
+      return jsonOut({ok:true, version:version, payload:JSON.parse(raw)});
+    }
+    throw new Error('Action không hợp lệ');
+  } catch (err) { return jsonOut({error:err.message}); }
 }
 
 function doPost(e) {
+  const lock = LockService.getScriptLock();
   try {
-    var body = JSON.parse(e.postData.contents);
-    var p = body.payload;
-    if (!p) return jsonOut({ error: 'Thiếu payload' });
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    lock.waitLock(30000);
+    const body = JSON.parse(e.postData.contents || '{}');
+    if (body.action !== 'push' || !body.payload) throw new Error('Yêu cầu đẩy dữ liệu không hợp lệ');
+    const expected = PropertiesService.getScriptProperties().getProperty('ADMIN_TOKEN');
+    if (!expected || !body.token || body.token !== expected) throw new Error('Không có quyền đẩy dữ liệu: mã Admin không hợp lệ');
+    const p = body.payload;
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sh = ss.getSheetByName(DATA_SHEET) || ss.insertSheet(DATA_SHEET);
+    const meta = ss.getSheetByName(META_SHEET) || ss.insertSheet(META_SHEET);
+    if (sh.getLastRow() === 0) sh.getRange(1,1,1,3).setValues([['version','chunk_index','json_chunk']]);
+    if (meta.getLastRow() === 0) meta.getRange(1,1,1,4).setValues([['version','updated_at_ms','chunk_count','record_count']]);
 
-    // 1. Lưu bản sao JSON đầy đủ để đồng bộ 2 chiều giữa các thiết bị
-    var meta = ss.getSheetByName('_ERP_JSON') || ss.insertSheet('_ERP_JSON');
-    meta.clear();
-    meta.getRange('A1').setValue(JSON.stringify(p));
+    const raw = JSON.stringify(p);
+    const chunks = [];
+    for (let i=0; i<raw.length;) {
+      let end = Math.min(i + CHUNK_SIZE, raw.length);
+      // Không cắt đôi cặp surrogate Unicode
+      const last = raw.charCodeAt(end-1);
+      if (last >= 0xD800 && last <= 0xDBFF) end--;
+      chunks.push(raw.slice(i,end)); i=end;
+    }
+    const version = String(Date.now()) + '-' + Utilities.getUuid().slice(0,8);
+    const rows = chunks.map((chunk,i)=>[version,i,chunk]);
+    const writeAt = sh.getLastRow()+1;
+    sh.getRange(writeAt,1,rows.length,3).setValues(rows);
 
-    // 2. Ghi bảng dễ đọc ra Sheet chính
-    var shName = p.sheetName || 'NhatKyBaiXe34';
-    var sh = ss.getSheetByName(shName) || ss.insertSheet(shName);
-    sh.clear();
-    var hdr = ['ID','Biển số/VIN','Biển số','VIN','Dòng xe','Màu sắc','Ngày nhập','Vị trí','Người gửi','Tình trạng vào','Ghi chú nhập','Trạng thái','Ngày xuất','Tình trạng ra','Người nhận','Ghi chú xuất'];
-    var rows = [hdr];
-    (p.flatRows || []).forEach(function(r) {
-      rows.push([r.id, r.key, r.plate, r.vin, r.model, r.color, r.inDate, r.posLabel, r.party, r.statusIn, r.noteIn, r.done ? 'Đã xuất' : 'Trong bãi', r.outDate, r.statusOut, r.receiver, r.noteOut]);
-    });
-    sh.getRange(1, 1, rows.length, hdr.length).setValues(rows);
-    return jsonOut({ ok: true, count: rows.length - 1 });
-  } catch (err) {
-    return jsonOut({ error: err.message });
-  }
+    // Công bố phiên bản sau khi toàn bộ các phần dữ liệu đã ghi xong.
+    const updatedAt = Date.now();
+    meta.getRange(2,1,1,4).setValues([[version,updatedAt,chunks.length,(p.flatRows||[]).length]]);
+
+    // Bảng nhật ký dễ đọc, không lưu toàn bộ JSON vào một ô.
+    const name = String(p.sheetName || 'NhatKyBaiXe34').slice(0,90);
+    const log = ss.getSheetByName(name) || ss.insertSheet(name);
+    const headers = ['ID','Biển số/VIN','Biển số','VIN','Dòng xe','Màu sắc','Ngày nhập','Vị trí','Người gửi','Tình trạng vào','Ghi chú nhập','Trạng thái','Ngày xuất','Tình trạng ra','Người nhận','Ghi chú xuất'];
+    const safeCell = v => { const t = (v===null || v===undefined) ? '' : String(v); return t.length>45000 ? t.slice(0,44980)+'… [đã rút gọn ở bảng xem; bản JSON đầy đủ vẫn được lưu]' : v; };
+    const dataRows = (p.flatRows || []).map(r=>[r.id,r.key,r.plate,r.vin,r.model,r.color,r.inDate,r.posLabel,r.party,r.statusIn,safeCell(r.noteIn),r.done?'Đã xuất':'Trong bãi',r.outDate,r.statusOut,r.receiver,safeCell(r.noteOut)]);
+    log.clearContents();
+    log.getRange(1,1,1,headers.length).setValues([headers]);
+    if (dataRows.length) log.getRange(2,1,dataRows.length,headers.length).setValues(dataRows);
+
+    // Giữ phiên bản hiện tại và phiên bản ngay trước để tránh race khi Viewer đang tải.
+    const all = sh.getLastRow()>1 ? sh.getRange(2,1,sh.getLastRow()-1,3).getValues() : [];
+    const versions = [...new Set(all.map(r=>String(r[0])))].filter(Boolean);
+    const keep = new Set([version]);
+    if (versions.length>1) keep.add(versions[versions.length-2]);
+    const retained = all.filter(r=>keep.has(String(r[0])));
+    sh.clearContents();
+    sh.getRange(1,1,1,3).setValues([['version','chunk_index','json_chunk']]);
+    if (retained.length) sh.getRange(2,1,retained.length,3).setValues(retained);
+    return jsonOut({ok:true,version:version,updatedAt:updatedAt,chunkCount:chunks.length,recordCount:dataRows.length});
+  } catch (err) { return jsonOut({error:err.message}); }
+  finally { try { lock.releaseLock(); } catch (_) {} }
 }
 
 function jsonOut(obj) {
@@ -809,7 +739,7 @@ function jsonOut(obj) {
       <h3 class="text-lg font-bold">📋 Mã Google Apps Script kết nối Sheet</h3>
       <button onclick="closeModal()" class="text-xl">✕</button>
     </div>
-    <p class="text-xs text-slate-600 mb-2">1. Mở Google Sheet → <b>Tiện ích mở rộng</b> → <b>Apps Script</b>.<br>2. Dán toàn bộ đoạn mã dưới đây → bấm <b>Triển khai (Deploy)</b> → <b>Ứng dụng web</b> (Quyền truy cập: <i>Bất kỳ ai</i>) → dán URL Web App vào ô cấu hình.</p>
+    <p class="text-xs text-slate-600 mb-2">1. Mở Google Sheet → <b>Tiện ích mở rộng → Apps Script</b>, dán toàn bộ mã.<br>2. Thay chuỗi bí mật mẫu trong <b>setupAdminToken()</b> bằng chuỗi ngẫu nhiên dài ít nhất 32 ký tự, chọn hàm <b>setupAdminToken</b> và chạy 1 lần để cấp quyền.<br>3. Triển khai → <b>Ứng dụng web</b> (Thực thi với tư cách: Tôi; Ai có quyền truy cập: Bất kỳ ai).<br>4. Dán URL Web App vào app và nhập cùng chuỗi bí mật trong ô Mã bảo vệ Admin.</p>
     <textarea id="gasCodeBox" rows="12" class="inp font-mono text-xs bg-slate-50" readonly>${esc(code)}</textarea>
     <div class="flex gap-2 mt-3">
       <button class="btn btn-primary" onclick="navigator.clipboard.writeText($('#gasCodeBox').value);toast('Đã sao chép mã Apps Script')">📋 Sao chép mã</button>
@@ -832,12 +762,12 @@ function toggleSidebar(o){$('#sidebar').classList.toggle('open',o);$('#overlay')
 function canAccessTab(t){
   if(!AUTH_USER) return false;
   if(AUTH_USER.role==='admin') return true;
-  return ['chat','hist'].includes(t);
+  return t==='hist' && viewerVerified;
 }
 function setTab(t){
   if(!canAccessTab(t)){
-    toast('Tài khoản Người xem chỉ được phép dùng Chat (ERP) và Lịch sử giao dịch');
-    t='chat';
+    toast('Viewer cần bấm Kiểm tra dữ liệu trước và chỉ được xem Lịch sử giao dịch.');
+    t=AUTH_USER&&AUTH_USER.role==='viewer'?'hist':'chat';
   }
   TAB=t;
   ['chat','dash','yard','hist','report','settings'].forEach(x=>$('#tab-'+x).classList.toggle('hidden',x!==t));
@@ -1163,12 +1093,11 @@ function handle(raw){
   const n=norm(raw);let m;
   if(!n)return;
   if(/^(dong bo|sync|day du lieu|tai du lieu)/.test(n)){
-    if(/tai/.test(n)){botSay('🔄 Đang tải dữ liệu mới nhất từ Cloud về máy...');syncAllNow('pull');}
-    else{botSay('🔄 Đang đồng bộ dữ liệu Offline lên Google Sheet / Firebase...');syncAllNow('both');}
+    if(/tai/.test(n)){botSay('ℹ️ Bản Viewer được tải bằng nút Kiểm tra dữ liệu. Admin không tải ngược từ Sheet trong quy trình này.');}
+    else{botSay('🔄 Đang đẩy dữ liệu Offline lên Google Sheets...');syncAllNow('push');}
     return;
   }
-  if(/^(bat online|che do online|online on)/.test(n)){toggleCloudMode(true);botSay('🟢 Đã <b>BẬT</b> chế độ đồng bộ Online (vẫn lưu song song Offline trên máy).');return;}
-  if(/^(tat online|che do offline|offline on)/.test(n)){toggleCloudMode(false);botSay('🔌 Đã <b>TẮT</b> chế độ Online — hệ thống hoạt động 100% Offline trên máy.');return;}
+  if(/^(bat online|che do online|online on|tat online|che do offline|offline on)/.test(n)){botSay('ℹ️ Hệ thống luôn lưu Offline. Chỉ Admin chủ động đẩy dữ liệu lên Google Sheets bằng thao tác Đẩy dữ liệu.');return;}
   if((m=n.match(/ton\s*(?:tren|qua|>)?\s*(\d+)\s*ngay/))){agedCmd(parseInt(m[1]));return;}
   if(/(chua co vi tri|khong co vi tri|thieu vi tri)/.test(n)){noPosCmd();return;}
   if(/^(bao cao|thong ke|tong quan|bao nhieu xe|tong so xe)/.test(n)){reportCmd();return;}
@@ -1628,7 +1557,10 @@ function renderHist(){
     </select>
     <input type="date" id="hf" class="inp" value="${HF.from}" title="Từ ngày"><input type="date" id="hto" class="inp" value="${HF.to}" title="Đến ngày">
    </div>
-   <div class="text-sm text-slate-500 mb-2">Tổng <b>${records.length}</b> hồ sơ xe${records.length>400?' (hiển thị 400 mới nhất)':''} · <span class="text-xs text-vf font-medium">Mỗi xe 1 hồ sơ — chạm vào hàng bất kỳ để xem chi tiết & thao tác</span></div>
+   <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+     <div class="text-sm text-slate-500">Tổng <b>${records.length}</b> hồ sơ xe${records.length>400?' (hiển thị 400 mới nhất)':''} · <span class="text-xs text-vf font-medium">Mỗi xe 1 hồ sơ — chạm vào hàng bất kỳ để xem chi tiết</span></div>
+     ${isViewer?`<div class="flex flex-wrap items-center gap-2"><span id="viewerRefreshStatus" class="text-[11px] text-slate-500">${viewerLastCheckedAt?'Kiểm tra lúc '+new Date(viewerLastCheckedAt).toLocaleTimeString('vi-VN'):'Dữ liệu đã xác nhận'}</span><button id="viewerRefreshBtn" type="button" class="btn btn-sm btn-primary" onclick="viewerRefreshData()">🔄 Làm mới dữ liệu</button></div>`:''}
+   </div>
    <div class="overflow-auto" style="max-height:calc(100dvh - 260px)"><table class="t" style="min-width:940px"><thead><tr><th>#</th><th>Biển số / VIN</th><th>Dòng xe</th><th>Màu</th><th>Cập nhật cuối</th><th>Vị trí / Tình trạng cuối</th><th>Người gửi / nhận</th><th>Số lượt</th><th>Trạng thái cuối</th><th></th></tr></thead><tbody>
    ${shown.map((r,i)=>{
      const v=r.last, vv=r.veh;
@@ -1848,67 +1780,20 @@ function renderSettings(){
     <div class="text-xs text-slate-500 mt-3">Tổng: ${Object.keys(S.vehicles).length} xe · ${S.visits.length} lượt lưu bãi · ${active().length} xe đang trong bãi.</div></div>
   </div>
 
-  <!-- KẾT NỐI ONLINE: GOOGLE SHEET & FIREBASE CONSOLE -->
-  ${(()=>{
-    const c=ensureCloudCfg();
-    return `<div class="card p-4 mt-4 border-2 ${c.onlineEnabled?'border-blue-300 bg-blue-50/20':'border-slate-200'}">
-      <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
-        <div>
-          <div class="font-bold text-base flex items-center gap-2">☁️ Kết nối Online (Google Sheet & Firebase Console)
-            <span class="badge ${c.onlineEnabled?'bg-green-100 text-green-700':'bg-slate-200 text-slate-700'}">${c.onlineEnabled?'ĐANG BẬT ONLINE':'CHỈ OFFLINE'}</span>
-          </div>
-          <div class="text-xs text-slate-500 mt-0.5">Mặc định luôn lưu an toàn trên máy (Offline). Bật Online khi cần đồng bộ nhiều máy hoặc sao lưu đám mây.</div>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <button type="button" class="btn ${c.onlineEnabled?'btn-red':'btn-primary'}" data-act="toggleCloud">${c.onlineEnabled?'🔌 Tắt Online (về Offline)':'🟢 Bật chế độ Online'}</button>
-          <button type="button" class="btn btn-primary" data-act="syncPush">⬆️ Đẩy lên Cloud</button>
-          <button type="button" class="btn" data-act="syncPull">⬇️ Tải từ Cloud về</button>
-        </div>
-      </div>
-
-      <div class="flex flex-wrap items-center justify-between gap-2 py-2.5 px-3 bg-slate-50 rounded-xl mt-3 text-xs">
-        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer">
-          <input type="checkbox" id="cl_autoSync" ${c.autoSync?'checked':''}> Tự động đẩy dữ liệu lên Cloud mỗi khi nhập / xuất / sửa xe (khi Online đang BẬT)
-        </label>
-        <div class="text-slate-500">Trạng thái: <b>${esc(c.lastSyncStatus||'Chưa đồng bộ')}</b> ${c.lastSync?'('+esc(c.lastSync)+')':''}</div>
-      </div>
-
-      <div class="grid gap-4 lg:grid-cols-2 mt-3">
-        <!-- Google Sheet -->
-        <div class="rounded-xl border border-slate-200 bg-white p-3.5 space-y-2.5">
-          <div class="flex items-center justify-between">
-            <label class="font-bold text-sm flex items-center gap-2 cursor-pointer text-green-800">
-              <input type="checkbox" id="cl_gsEnabled" ${c.gsEnabled?'checked':''}> 📊 Liên kết Google Sheet (Apps Script)
-            </label>
-            <button type="button" class="btn btn-sm" onclick="showGasCodeModal()">Lấy mã Script</button>
-          </div>
-          <div>${lab('URL Web App Google Apps Script')}<input id="cl_gsUrl" class="inp text-xs" placeholder="https://script.google.com/macros/s/.../exec" value="${esc(c.gsUrl)}"></div>
-          <div>${lab('Tên Sheet ghi nhật ký')}<input id="cl_gsSheetName" class="inp text-xs" placeholder="NhatKyBaiXe34" value="${esc(c.gsSheetName)}"></div>
-        </div>
-
-        <!-- Firebase Console -->
-        <div class="rounded-xl border border-slate-200 bg-white p-3.5 space-y-2.5">
-          <div class="flex items-center justify-between">
-            <label class="font-bold text-sm flex items-center gap-2 cursor-pointer text-amber-800">
-              <input type="checkbox" id="cl_fbEnabled" ${c.fbEnabled?'checked':''}> 🔥 Liên kết Firebase Console (Realtime DB)
-            </label>
-            <span class="text-[11px] text-slate-400">REST API</span>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>${lab('Project ID')}<input id="cl_fbProjectId" class="inp text-xs" placeholder="new-erp-608f6" value="${esc(c.fbProjectId)}"></div>
-            <div>${lab('Node dữ liệu')}<input id="cl_fbNode" class="inp text-xs" placeholder="baixe34_erp" value="${esc(c.fbNode)}"></div>
-          </div>
-          <div>${lab('Database URL (Firebase Console)')}<input id="cl_fbDbUrl" class="inp text-xs" placeholder="https://new-erp-608f6-default-rtdb.firebaseio.com" value="${esc(c.fbDbUrl)}"></div>
-          <div>${lab('Database Secret / Auth Token (nếu có)')}<input id="cl_fbAuthToken" class="inp text-xs" placeholder="Để trống nếu Rules đang mở" value="${esc(c.fbAuthToken)}"></div>
-        </div>
-      </div>
-
-      <div class="flex flex-wrap gap-2 mt-3">
-        <button type="button" class="btn btn-primary" data-act="saveCloudCfg">💾 Lưu cấu hình kết nối</button>
-        <button type="button" class="btn" data-act="syncBoth">🔄 Đồng bộ 2 chiều ngay</button>
-      </div>
-    </div>`;
-  })()}
+  <!-- GOOGLE SHEETS: CHỈ ĐẨY KHI ADMIN CHỦ ĐỘNG -->
+  ${(()=>{const c=ensureCloudCfg();return `<div class="card p-4 mt-4 border-2 border-green-200">
+    <div class="font-bold text-base">📊 Google Sheets · Kho dữ liệu trung tâm</div>
+    <p class="text-xs text-slate-500 mt-1">Dữ liệu vẫn lưu Offline trên thiết bị. Chỉ khi Admin bấm Đẩy dữ liệu, bản sao mới được tải lên Google Sheets. Viewer phải kiểm tra dữ liệu trước khi xem lịch sử.</p>
+    <div class="mt-3">${lab('URL Web App Google Apps Script')}<input id="cl_gsUrl" class="inp text-xs" placeholder="https://script.google.com/macros/s/.../exec" value="${esc(c.gsUrl)}"></div>
+    <div class="mt-2">${lab('Tên Sheet nhật ký dễ đọc')}<input id="cl_gsSheetName" class="inp text-xs" value="${esc(c.gsSheetName||'NhatKyBaiXe34')}"></div>
+    <div class="mt-2">${lab('Mã bảo vệ kết nối Google Sheets (KHÁC mật khẩu đăng nhập Admin)')}<input id="cl_gsAdminToken" type="password" class="inp text-xs" autocomplete="new-password" value="${esc(c.gsAdminToken||'')}" placeholder="Nhập đúng chuỗi ADMIN_TOKEN đã cài trong Apps Script"><p class="text-[11px] text-amber-700 mt-1">Đây là mã bí mật dùng để cho phép Apps Script nhận dữ liệu. Không phải email/mật khẩu tài khoản Admin. Phải trùng chính xác với chuỗi trong Script Properties.</p></div>
+    <div class="flex flex-wrap gap-2 mt-3">
+      <button type="button" class="btn btn-primary" data-act="saveCloudCfg">💾 Lưu cấu hình</button>
+      <button type="button" class="btn" onclick="showGasCodeModal()">📋 Lấy mã Apps Script mới</button>
+      <button type="button" class="btn btn-primary" data-act="syncPush">⬆️ Đẩy dữ liệu lên Google Sheets</button>
+    </div>
+    <div class="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-600">Trạng thái: <b>${esc(c.lastSyncStatus||'Chưa đồng bộ')}</b>${c.lastSync?' · '+esc(c.lastSync):''}<br>Phiên bản đã công bố trên thiết bị này: ${esc(c.gsLastVersion||'Chưa có')}</div>
+  </div>`;})()}
   <datalist id="colorList">${['Trắng','Đen','Xanh','Đỏ','Xám','Bạc','Cam','Vàng'].map(c=>`<option value="${c}">`).join('')}</datalist>`;
 }
 const colorDL=document.createElement('datalist');colorDL.id='colorList';colorDL.innerHTML=['Trắng','Đen','Xanh','Đỏ','Xám','Bạc','Cam','Vàng'].map(c=>`<option value="${c}">`).join('');
@@ -1942,7 +1827,7 @@ $('#settingsBox').addEventListener('click',e=>{
     const valid=new Set(allPositions());const bad=active().filter(v=>v.pos&&!valid.has(v.pos)).length;
     save();toast(bad?`Đã áp dụng. ${bad} xe đang ở vị trí ngoài sơ đồ mới — hãy sửa vị trí.`:'Đã áp dụng sơ đồ mới');
   }
-  else if(a==='expJson'){saveOrShareBlob(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}),`bai-xe-34_${todayISO()}.json`,'Sao lưu JSON Bãi Xe 34');}
+  else if(a==='expJson'){const backup=JSON.parse(JSON.stringify(S));if(backup.settings&&backup.settings.cloud)delete backup.settings.cloud.gsAdminToken;saveOrShareBlob(new Blob([JSON.stringify(backup,null,1)],{type:'application/json'}),`bai-xe-34_${todayISO()}.json`,'Sao lưu JSON Bãi Xe 34');}
   else if(a==='impJson')$('#fileJson').click();
   else if(a==='expXlsx')exportXlsx();
   else if(a==='impXlsx')$('#fileXlsx').click();
@@ -1950,41 +1835,13 @@ $('#settingsBox').addEventListener('click',e=>{
   else if(a==='clear'){if(confirm('Xóa TOÀN BỘ xe và giao dịch? Danh mục cài đặt được giữ lại.')){S.vehicles={};S.visits=[];S.notes={};save();toast('Đã xóa dữ liệu');}}
   else if(a==='saveCloudCfg'){
     const c=ensureCloudCfg();
-    c.autoSync=$('#cl_autoSync').checked;
-    c.gsEnabled=$('#cl_gsEnabled').checked;
     c.gsUrl=$('#cl_gsUrl').value.trim();
     c.gsSheetName=$('#cl_gsSheetName').value.trim()||'NhatKyBaiXe34';
-    c.fbEnabled=$('#cl_fbEnabled').checked;
-    c.fbProjectId=$('#cl_fbProjectId').value.trim();
-    c.fbNode=$('#cl_fbNode').value.trim()||'baixe34_erp';
-    let fbUrl=$('#cl_fbDbUrl').value.trim();
-    if(!fbUrl && c.fbProjectId) fbUrl=PRESET_CLOUD.fbDbUrl;
-    c.fbDbUrl=fbUrl;
-    c.fbAuthToken=$('#cl_fbAuthToken').value.trim();
-    save(true);
-    toast('Đã lưu cấu hình Google Sheet & Firebase');
-  }
-  else if(a==='toggleCloud'){
-    // Lưu trước các ô đang nhập rồi mới bật/tắt
-    const c=ensureCloudCfg();
-    if($('#cl_gsUrl')){
-      c.autoSync=$('#cl_autoSync').checked;
-      c.gsEnabled=$('#cl_gsEnabled').checked;
-      c.gsUrl=$('#cl_gsUrl').value.trim();
-      c.gsSheetName=$('#cl_gsSheetName').value.trim()||'NhatKyBaiXe34';
-      c.fbEnabled=$('#cl_fbEnabled').checked;
-      c.fbProjectId=$('#cl_fbProjectId').value.trim();
-      c.fbNode=$('#cl_fbNode').value.trim()||'baixe34_erp';
-      c.fbDbUrl=$('#cl_fbDbUrl').value.trim()||(c.fbProjectId?PRESET_CLOUD.fbDbUrl:'');
-      c.fbAuthToken=$('#cl_fbAuthToken').value.trim();
-    }
-    toggleCloudMode();
+    c.gsAdminToken=$('#cl_gsAdminToken').value.trim();
+    save(true);toast('Đã lưu cấu hình Google Sheets');
   }
   else if(a==='syncPush'){syncAllNow('push');}
-  else if(a==='syncPull'){
-    if(confirm('Tải dữ liệu từ Cloud sẽ ghi đè dữ liệu Offline hiện tại trên máy này. Tiếp tục?')) syncAllNow('pull');
-  }
-  else if(a==='syncBoth'){syncAllNow('both');}
+  else if(a==='syncPull'||a==='syncBoth'){toast('Đã tắt đồng bộ hai chiều.');}
 });
 $('#fileJson').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
@@ -2114,22 +1971,23 @@ function applyRolePermissions(){
   // Ẩn/hiện các tab theo quyền: Viewer chỉ dùng được Chat (ERP) và Lịch sử giao dịch
   document.querySelectorAll('#nav .nav-btn').forEach(btn=>{
     const t=btn.dataset.tab;
-    const allow=!isViewer || t==='chat' || t==='hist';
+    const allow=!isViewer || t==='hist';
     btn.classList.toggle('hidden', !allow);
   });
 
   document.querySelectorAll('.bn-btn[data-btab]').forEach(btn=>{
     const t=btn.dataset.btab;
-    btn.classList.toggle('hidden', isViewer && t!=='chat' && t!=='hist');
+    btn.classList.toggle('hidden', isViewer && t!=='hist');
   });
 
-  // Ẩn nút "Cấu hình" trên sidebar đối với Viewer để tránh nhảy sang tab Cài đặt
-  const cfgBtn=$('#btnSideConfig');
-  if(cfgBtn) cfgBtn.classList.toggle('hidden', isViewer);
+  // Viewer chỉ thấy lịch sử; ẩn toàn bộ điều khiển đồng bộ và cấu hình.
+  ['sidebarCloudBox','hdrCloudToggle','hdrSyncBtn','btnSideConfig'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('hidden',isViewer);});
+  const gate=$('#viewerGate');if(gate)gate.classList.toggle('hidden',!isViewer||viewerVerified);
 }
 
 function enterAppWithUser(acc){
   AUTH_USER=acc;
+  if(acc.role==='admin'){try{const saved=JSON.parse(localStorage.getItem(LS)||'null');if(saved&&saved.vehicles&&saved.visits&&saved.settings)S=saved;ensureCloudCfg();}catch(e){}}
   try{
     if(acc.role==='admin') sessionStorage.setItem(AUTH_LS, JSON.stringify({email:acc.email}));
     else sessionStorage.removeItem(AUTH_LS);
@@ -2137,11 +1995,9 @@ function enterAppWithUser(acc){
   closeAdminLogin();
   $('#appShell').classList.remove('hidden');
   applyRolePermissions();
-  if(!APP_BOOTED){
-    APP_BOOTED=true;
-    botSay(`Xin chào! Gõ <b>biển số / VIN</b> hoặc bấm <b>📷</b> để nhập hoặc xuất xe ngay.`);
-  }
-  setTab('chat');
+  if(!APP_BOOTED){APP_BOOTED=true;if(acc.role==='admin')botSay(`Xin chào! Gõ <b>biển số / VIN</b> hoặc bấm <b>📷</b> để nhập hoặc xuất xe ngay.`);}
+  if(acc.role==='viewer'){viewerVerified=false;setTab('hist');$('#viewerGate').classList.remove('hidden');$('#viewerGateStatus').textContent='Hãy bấm “Kiểm tra dữ liệu” để xác nhận phiên bản mới nhất.';}
+  else setTab('chat');
 }
 
 function logoutAuth(){
