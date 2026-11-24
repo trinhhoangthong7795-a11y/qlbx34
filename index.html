@@ -238,12 +238,16 @@ function countBy(arr,fn){const m={};arr.forEach(x=>{const k=fn(x);m[k]=(m[k]||0)
 
 /* ================== TẢI FILE / CHIA SẺ CHUẨN APK ================== */
 async function saveOrShareBlob(blob, filename, title='Bãi Xe 34'){
-  // Android: use the system "Create document" picker so the user saves a real file
-  // into Downloads or another chosen folder, instead of the app's temporary CACHE.
+  // Native Android: use the plugin shim injected by Capacitor's bridge.
+  // This standalone HTML does not bundle @capacitor/core, so cap.registerPlugin()
+  // is not guaranteed to exist here.
   const cap=window.Capacitor;
-  if(cap && typeof cap.isNativePlatform==='function' && cap.isNativePlatform() && typeof cap.registerPlugin==='function'){
+  if(cap && typeof cap.isNativePlatform==='function' && cap.isNativePlatform()){
     try{
-      const FileExport=cap.registerPlugin('FileExport');
+      const FileExport=cap.Plugins && cap.Plugins.FileExport;
+      if(!FileExport || typeof FileExport.saveFile!=='function'){
+        throw new Error('Không tìm thấy cầu nối FileExport của Android. Vui lòng cài đúng bản APK mới.');
+      }
       const base64=await new Promise((resolve,reject)=>{
         const reader=new FileReader();
         reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');
@@ -259,7 +263,7 @@ async function saveOrShareBlob(blob, filename, title='Bãi Xe 34'){
       if(!saved||!saved.uri)throw new Error('Android chưa xác nhận lưu file.');
       return true;
     }catch(e){
-      if(e && (e.name==='AbortError'||(String(e.message||'').toLowerCase().includes('cancel')||String(e.message||'').toLowerCase().includes('hủy'))))return false;
+      if(e && (e.name==='AbortError'||String(e.message||'').toLowerCase().includes('cancel')||String(e.message||'').toLowerCase().includes('hủy')))return false;
       console.error('Native file export failed:',e);
       toast('Không thể lưu file vào điện thoại: '+(e.message||e));
       return false;
