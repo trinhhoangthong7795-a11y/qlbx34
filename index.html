@@ -1964,6 +1964,7 @@ $('#fileXlsx').onchange=async e=>{
       const pos=String(pick('Mã vị trí')||'');
       visits.push({id:++seq,key,inDate:parseAnyDate(pick('Ngày nhập')),pos:/^\d+\|[^|]+\|\d+$/.test(pos)?pos:'',party:String(pick('Người gửi')||''),statusIn:String(pick('Tình trạng vào')||''),noteIn:String(pick('Ghi chú nhập')||''),done:!!(outD||stOut),outDate:outD,statusOut:stOut,receiver:String(pick('Người nhận')||''),noteOut:String(pick('Ghi chú xuất')||''),created:Date.now()});
     });
+    if(!visits.length)throw new Error('Không tìm thấy dòng xe hợp lệ trong sheet “Lượt lưu bãi”. Dữ liệu hiện tại được giữ nguyên.');
     S.vehicles=nv;S.visits=visits;S.seq=seq;
     visits.forEach(v=>{if(v.statusIn&&!S.settings.statusIn.includes(v.statusIn))S.settings.statusIn.push(v.statusIn);if(v.statusOut&&!S.settings.statusOut.includes(v.statusOut))S.settings.statusOut.push(v.statusOut);});
     Object.values(nv).forEach(v=>{if(v.model&&!S.settings.models.includes(v.model))S.settings.models.push(v.model);});
