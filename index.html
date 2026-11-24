@@ -259,7 +259,7 @@ async function saveOrShareBlob(blob, filename, title='Bãi Xe 34'){
       if(!saved||!saved.uri)throw new Error('Android chưa xác nhận lưu file.');
       return true;
     }catch(e){
-      if(e && (e.name==='AbortError'||String(e.message||'').toLowerCase().includes('cancel')))return false;
+      if(e && (e.name==='AbortError'||(String(e.message||'').toLowerCase().includes('cancel')||String(e.message||'').toLowerCase().includes('hủy'))))return false;
       console.error('Native file export failed:',e);
       toast('Không thể lưu file vào điện thoại: '+(e.message||e));
       return false;
