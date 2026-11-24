@@ -238,12 +238,12 @@ function countBy(arr,fn){const m={};arr.forEach(x=>{const k=fn(x);m[k]=(m[k]||0)
 
 /* ================== TẢI FILE / CHIA SẺ CHUẨN APK ================== */
 async function saveOrShareBlob(blob, filename, title='Bãi Xe 34'){
-  // Native Android: write to app cache and let Android's share sheet save/export the file.
+  // Android: use the system "Create document" picker so the user saves a real file
+  // into Downloads or another chosen folder, instead of the app's temporary CACHE.
   const cap=window.Capacitor;
   if(cap && typeof cap.isNativePlatform==='function' && cap.isNativePlatform() && typeof cap.registerPlugin==='function'){
     try{
-      const Filesystem=cap.registerPlugin('Filesystem');
-      const Share=cap.registerPlugin('Share');
+      const FileExport=cap.registerPlugin('FileExport');
       const base64=await new Promise((resolve,reject)=>{
         const reader=new FileReader();
         reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');
@@ -251,26 +251,21 @@ async function saveOrShareBlob(blob, filename, title='Bãi Xe 34'){
         reader.readAsDataURL(blob);
       });
       if(!base64)throw new Error('File xuất ra đang rỗng.');
-      const saved=await Filesystem.writeFile({path:filename,data:base64,directory:'CACHE',recursive:true});
-      if(!saved||!saved.uri)throw new Error('Android không tạo được file tạm.');
-      await Share.share({title,text:title,url:saved.uri,dialogTitle:title});
+      const saved=await FileExport.saveFile({
+        filename,
+        mimeType:blob.type||'application/octet-stream',
+        data:base64
+      });
+      if(!saved||!saved.uri)throw new Error('Android chưa xác nhận lưu file.');
       return true;
     }catch(e){
-      if(e && e.name==='AbortError')return false;
+      if(e && (e.name==='AbortError'||String(e.message||'').toLowerCase().includes('cancel')))return false;
       console.error('Native file export failed:',e);
-      toast('Không thể xuất file trên Android: '+(e.message||e));
+      toast('Không thể lưu file vào điện thoại: '+(e.message||e));
       return false;
     }
   }
-  if(navigator.canShare && navigator.share){
-    try{
-      const file=new File([blob], filename, {type: blob.type || 'application/octet-stream'});
-      if(navigator.canShare({files:[file]})){
-        await navigator.share({files:[file], title});
-        return true;
-      }
-    }catch(e){if(e.name==='AbortError')return false;}
-  }
+  // Browser fallback (GitHub Pages / desktop Chrome).
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=filename;
   document.body.appendChild(a);a.click();
@@ -1847,7 +1842,7 @@ $('#settingsBox').addEventListener('click',e=>{
     const valid=new Set(allPositions());const bad=active().filter(v=>v.pos&&!valid.has(v.pos)).length;
     save();toast(bad?`Đã áp dụng. ${bad} xe đang ở vị trí ngoài sơ đồ mới — hãy sửa vị trí.`:'Đã áp dụng sơ đồ mới');
   }
-  else if(a==='expJson'){const backup=JSON.parse(JSON.stringify(S));if(backup.settings&&backup.settings.cloud)delete backup.settings.cloud.gsAdminToken;saveOrShareBlob(new Blob([JSON.stringify(backup,null,1)],{type:'application/json'}),`bai-xe-34_${todayISO()}.json`,'Sao lưu JSON Bãi Xe 34');}
+  else if(a==='expJson'){const backup=JSON.parse(JSON.stringify(S));if(backup.settings&&backup.settings.cloud)delete backup.settings.cloud.gsAdminToken;saveOrShareBlob(new Blob([JSON.stringify(backup,null,1)],{type:'application/json'}),`bai-xe-34_${todayISO()}.json`,'Sao lưu JSON Bãi Xe 34').then(ok=>{if(ok)toast('Đã lưu bản sao lưu JSON vào điện thoại');});}
   else if(a==='impJson')$('#fileJson').click();
   else if(a==='expXlsx')exportXlsx();
   else if(a==='impXlsx')$('#fileXlsx').click();
