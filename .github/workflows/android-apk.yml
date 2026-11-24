@@ -92,6 +92,10 @@ jobs:
           import com.getcapacitor.PluginMethod;
           import com.getcapacitor.annotation.ActivityCallback;
           import com.getcapacitor.annotation.CapacitorPlugin;
+          import java.io.File;
+          import java.io.FileInputStream;
+          import java.io.FileOutputStream;
+          import java.io.InputStream;
           import java.io.OutputStream;
 
           @CapacitorPlugin(name = "FileExport")
@@ -107,36 +111,70 @@ jobs:
                   }
                   if (mimeType == null || mimeType.isEmpty()) mimeType = "application/octet-stream";
 
-                  Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-                  intent.addCategory(Intent.CATEGORY_OPENABLE);
-                  intent.setType(mimeType);
-                  intent.putExtra(Intent.EXTRA_TITLE, filename);
-                  startActivityForResult(call, intent, "saveFileResult");
+                  File stagedFile = null;
+                  try {
+                      // Stage the payload in app cache before opening the external picker.
+                      // Capacitor otherwise persists the full PluginCall JSON in Activity state;
+                      // large Base64 exports can exceed Android's Binder/Bundle transaction limit.
+                      byte[] bytes = Base64.decode(encoded, Base64.DEFAULT);
+                      stagedFile = File.createTempFile("qlbx-export-", ".tmp", getContext().getCacheDir());
+                      try (FileOutputStream staged = new FileOutputStream(stagedFile)) {
+                          staged.write(bytes);
+                          staged.flush();
+                      }
+
+                      // Keep only a short cache path in the saved PluginCall while the picker is open.
+                      call.getData().remove("data");
+                      call.getData().put("tempPath", stagedFile.getAbsolutePath());
+
+                      Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                      intent.addCategory(Intent.CATEGORY_OPENABLE);
+                      intent.setType(mimeType);
+                      intent.putExtra(Intent.EXTRA_TITLE, filename);
+                      startActivityForResult(call, intent, "saveFileResult");
+                  } catch (Exception e) {
+                      if (stagedFile != null) stagedFile.delete();
+                      call.reject("Không thể chuẩn bị file để lưu: " + e.getMessage(), e);
+                  }
               }
 
               @ActivityCallback
               private void saveFileResult(PluginCall call, ActivityResult result) {
                   if (call == null) return;
+                  String tempPath = call.getString("tempPath");
+                  File stagedFile = tempPath == null ? null : new File(tempPath);
                   if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null || result.getData().getData() == null) {
+                      if (stagedFile != null) stagedFile.delete();
                       call.reject("Bạn đã hủy thao tác lưu file.");
                       return;
                   }
+
                   Uri uri = result.getData().getData();
+                  long totalBytes = 0;
                   try {
-                      String encoded = call.getString("data");
-                      byte[] bytes = Base64.decode(encoded, Base64.DEFAULT);
+                      if (stagedFile == null || !stagedFile.isFile()) {
+                          throw new IllegalStateException("Không tìm thấy dữ liệu tạm để ghi file.");
+                      }
                       OutputStream output = getContext().getContentResolver().openOutputStream(uri, "w");
                       if (output == null) throw new IllegalStateException("Không mở được vị trí lưu file.");
-                      try (OutputStream stream = output) {
-                          stream.write(bytes);
+                      try (InputStream input = new FileInputStream(stagedFile);
+                           OutputStream stream = output) {
+                          byte[] buffer = new byte[64 * 1024];
+                          int count;
+                          while ((count = input.read(buffer)) != -1) {
+                              stream.write(buffer, 0, count);
+                              totalBytes += count;
+                          }
                           stream.flush();
                       }
                       JSObject ret = new JSObject();
                       ret.put("uri", uri.toString());
-                      ret.put("bytes", bytes.length);
+                      ret.put("bytes", totalBytes);
                       call.resolve(ret);
                   } catch (Exception e) {
                       call.reject("Không thể ghi file: " + e.getMessage(), e);
+                  } finally {
+                      if (stagedFile != null) stagedFile.delete();
                   }
               }
           }
