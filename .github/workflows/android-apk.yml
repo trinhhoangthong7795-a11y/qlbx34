@@ -1,0 +1,94 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "index.html"
+      - ".github/workflows/android-apk.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bai-xe-34-android-apk
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Bãi Xe 34 APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Verify source HTML
+        run: |
+          test -s index.html
+          mkdir -p www
+          cp index.html www/index.html
+
+      - name: Create Capacitor Android project
+        run: |
+          npm init -y
+          npm install --save-exact @capacitor/core@7 @capacitor/android@7
+          npm install --save-dev --save-exact @capacitor/cli@7
+          npx cap init "Bãi Xe 34" "vn.qlbx.erp" --web-dir www
+          npx cap add android
+          npx cap sync android
+
+      - name: Configure Android app label and keyboard behavior
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          manifest = Path("android/app/src/main/AndroidManifest.xml")
+          xml = manifest.read_text(encoding="utf-8")
+
+          # Keep the Android status/notification bar visible. Capacitor's
+          # default theme is not fullscreen; ensure the activity resizes
+          # when the soft keyboard opens.
+          if "android:windowSoftInputMode=" not in xml:
+              xml, count = re.subn(
+                  r"<activity\\b([^>]*)>",
+                  lambda m: '<activity' + m.group(1) +
+                            ' android:windowSoftInputMode="adjustResize">',
+                  xml,
+                  count=1
+              )
+              if count != 1:
+                  raise SystemExit("Could not locate the Android activity in AndroidManifest.xml")
+          xml = re.sub(r'android:label="[^"]*"', 'android:label="Bãi Xe 34"', xml, count=1)
+          manifest.write_text(xml, encoding="utf-8")
+          PY
+
+      - name: Build debug APK
+        run: |
+          chmod +x android/gradlew
+          cd android
+          ./gradlew --no-daemon assembleDebug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BaiXe34-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
