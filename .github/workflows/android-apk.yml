@@ -74,7 +74,7 @@ jobs:
               raise SystemExit(f"Expected exactly one MainActivity.java, found {len(main_files)}")
           main = main_files[0]
           src = main.read_text(encoding="utf-8")
-          m = re.search(r"^package\\s+([\\w.]+);", src, re.M)
+          m = re.search(r"^package\s+([\w.]+);", src, re.M)
           if not m:
               raise SystemExit("Could not determine MainActivity package")
           package = m.group(1)
