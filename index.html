@@ -238,6 +238,30 @@ function countBy(arr,fn){const m={};arr.forEach(x=>{const k=fn(x);m[k]=(m[k]||0)
 
 /* ================== TẢI FILE / CHIA SẺ CHUẨN APK ================== */
 async function saveOrShareBlob(blob, filename, title='Bãi Xe 34'){
+  // Native Android: write to app cache and let Android's share sheet save/export the file.
+  const cap=window.Capacitor;
+  if(cap && typeof cap.isNativePlatform==='function' && cap.isNativePlatform() && typeof cap.registerPlugin==='function'){
+    try{
+      const Filesystem=cap.registerPlugin('Filesystem');
+      const Share=cap.registerPlugin('Share');
+      const base64=await new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');
+        reader.onerror=()=>reject(reader.error||new Error('Không đọc được dữ liệu file'));
+        reader.readAsDataURL(blob);
+      });
+      if(!base64)throw new Error('File xuất ra đang rỗng.');
+      const saved=await Filesystem.writeFile({path:filename,data:base64,directory:'CACHE',recursive:true});
+      if(!saved||!saved.uri)throw new Error('Android không tạo được file tạm.');
+      await Share.share({title,text:title,url:saved.uri,dialogTitle:title});
+      return true;
+    }catch(e){
+      if(e && e.name==='AbortError')return false;
+      console.error('Native file export failed:',e);
+      toast('Không thể xuất file trên Android: '+(e.message||e));
+      return false;
+    }
+  }
   if(navigator.canShare && navigator.share){
     try{
       const file=new File([blob], filename, {type: blob.type || 'application/octet-stream'});
@@ -245,17 +269,12 @@ async function saveOrShareBlob(blob, filename, title='Bãi Xe 34'){
         await navigator.share({files:[file], title});
         return true;
       }
-    }catch(e){
-      if(e.name==='AbortError') return false;
-    }
+    }catch(e){if(e.name==='AbortError')return false;}
   }
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=filename;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},2000);
+  const a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},10000);
   return true;
 }
 
@@ -300,8 +319,9 @@ async function unzipXlsx(buf){
     const method=dv.getUint16(p+10,true),cs=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
     const name=new TextDecoder().decode(u.subarray(p+46,p+46+nl));p+=46+nl+el+cl;
     const st0=lo+30+dv.getUint16(lo+26,true)+dv.getUint16(lo+28,true),data=u.subarray(st0,st0+cs);
-    files[name]=async()=>{if(method===0)return data;if(typeof DecompressionStream==='undefined')throw new Error('Trình duyệt/WebView không hỗ trợ giải nén file này.');
-      return new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());};}
+    files[name]=async()=>{if(method===0)return data;if(method!==8)throw new Error('File Excel dùng kiểu nén không được hỗ trợ (ZIP method '+method+'). Hãy mở và lưu lại dưới dạng .xlsx bằng Excel.');if(typeof DecompressionStream==='undefined')throw new Error('Android System WebView quá cũ để đọc file Excel nén. Hãy cập nhật Android System WebView/Chrome rồi thử lại.');
+      try{return new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());}
+      catch(e){throw new Error('Không giải nén được file Excel. Hãy mở file bằng Excel và lưu lại dưới dạng .xlsx mới. '+(e.message||''));}};}
   return files;
 }
 async function readXlsxPure(file){
@@ -1845,8 +1865,12 @@ $('#settingsBox').addEventListener('click',e=>{
 });
 $('#fileJson').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
-  try{const d=JSON.parse(await f.text());if(!d.visits||!d.vehicles||!d.settings)throw new Error('File không đúng định dạng');
-    if(!confirm('Nhập dữ liệu sẽ thay thế toàn bộ dữ liệu hiện tại. Tiếp tục?'))return;S=d;S.notes=S.notes||{};S.seq=S.seq||Math.max(0,...S.visits.map(v=>v.id||0));save();toast('Đã nhập JSON');}catch(err){toast('Lỗi: '+err.message);}
+  try{const d=JSON.parse(await f.text());if(!d||!Array.isArray(d.visits)||!d.vehicles||typeof d.vehicles!=='object'||!d.settings)throw new Error('File JSON không đúng cấu trúc sao lưu Bãi Xe 34.');
+    if(!confirm('Nhập dữ liệu sẽ thay thế toàn bộ dữ liệu hiện tại. Tiếp tục?'))return;
+    const currentCloud=ensureCloudCfg();
+    S=d;S.notes=S.notes||{};S.seq=S.seq||Math.max(0,...S.visits.map(v=>v.id||0));
+    S.settings=S.settings||DEF_SETTINGS();S.settings.cloud=Object.assign(DEF_CLOUD(),S.settings.cloud||{}, {gsAdminToken:currentCloud.gsAdminToken||''});
+    save();toast('Đã nhập JSON');}catch(err){toast('Lỗi nhập JSON: '+err.message);}
 };
 
 /* ================== XUẤT / NHẬP EXCEL THUẦN JS (APK READY) ================== */
@@ -1878,7 +1902,17 @@ async function exportYardXlsx(){
       v.noteIn||''
     ]);
   });
-  const blob=buildXlsx([{name:'Xe trong bãi',rows,hdr:3,widths:[6,16,18,16,12,16,16,16,18,20,18,28]}]);
+  // Include the transaction sheet too, so the stock workbook can be imported again
+  // without silently losing the vehicle cycle history.
+  const allRows=[['Biển số/VIN','Biển số','VIN','Dòng xe','Màu sắc','Ngày nhập','Vị trí','Mã vị trí','Người gửi','Tình trạng vào','Ghi chú nhập','Ngày xuất','Tình trạng ra','Người nhận','Ghi chú xuất']];
+  S.visits.slice().sort((a,b)=>a.id-b.id).forEach(v=>{
+    const x=veh(v.key);
+    allRows.push([v.key,x.plate||'',x.vin||'',x.model||'',x.color||'',isValidInDate(v.inDate)?v.inDate:'0',v.pos?posLabel(v.pos):'',v.pos||'',v.party||'',v.statusIn||'',v.noteIn||'',v.outDate||'',v.statusOut||'',v.receiver||'',v.noteOut||'']);
+  });
+  const blob=buildXlsx([
+    {name:'Xe trong bãi',rows,hdr:3,widths:[6,16,18,16,12,16,16,16,18,20,18,28]},
+    {name:'Lượt lưu bãi',rows:allRows,hdr:0,widths:[16,14,14,16,12,14,18,12,18,20,24,14,20,18,24]}
+  ]);
   const ok=await saveOrShareBlob(blob,`TonBai_Xe34_${todayISO()}.xlsx`,'Danh sách tồn Bãi Xe 34');
   if(ok) toast(`Đã xuất ${act.length} xe tồn bãi ra Excel`);
 }
@@ -1917,17 +1951,18 @@ $('#fileXlsx').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
   try{
     const sheets=await readXlsxPure(f);
-    const rows=sheets['Lượt lưu bãi']||sheets[Object.keys(sheets)[0]];
-    if(!rows||!rows.length)throw new Error('Không có dòng dữ liệu hợp lệ');
+    const rows=sheets['Lượt lưu bãi'];
+    if(!rows||!rows.length)throw new Error('File Excel thiếu sheet “Lượt lưu bãi”. Hãy dùng file Xuất Excel toàn bộ dữ liệu hoặc Xuất Excel tồn bãi từ phiên bản mới.');
     if(!confirm(`Nhập ${rows.length} dòng sẽ thay thế toàn bộ xe & giao dịch hiện tại. Tiếp tục?`))return;
     const nv={},visits=[];let seq=0;
     rows.forEach(r=>{
-      const key=cleanId(r['Biển số/VIN']||r['Biển số']||r['VIN']||r['Mã nhận dạng']);if(!key)return;
-      const plate=cleanId(r['Biển số'])||(isPlate(key)?key:''),vin=cleanId(r['VIN'])||(isPlate(key)?'':key);
-      if(!nv[key])nv[key]={key,plate,vin,model:String(r['Dòng xe']||''),color:String(r['Màu sắc']||'')};
-      const outD=parseAnyDate(r['Ngày xuất']),stOut=String(r['Tình trạng ra']||'');
-      const pos=String(r['Mã vị trí']||'');
-      visits.push({id:++seq,key,inDate:parseAnyDate(r['Ngày nhập']),pos:/^\d+\|[^|]+\|\d+$/.test(pos)?pos:'',party:String(r['Người gửi']||''),statusIn:String(r['Tình trạng vào']||''),noteIn:String(r['Ghi chú nhập']||''),done:!!(outD||stOut),outDate:outD,statusOut:stOut,receiver:String(r['Người nhận']||''),noteOut:String(r['Ghi chú xuất']||''),created:Date.now()});
+      const pick=(...names)=>{for(const n of names){if(r[n]!==undefined&&r[n]!==null&&String(r[n]).trim()!=='')return r[n];}return '';};
+      const key=cleanId(pick('Biển số/VIN','Biển số / VIN','Mã nhận dạng','Biển số','VIN'));if(!key)return;
+      const plate=cleanId(pick('Biển số'))||(isPlate(key)?key:''),vin=cleanId(pick('VIN'))||(isPlate(key)?'':key);
+      if(!nv[key])nv[key]={key,plate,vin,model:String(pick('Dòng xe')||''),color:String(pick('Màu sắc')||'')};
+      const outD=parseAnyDate(pick('Ngày xuất')),stOut=String(pick('Tình trạng ra')||'');
+      const pos=String(pick('Mã vị trí')||'');
+      visits.push({id:++seq,key,inDate:parseAnyDate(pick('Ngày nhập')),pos:/^\d+\|[^|]+\|\d+$/.test(pos)?pos:'',party:String(pick('Người gửi')||''),statusIn:String(pick('Tình trạng vào')||''),noteIn:String(pick('Ghi chú nhập')||''),done:!!(outD||stOut),outDate:outD,statusOut:stOut,receiver:String(pick('Người nhận')||''),noteOut:String(pick('Ghi chú xuất')||''),created:Date.now()});
     });
     S.vehicles=nv;S.visits=visits;S.seq=seq;
     visits.forEach(v=>{if(v.statusIn&&!S.settings.statusIn.includes(v.statusIn))S.settings.statusIn.push(v.statusIn);if(v.statusOut&&!S.settings.statusOut.includes(v.statusOut))S.settings.statusOut.push(v.statusOut);});
