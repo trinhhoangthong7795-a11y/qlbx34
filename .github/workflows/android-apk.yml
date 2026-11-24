@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - fix/android-export-persist-payload
     paths:
       - "index.html"
       - ".github/workflows/android-apk.yml"
