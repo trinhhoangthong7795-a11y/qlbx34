@@ -997,6 +997,7 @@ $('#dashBox').addEventListener('click',e=>{
          </div>`;}).join('')}
          </div></div>`
       : `<div class="text-xs text-slate-500 mt-3">Hiện không có xe nào trong danh sách chưa có vị trí.</div>`;
+
     showModal(`<div class="p-5"><div class="flex justify-between"><h3 class="text-lg font-bold">Vị trí trống · ${esc(posLabel(p))}</h3><button onclick="closeModal()" class="text-xl">✕</button></div>
     ${waitHtml}
     <div class="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between gap-2">
