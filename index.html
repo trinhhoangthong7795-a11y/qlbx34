@@ -101,7 +101,10 @@ button{-webkit-tap-highlight-color:transparent}
         <div class="brand-sub">HỆ THỐNG QUẢN LÝ BÃI XE ERP</div>
       </div>
     </div>
-    <div class="header-status"><span class="status-dot"></span><span>IndexedDB Offline</span></div>
+    <div class="flex items-center gap-2">
+      <div class="header-status" id="syncStatus"><span class="status-dot"></span><span>Đang chạy Offline</span></div>
+      <button type="button" class="btn btn-sm" id="firebaseOpenBtn" onclick="openFirebasePanel()">☁️ Firebase</button>
+    </div>
   </header>
 
   <section class="workspace-head">
@@ -134,12 +137,202 @@ button{-webkit-tap-highlight-color:transparent}
 <div id="modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 p-3">
   <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[92dvh] overflow-auto shadow-2xl" id="modalBody"></div>
 </div>
+<div id="firebasePanel" class="fixed inset-0 hidden items-center justify-center bg-black/50 p-3" style="z-index:100">
+  <div class="bg-white rounded-2xl w-full max-w-md p-4 shadow-2xl">
+    <div class="flex items-center justify-between mb-2">
+      <b class="text-lg text-navy">☁️ Kết nối Firebase</b>
+      <button type="button" class="btn btn-sm" onclick="closeFirebasePanel()">✕</button>
+    </div>
+    <p class="text-xs text-slate-500 mb-3">Dữ liệu vẫn lưu trên máy bằng IndexedDB. Khi đăng nhập, ứng dụng đồng bộ dữ liệu lên Firebase Realtime Database.</p>
+    <div id="firebaseSignedOut">
+      <label class="text-sm font-semibold block mb-1" for="fbEmail">Email quản trị</label>
+      <input id="fbEmail" class="inp mb-2" type="email" autocomplete="username" placeholder="Email đã tạo trong Firebase Authentication">
+      <label class="text-sm font-semibold block mb-1" for="fbPassword">Mật khẩu</label>
+      <input id="fbPassword" class="inp mb-3" type="password" autocomplete="current-password" placeholder="Mật khẩu Firebase">
+      <button type="button" class="btn btn-primary w-full" id="fbLoginBtn" onclick="firebaseLogin()">Đăng nhập và đồng bộ</button>
+      <p class="text-xs text-slate-500 mt-2">Tài khoản phải được tạo trước trong Firebase Console → Authentication → Users.</p>
+    </div>
+    <div id="firebaseSignedIn" class="hidden">
+      <div class="rounded-xl bg-green-50 border border-green-200 p-3 text-sm mb-3">
+        <div class="font-bold text-green-800">Đã đăng nhập Firebase</div>
+        <div id="fbUserEmail" class="text-green-700 break-all"></div>
+        <div id="fbSyncDetail" class="text-xs text-green-700 mt-1">Đang chuẩn bị đồng bộ…</div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" class="btn btn-primary" onclick="firebaseSyncNow()">↻ Đồng bộ ngay</button>
+        <button type="button" class="btn" onclick="firebaseLogout()">Đăng xuất</button>
+      </div>
+    </div>
+    <div id="fbError" class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-2 mt-3"></div>
+    <div class="text-[11px] text-slate-400 mt-3">Không chia sẻ mật khẩu Firebase. Chỉ đăng nhập trên thiết bị tin cậy.</div>
+  </div>
+</div>
 <div id="toast"></div>
 <input type="file" id="fileJson" accept=".json,application/json" class="hidden">
 <input type="file" id="fileXlsx" accept=".xlsx" class="hidden">
 
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <script>
 /* ================== TIỆN ÍCH ================== */
+// Firebase Web SDK (Realtime Database + Email/Password Authentication)
+const firebaseConfig = {
+  apiKey: "AIzaSyDrMV8t3UTbanAsX5kvbvd6ft6kMxcTS6s",
+  authDomain: "new-erp-608f6.firebaseapp.com",
+  databaseURL: "https://new-erp-608f6-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "new-erp-608f6",
+  storageBucket: "new-erp-608f6.firebasestorage.app",
+  messagingSenderId: "810747632401",
+  appId: "1:810747632401:web:53951e1b5579189f2b4ab0",
+  measurementId: "G-YE2DVXP896"
+};
+let firebaseApp=null, firebaseAuth=null, firebaseDb=null, firebaseUser=null;
+let cloudReady=false, cloudApplying=false, cloudTimer=null, cloudListener=null;
+const CLOUD_STATE_PATH = uid => `users/${uid}/erp_bai_xe_34/state`;
+
+function initFirebase(){
+  if(firebaseApp) return;
+  if(!window.firebase || !firebase.app) throw new Error('Không tải được Firebase SDK. Kiểm tra kết nối Internet.');
+  firebaseApp=firebase.initializeApp(firebaseConfig);
+  firebaseAuth=firebase.auth();
+  firebaseDb=firebase.database();
+  firebaseAuth.onAuthStateChanged(async user=>{
+    firebaseUser=user||null;
+    cloudReady=false;
+    if(user){
+      updateFirebaseUI('Đã đăng nhập · đang đồng bộ');
+      try{await connectCloudState();}
+      catch(e){showFirebaseError(firebaseErrorText(e));updateFirebaseUI('Lỗi đồng bộ');}
+    }else{
+      if(cloudListener && firebaseDb){cloudListener.off();cloudListener=null;}
+      updateFirebaseUI('Đang chạy Offline');
+    }
+  });
+}
+function firebaseErrorText(e){
+  const c=e&&e.code||'';
+  const m=e&&e.message||String(e);
+  if(c.includes('permission-denied')) return 'Firebase từ chối quyền. Kiểm tra Realtime Database Rules và trạng thái đăng nhập.';
+  if(c.includes('network')) return 'Không có kết nối mạng. Ứng dụng vẫn lưu dữ liệu Offline.';
+  if(c.includes('invalid-credential')||c.includes('wrong-password')||c.includes('user-not-found')) return 'Email hoặc mật khẩu không đúng, hoặc tài khoản chưa được tạo trong Firebase Authentication.';
+  return m;
+}
+function showFirebaseError(msg){
+  const el=document.getElementById('fbError');
+  if(el){el.textContent=msg;el.classList.remove('hidden');}
+  console.error('[Firebase]',msg);
+}
+function updateFirebaseUI(msg){
+  const status=document.getElementById('syncStatus');
+  if(status){
+    status.innerHTML=`<span class="status-dot"></span><span>${esc(msg)}</span>`;
+    status.style.color=firebaseUser?'#15803d':'#64748b';
+    status.style.background=firebaseUser?'#f0fdf4':'#f1f5f9';
+  }
+  const signedIn=document.getElementById('firebaseSignedIn');
+  const signedOut=document.getElementById('firebaseSignedOut');
+  if(signedIn&&signedOut){
+    signedIn.classList.toggle('hidden',!firebaseUser);
+    signedOut.classList.toggle('hidden',!!firebaseUser);
+    const em=document.getElementById('fbUserEmail');
+    if(em)em.textContent=firebaseUser?.email||'Tài khoản đã xác thực';
+  }
+}
+function openFirebasePanel(){
+  try{initFirebase();}catch(e){showFirebaseError(firebaseErrorText(e));}
+  const p=document.getElementById('firebasePanel');
+  p.classList.remove('hidden');p.classList.add('flex');
+  const er=document.getElementById('fbError');if(er)er.classList.add('hidden');
+}
+function closeFirebasePanel(){
+  const p=document.getElementById('firebasePanel');
+  p.classList.add('hidden');p.classList.remove('flex');
+}
+async function firebaseLogin(){
+  try{
+    initFirebase();
+    const email=document.getElementById('fbEmail').value.trim();
+    const password=document.getElementById('fbPassword').value;
+    if(!email||!password) throw new Error('Vui lòng nhập email và mật khẩu.');
+    const b=document.getElementById('fbLoginBtn');b.disabled=true;b.textContent='Đang đăng nhập…';
+    await firebaseAuth.signInWithEmailAndPassword(email,password);
+    document.getElementById('fbPassword').value='';
+  }catch(e){showFirebaseError(firebaseErrorText(e));}
+  finally{const b=document.getElementById('fbLoginBtn');if(b){b.disabled=false;b.textContent='Đăng nhập và đồng bộ';}}
+}
+async function firebaseLogout(){
+  if(!firebaseAuth)return;
+  try{await firebaseAuth.signOut();updateFirebaseUI('Đang chạy Offline');}
+  catch(e){showFirebaseError(firebaseErrorText(e));}
+}
+async function connectCloudState(){
+  if(!firebaseUser||!firebaseDb||!S)return;
+  const ref=firebaseDb.ref(CLOUD_STATE_PATH(firebaseUser.uid));
+  if(cloudListener){cloudListener.off();cloudListener=null;}
+  const snap=await ref.once('value');
+  if(snap.exists()){
+    const remote=snap.val();
+    if(remote&&remote.vehicles&&remote.visits&&remote.settings){
+      cloudApplying=true;
+      S=remote;
+      await idbPutState();
+      cloudApplying=false;
+      refresh();
+      updateFirebaseUI('Đã tải dữ liệu từ Cloud');
+    }else{
+      throw new Error('Dữ liệu trên Firebase không đúng cấu trúc ERP; chưa ghi đè dữ liệu hiện tại.');
+    }
+  }else{
+    if(S.isDemoSeed){
+      cloudReady=false;
+      updateFirebaseUI('Cloud trống · chưa tải dữ liệu mẫu');
+      showFirebaseError('Firebase đang trống và ứng dụng đang dùng dữ liệu mẫu. Hãy nhập dữ liệu thực tế từ Excel/JSON trước, sau đó bấm “Đồng bộ ngay” để đưa dữ liệu lên Cloud. Không tự động tải dữ liệu mẫu lên Firebase.');
+      return;
+    }
+    await ref.set(S);
+    updateFirebaseUI('Đã tải dữ liệu hiện tại lên Cloud');
+  }
+  cloudReady=true;
+  cloudListener=ref;
+  cloudListener.on('value',async snapshot=>{
+    if(!cloudReady||cloudApplying||!snapshot.exists())return;
+    const remote=snapshot.val();
+    if(!remote||!remote.vehicles||!remote.visits||!remote.settings)return;
+    if(Number(remote.updatedAt||0)>Number(S.updatedAt||0)){
+      cloudApplying=true;
+      S=remote;
+      await idbPutState();
+      refresh();
+      cloudApplying=false;
+      updateFirebaseUI('Đã nhận cập nhật từ thiết bị khác');
+    }
+  },err=>{showFirebaseError(firebaseErrorText(err));updateFirebaseUI('Lỗi quyền Cloud');});
+}
+function queueFirebaseSync(){
+  if(!firebaseUser||!cloudReady||cloudApplying)return;
+  clearTimeout(cloudTimer);
+  cloudTimer=setTimeout(async()=>{
+    try{
+      const payload=JSON.parse(JSON.stringify(S));
+      await firebaseDb.ref(CLOUD_STATE_PATH(firebaseUser.uid)).set(payload);
+      updateFirebaseUI('Đã đồng bộ Cloud');
+    }catch(e){
+      showFirebaseError(firebaseErrorText(e));
+      updateFirebaseUI('Lưu máy · Cloud lỗi');
+    }
+  },700);
+}
+async function firebaseSyncNow(){
+  if(!firebaseUser){showFirebaseError('Hãy đăng nhập Firebase trước.');return;}
+  try{
+    await firebaseDb.ref(CLOUD_STATE_PATH(firebaseUser.uid)).set(S);
+    await connectCloudState();
+    updateFirebaseUI('Đã đồng bộ Cloud');
+    const d=document.getElementById('fbSyncDetail');if(d)d.textContent='Đồng bộ thành công lúc '+new Date().toLocaleString('vi-VN');
+  }catch(e){showFirebaseError(firebaseErrorText(e));}
+}
+
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const p2=n=>String(n).padStart(2,'0');
@@ -338,6 +531,7 @@ async function load(){
 function save(){
   S.updatedAt=Date.now();
   idbPutState();
+  queueFirebaseSync();
   refresh();
 }
 
@@ -433,6 +627,7 @@ function sample(){
     const nIn=addDays(out,-ri(2,40));
     addVisit({key:k,inDate:nIn,outDate:out,done:true,pos:pick(pool),party:pick(parties),statusIn:pick(['Chờ sửa chữa','Chờ giao GSM','Lưu kho']),noteIn:pick(notes),statusOut:pick(st.settings.statusOut),receiver:pick(parties)});
   }
+  st.isDemoSeed=true;
   return st;
 }
 
@@ -1576,6 +1771,7 @@ document.body.appendChild(colorDL);
 load().then(()=>{
   bindGlobalSearch();
   setTab('dash');
+  try{initFirebase();}catch(e){console.warn('Firebase initialization skipped:',e);}
 }).catch(e=>{
   console.error(e);
   toast('Lỗi khởi tạo IndexedDB: '+(e.message||e));
