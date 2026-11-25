@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>ERP Bãi Xe 34</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="./html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap&subset=vietnamese" rel="stylesheet">
 <script>
 if(window.tailwind)tailwind.config={theme:{extend:{colors:{navy:'#13294B',bgm:'#F4F7FA',vf:'#1E62D0'},fontFamily:{sans:['Inter','system-ui','sans-serif']}}}};
@@ -162,6 +162,12 @@ button{-webkit-tap-highlight-color:transparent}
         <button type="button" class="btn btn-primary" onclick="firebaseSyncNow()">↻ Đồng bộ ngay</button>
         <button type="button" class="btn" onclick="firebaseLogout()">Đăng xuất</button>
       </div>
+      <div class="rounded-xl border border-blue-200 bg-blue-50 p-3 mt-3">
+        <div class="flex items-center justify-between gap-2"><b class="text-sm text-navy">📦 Theo dõi dung lượng Firebase</b><button type="button" class="btn btn-sm" onclick="renderFirebaseUsage()">Làm mới</button></div>
+        <div id="fbUsageSummary" class="text-xs text-slate-600 mt-2">Đang tính dung lượng…</div>
+        <div id="fbUsageLog" class="text-[11px] text-slate-500 mt-2 max-h-28 overflow-auto"></div>
+        <p class="text-[10px] text-slate-500 mt-2">Số liệu trong ứng dụng là ước tính theo JSON và không bao gồm toàn bộ overhead mạng. Đối chiếu số chính thức trong Firebase Console → Realtime Database → Usage.</p>
+      </div>
     </div>
     <div id="fbError" class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-2 mt-3"></div>
     <div class="text-[11px] text-slate-400 mt-3">Không chia sẻ mật khẩu Firebase. Chỉ đăng nhập trên thiết bị tin cậy.</div>
@@ -190,6 +196,33 @@ const firebaseConfig = {
 let firebaseApp=null, firebaseAuth=null, firebaseDb=null, firebaseUser=null;
 let cloudReady=false, cloudApplying=false, cloudTimer=null, cloudListener=null;
 const CLOUD_STATE_PATH = uid => `users/${uid}/erp_bai_xe_34/state`;
+const FB_USAGE_KEY='qlbx34_firebase_usage_v1';
+function fbByteSize(value){
+  try{return new TextEncoder().encode(typeof value==='string'?value:JSON.stringify(value)).length;}
+  catch(e){return new Blob([typeof value==='string'?value:JSON.stringify(value)]).size;}
+}
+function fbUsageRead(){
+  try{return JSON.parse(localStorage.getItem(FB_USAGE_KEY)||'{"events":[]}');}
+  catch(e){return {events:[]};}
+}
+function fbUsageRecord(kind,label,bytes,detail=''){
+  const u=fbUsageRead();u.events=Array.isArray(u.events)?u.events:[];
+  u.events.push({at:Date.now(),kind,label,bytes:Number(bytes)||0,detail});
+  u.events=u.events.slice(-250);
+  try{localStorage.setItem(FB_USAGE_KEY,JSON.stringify(u));}catch(e){}
+  renderFirebaseUsage();
+}
+function fbFmtBytes(n){n=Math.max(0,Number(n)||0);if(n<1024)return n.toFixed(0)+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';if(n<1073741824)return (n/1048576).toFixed(2)+' MB';return (n/1073741824).toFixed(3)+' GB';}
+function renderFirebaseUsage(){
+  const box=document.getElementById('fbUsageSummary');if(!box)return;
+  const events=fbUsageRead().events||[],month=new Date().toISOString().slice(0,7);
+  const cur=events.filter(x=>new Date(x.at).toISOString().slice(0,7)===month);
+  const up=cur.filter(x=>x.kind==='up').reduce((a,x)=>a+x.bytes,0),down=cur.filter(x=>x.kind==='down').reduce((a,x)=>a+x.bytes,0);
+  const size=fbByteSize(S||{}),freeDown=10*1024**3,freeStore=1024**3;
+  const projected=(down/Math.max(1,new Date().getDate()))*new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
+  box.innerHTML=`<div class="grid grid-cols-2 gap-2"><div><span class="text-slate-500">Dung lượng dữ liệu hiện tại (ước tính)</span><div class="font-bold text-navy">${fbFmtBytes(size)}</div><div class="text-[10px]">Mức miễn phí lưu trữ: 1 GB</div></div><div><span class="text-slate-500">Tải lên đã ghi nhận tháng này</span><div class="font-bold">${fbFmtBytes(up)}</div><div class="text-[10px]">Tổng payload ghi từ ứng dụng</div></div><div><span class="text-slate-500">Tải xuống đã ghi nhận tháng này</span><div class="font-bold">${fbFmtBytes(down)}</div><div class="text-[10px]">Ước tính giới hạn miễn phí: 10 GB/tháng</div></div><div><span class="text-slate-500">Dự báo tải xuống cuối tháng</span><div class="font-bold">${fbFmtBytes(projected)}</div><div class="text-[10px]">Ước tính tuyến tính theo ngày hiện tại</div></div></div><div class="mt-2 h-2 rounded bg-white overflow-hidden"><div style="height:100%;width:${Math.min(100,projected/freeDown*100)}%;background:${projected>freeDown*.8?'#dc2626':'#16a34a'}"></div></div><div class="text-[10px] mt-1">${(projected/freeDown*100).toFixed(3)}% hạn mức tải xuống miễn phí (ước tính)</div>`;
+  const log=document.getElementById('fbUsageLog');if(log){log.innerHTML=events.slice(-8).reverse().map(x=>`<div class="flex justify-between gap-2 border-t border-blue-100 py-1"><span>${new Date(x.at).toLocaleTimeString('vi-VN')} · ${esc(x.label)}</span><b>${x.kind==='up'?'↑':'↓'} ${fbFmtBytes(x.bytes)}</b></div>`).join('')||'Chưa ghi nhận thao tác Firebase nào.';}
+}
 
 function initFirebase(){
   if(firebaseApp) return;
@@ -237,6 +270,7 @@ function updateFirebaseUI(msg){
     signedOut.classList.toggle('hidden',!!firebaseUser);
     const em=document.getElementById('fbUserEmail');
     if(em)em.textContent=firebaseUser?.email||'Tài khoản đã xác thực';
+    if(firebaseUser)renderFirebaseUsage();
   }
 }
 function openFirebasePanel(){
@@ -271,6 +305,7 @@ async function connectCloudState(){
   const ref=firebaseDb.ref(CLOUD_STATE_PATH(firebaseUser.uid));
   if(cloudListener){cloudListener.off();cloudListener=null;}
   const snap=await ref.once('value');
+  if(snap.exists()) fbUsageRecord('down','Đọc dữ liệu khi đăng nhập',fbByteSize(snap.val()));
   if(snap.exists()){
     const remote=snap.val();
     if(remote&&remote.vehicles&&remote.visits&&remote.settings){
@@ -291,6 +326,7 @@ async function connectCloudState(){
       return;
     }
     await ref.set(S);
+    fbUsageRecord('up','Tải dữ liệu ban đầu lên Cloud',fbByteSize(S));
     updateFirebaseUI('Đã tải dữ liệu hiện tại lên Cloud');
   }
   cloudReady=true;
@@ -300,6 +336,7 @@ async function connectCloudState(){
     const remote=snapshot.val();
     if(!remote||!remote.vehicles||!remote.visits||!remote.settings)return;
     if(Number(remote.updatedAt||0)>Number(S.updatedAt||0)){
+      fbUsageRecord('down','Nhận dữ liệu qua đồng bộ thời gian thực',fbByteSize(remote));
       cloudApplying=true;
       S=remote;
       await idbPutState();
@@ -316,6 +353,7 @@ function queueFirebaseSync(){
     try{
       const payload=JSON.parse(JSON.stringify(S));
       await firebaseDb.ref(CLOUD_STATE_PATH(firebaseUser.uid)).set(payload);
+      fbUsageRecord('up','Ghi đồng bộ tự động',fbByteSize(payload));
       updateFirebaseUI('Đã đồng bộ Cloud');
     }catch(e){
       showFirebaseError(firebaseErrorText(e));
@@ -327,6 +365,7 @@ async function firebaseSyncNow(){
   if(!firebaseUser){showFirebaseError('Hãy đăng nhập Firebase trước.');return;}
   try{
     await firebaseDb.ref(CLOUD_STATE_PATH(firebaseUser.uid)).set(S);
+    fbUsageRecord('up','Ghi đồng bộ thủ công',fbByteSize(S));
     await connectCloudState();
     updateFirebaseUI('Đã đồng bộ Cloud');
     const d=document.getElementById('fbSyncDetail');if(d)d.textContent='Đồng bộ thành công lúc '+new Date().toLocaleString('vi-VN');
@@ -370,9 +409,7 @@ async function saveOrShareBlob(blob, filename){
   if(cap && typeof cap.isNativePlatform==='function' && cap.isNativePlatform()){
     try{
       const FileExport=cap.Plugins && cap.Plugins.FileExport;
-      if(!FileExport || typeof FileExport.saveFile!=='function'){
-        throw new Error('Không tìm thấy cầu nối FileExport của Android. Vui lòng cài đúng bản APK mới.');
-      }
+      if(FileExport && typeof FileExport.saveFile==='function'){
       const base64=await new Promise((resolve,reject)=>{
         const reader=new FileReader();
         reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');
@@ -387,6 +424,12 @@ async function saveOrShareBlob(blob, filename){
       });
       if(!saved||!saved.uri)throw new Error('Android chưa xác nhận lưu file.');
       return true;
+      }
+      // APK không có plugin lưu tệp: thử bảng chia sẻ Android trước khi tải bằng trình duyệt.
+      if(navigator.canShare && navigator.share){
+        const file=new File([blob],filename,{type:blob.type||'application/octet-stream'});
+        if(navigator.canShare({files:[file]})){await navigator.share({files:[file],title:filename});return true;}
+      }
     }catch(e){
       if(e && (e.name==='AbortError'||String(e.message||'').toLowerCase().includes('cancel')||String(e.message||'').toLowerCase().includes('hủy')))return false;
       console.error('Native file export failed:',e);
@@ -1585,15 +1628,28 @@ function shiftWeek(d){
 }
 async function exportPNG(){
   const el=$('#reportArea');
-  if(typeof html2canvas==='undefined'){toast('Chưa tải được thư viện xuất ảnh');return;}
-  toast('Đang tạo ảnh báo cáo 1080p…');
+  if(!el){toast('Không tìm thấy nội dung báo cáo. Hãy mở lại tab Báo cáo.');return;}
+  if(typeof html2canvas==='undefined'){
+    toast('Đang tải bộ xuất ảnh…');
+    try{await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';sc.onload=resolve;sc.onerror=()=>reject(new Error('Không tải được thư viện tạo ảnh. Kiểm tra Internet.'));document.head.appendChild(sc);});}
+    catch(e){toast(e.message);return;}
+  }
+  const btn=document.querySelector('button[onclick="exportPNG()"]');if(btn){btn.disabled=true;btn.textContent='Đang tạo ảnh…';}
+  toast('Đang tạo ảnh báo cáo…');
   try{
-    const c=await html2canvas(el,{scale:2,backgroundColor:'#EEF3F7',useCORS:true,windowWidth:1200,
-      onclone:doc=>{const e=doc.getElementById('reportArea');doc.body.innerHTML='';doc.body.style.cssText='margin:0;height:auto;overflow:visible;background:#EEF3F7';doc.documentElement.style.height='auto';doc.body.appendChild(e);e.style.width='1080px';}});
-    const blob=await new Promise(res=>c.toBlob(res,'image/png'));
-    const ok=await saveOrShareBlob(blob, `bao-cao-bai-xe-34_${RP.from}_${RP.to}.png`);
-    if(ok) toast('Đã xuất ảnh báo cáo PNG');
-  }catch(e){toast('Lỗi xuất ảnh: '+e.message);}
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    const c=await html2canvas(el,{scale:Math.min(2,Math.max(1,window.devicePixelRatio||1)),backgroundColor:'#EEF3F7',useCORS:true,allowTaint:false,logging:false,windowWidth:1200,scrollX:0,scrollY:0,
+      onclone:doc=>{const e=doc.getElementById('reportArea');if(!e)throw new Error('Không sao chép được vùng báo cáo.');doc.body.style.cssText='margin:0;padding:0;height:auto;min-height:0;overflow:visible;background:#EEF3F7';doc.documentElement.style.cssText='height:auto;overflow:visible';e.style.width='1080px';e.style.maxWidth='none';e.style.minWidth='1080px';e.style.overflow='visible';}});
+    if(!c||!c.width||!c.height)throw new Error('Ảnh tạo ra không có kích thước hợp lệ.');
+    let blob;
+    if(typeof c.toBlob==='function') blob=await new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error('Trình duyệt không tạo được tệp PNG.')),'image/png'));
+    else {const data=c.toDataURL('image/png');const res=await fetch(data);blob=await res.blob();}
+    if(!blob||!blob.size)throw new Error('Tệp PNG rỗng.');
+    const filename=`bao-cao-bai-xe-34_${RP.from}_${RP.to}.png`;
+    const ok=await saveOrShareBlob(blob,filename);
+    if(ok)toast(`Đã tạo ảnh báo cáo (${fbFmtBytes(blob.size)}).`);
+  }catch(e){console.error('[Export PNG]',e);toast('Xuất ảnh chưa thành công: '+(e.message||e));}
+  finally{if(btn){btn.disabled=false;btn.textContent='🖼️ Xuất ảnh Báo cáo (PNG)';}}
 }
 
 /* ================== CÀI ĐẶT ================== */
