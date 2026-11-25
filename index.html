@@ -525,6 +525,7 @@ let S;
 const DEF_SETTINGS=()=>({
   statusIn:['Chờ sửa chữa','Chờ giao GSM','Lưu kho','CSM gửi','Xe mới lưu kho'],
   statusOut:['Xe mới xuất bãi','Giao GSM','Giao khách','Đã sửa xong','CSM nhận lại'],
+  customerOutStatuses:['Giao GSM','Chuyển kho Tây Ninh'],
   models:['VFe34','VF 5','Limo Green','VF 8','VF 7','Minio Green','Herio Green','EC Van','Dòng khác'],
   layout:{days:5,rows:20,cols:['1T','1TLD','1PLD','1P']}
 });
@@ -569,6 +570,8 @@ async function load(){
   }
   if(!S||!S.visits||!S.vehicles||!S.settings) S=sample();
   if(S.settings&&S.settings.cloud) delete S.settings.cloud;
+  S.settings=S.settings||DEF_SETTINGS();
+  if(!Array.isArray(S.settings.customerOutStatuses)) S.settings.customerOutStatuses=['Giao GSM','Chuyển kho Tây Ninh'];
   await idbPutState();
 }
 function save(){
@@ -591,9 +594,25 @@ function firstInDateOf(k, upToDate){
   if(vs.some(x=>!isValidInDate(x.inDate))) return null;
   return vs[0].inDate;
 }
+function isCustomerDeliveryStatus(status){
+  const configured=S.settings.customerOutStatuses||['Giao GSM','Chuyển kho Tây Ninh'];
+  return configured.some(x=>norm(x)===norm(status));
+}
+// Ngày bắt đầu chu kỳ hiện tại: chỉ reset sau lần xuất có trạng thái giao khách.
+// Các lần xuất/nhập thông thường trong cùng chu kỳ không làm thay đổi ngày này.
+function cycleStartDateOf(key,targetVisit){
+  const vs=visitsOf(key).slice().sort((a,b)=>(a.id||0)-(b.id||0));
+  let start=null,cycleStarted=false;
+  for(const x of vs){
+    if(!cycleStarted){start=isValidInDate(x.inDate)?x.inDate:null;cycleStarted=true;}
+    if(targetVisit && x.id===targetVisit.id) return start;
+    if(x.done && isCustomerDeliveryStatus(x.statusOut)){start=null;cycleStarted=false;}
+  }
+  return start;
+}
 function age(v, refDate){
   const ref=refDate||todayISO();
-  const baseDate=firstInDateOf(v.key, ref);
+  const baseDate=cycleStartDateOf(v.key,v);
   if(!isValidInDate(baseDate)) return null;
   return Math.max(0, diff(baseDate, ref));
 }
@@ -713,6 +732,7 @@ function closeActionPanel(){
 function vehCard(v){
   const vs=visitsOf(v.key),last=vs[vs.length-1],a=activeOf(v.key);
   const firstIn=firstInDateOf(v.key);
+  const cycleIn=cycleStartDateOf(v.key,a);
   const lastStr=last?`${fmt(last.inDate)} – ${last.done?fmt(last.outDate):'nay'}`:'—';
   const row=(l,x)=>`<div><span class="text-slate-500">${l}:</span> <b>${x}</b></div>`;
   return `<div class="bg-white rounded-xl border border-slate-200 p-3 flex gap-3 mt-2">${carSvg}
@@ -721,7 +741,7 @@ function vehCard(v){
     ${row('Mẫu xe',esc(v.model||'—'))}${row('Tổng số lần',vs.length+' lần')}
     ${row('Màu sắc',esc(v.color||'—'))}${row('Trạng thái hiện tại',a?`<span class="text-orange-600">Đang trong bãi</span>`:'Đã xuất')}
     ${a?row('Vị trí / Tình trạng',esc(posLabel(a.pos))+' · '+esc(statIn(a))):''}
-    ${a?row('Ngày nhập gốc / Tuổi tồn',fmt(firstIn)+' ('+(age(a)===null?'>31 ngày - thiếu ngày':age(a)+' ngày')+')'):''}
+    ${a?row('Ngày bắt đầu chu kỳ / Tuổi tồn',fmt(firstIn)+' ('+(age(a)===null?'>31 ngày - thiếu ngày':age(a)+' ngày')+')'):''}
    </div></div>`;
 }
 function findVeh(id){
@@ -1069,7 +1089,7 @@ function renderDash(){
      ['Tổng xe tồn bãi',kpi.total,'text-navy',`Biển: ${kpi.old} · VIN: ${kpi.nw}`],
      ['Vị trí đang có xe',used,'text-vf',`Còn trống ${total-used} / ${total} ô`],
      ['Xe chưa có vị trí',waitList.length,'text-orange-600','Chờ xếp vào sơ đồ'],
-     ['Xe cũ tồn ≥ 11 ngày',kpi.old11,'text-red-600','Tính từ chu kỳ đầu']
+     ['Xe cũ tồn ≥ 11 ngày',kpi.old11,'text-red-600','Tính từ chu kỳ hiện tại']
    ].map(x=>`<div class="card p-3.5 sm:p-4"><div class="text-xs text-slate-500 uppercase font-bold">${x[0]}</div><div class="text-3xl font-extrabold ${x[2]} my-0.5">${x[1]}</div><div class="text-[11px] text-slate-400 font-medium">${x[3]}</div></div>`).join('')}
   </div>
 
@@ -1204,12 +1224,12 @@ $('#dashBox').addEventListener('click',e=>{
   const p=c.dataset.pos,v=active().find(x=>x.pos===p);
   if(v){
     const vv=veh(v.key);
-    const firstIn=firstInDateOf(v.key);
+    const firstIn=cycleStartDateOf(v.key,v);
     showModal(`<div class="p-5"><div class="flex justify-between items-center"><h3 class="text-lg font-bold">${esc(v.key)} <span class="badge ml-1 ${isNewV(vv)?'bg-blue-100 text-blue-800':'bg-orange-100 text-orange-800'}">${esc(idTypeLabel(v.key))}</span></h3><button onclick="closeModal()" class="text-xl">✕</button></div>
     <div class="mt-3 text-sm space-y-1.5">
       <div>Vị trí: <b>${esc(posLabel(p))}</b></div>
       <div>Dòng xe: <b>${esc(vv.model||'—')}</b> · Màu: <b>${esc(vv.color||'—')}</b></div>
-      <div>Ngày nhập chu kỳ đầu: <b>${fmt(firstIn)}</b> ${ageBadge(v)}</div>
+      <div>Ngày bắt đầu chu kỳ: <b>${fmt(cycleStartDateOf(v.key,v))}</b> ${ageBadge(v)}</div>
       <div>Ngày nhập lượt gần nhất: <b>${fmt(v.inDate)}</b> (Tổng ${visitsOf(v.key).length} lượt)</div>
       <div>Tình trạng: <b>${esc(statIn(v))}</b></div>
       <div>Người gửi: <b>${esc(v.party||'—')}</b></div>
@@ -1253,7 +1273,7 @@ function openVehicleDetail(key, focusVisitId){
   const act=activeOf(v.key);
   const last=vs[vs.length-1]||null;
   const targetVisit=focusVisitId ? (vs.find(x=>x.id===focusVisitId)||act||last) : (act||last);
-  const firstIn=firstInDateOf(v.key);
+  const firstIn=cycleStartDateOf(v.key,act||targetVisit||last);
 
   const historyRows=vs.slice().reverse().map((x,idx)=>{
     const nth=vs.length-idx;
@@ -1299,7 +1319,7 @@ function openVehicleDetail(key, focusVisitId){
       <div><div class="text-xs text-slate-500">Dòng xe</div><div class="font-bold">${esc(v.model||'—')}</div></div>
       <div><div class="text-xs text-slate-500">Màu sắc</div><div class="font-bold">${esc(v.color||'—')}</div></div>
       <div><div class="text-xs text-slate-500">Tổng lượt lưu bãi</div><div class="font-bold">${vs.length} lượt</div></div>
-      <div><div class="text-xs text-slate-500">Ngày nhập chu kỳ đầu</div><div class="font-bold">${fmt(firstIn)}</div></div>
+      <div><div class="text-xs text-slate-500">Ngày bắt đầu chu kỳ gần nhất</div><div class="font-bold">${fmt(firstIn)}</div></div>
       <div><div class="text-xs text-slate-500">Cập nhật gần nhất</div><div class="font-bold">${last?fmt(last.done?last.outDate:last.inDate):'—'}</div></div>
       <div><div class="text-xs text-slate-500">${act?'Tuổi tồn hiện tại':'Trạng thái cuối'}</div><div class="font-bold">${act?ageBadge(act):'<span class="text-green-700">Đã xuất bãi</span>'}</div></div>
       ${act?`<div class="col-span-2 sm:col-span-3 pt-1 border-t border-slate-200 flex flex-wrap gap-x-6 gap-y-1 text-xs">
@@ -1560,9 +1580,9 @@ function renderReport(){
   R.outSt.forEach(([k,n])=>{mx+=metric('Ra · '+esc(k),n,PAL[ci++%PAL.length]);});
   const bar=(l,n,c)=>`<div style="display:flex;align-items:center;gap:14px;margin-top:10px"><div style="width:110px;color:#64748b;font-size:14px;flex:none">${l}</div><div style="flex:1;height:14px;background:#e9eef4;border-radius:99px;overflow:hidden"><div style="height:100%;width:${n/maxG*100}%;background:${c};border-radius:99px"></div></div><div style="width:40px;text-align:right;font-weight:600;color:#475569">${n}</div></div>`;
   const alerts=[];
-  alerts.push([ '#c62839',R.over30.length?`<b>${R.over30.length} xe tồn trên 30 ngày</b> (tính từ chu kỳ nhập đầu tiên). Lâu nhất: ${esc(R.over30.slice(0,3).map(v=>`${v.key} (${age(v)} ngày)`).join(', '))}.`:'0 xe có ngày nhập hợp lệ tồn trên 30 ngày.']);
+  alerts.push([ '#c62839',R.over30.length?`<b>${R.over30.length} xe tồn trên 30 ngày</b> (tính từ ngày bắt đầu chu kỳ hiện tại). Lâu nhất: ${esc(R.over30.slice(0,3).map(v=>`${v.key} (${age(v)} ngày)`).join(', '))}.`:'0 xe có ngày nhập hợp lệ tồn trên 30 ngày.']);
   if(R.missing.length)alerts.push(['#ee7d28',`<b>${R.missing.length} xe có ngày nhập = 0</b> (${esc(listPlates(R.missing,5))}) — vẫn tính vào tổng xe tồn bãi và xếp vào nhóm <b>&gt;31 ngày</b>.`]);
-  alerts.push(['#e8b923',R.near.length?`<b>${R.near.length} xe sắp quá 30 ngày</b> (25–30 ngày từ chu kỳ đầu): ${esc(listPlates(R.near,6))}.`:'0 xe sắp quá 30 ngày (25–30 ngày).']);
+  alerts.push(['#e8b923',R.near.length?`<b>${R.near.length} xe sắp quá 30 ngày</b> (25–30 ngày từ chu kỳ hiện tại): ${esc(listPlates(R.near,6))}.`:'0 xe sắp quá 30 ngày (25–30 ngày).']);
   alerts.push(['#9ca3af',`<b>${R.noPos.length} xe</b> trong bãi chưa có vị trí.`]);
   const kv=(arr)=>arr.length?arr.map(([k,n])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:14px"><span style="color:#64748b">${esc(k)}</span><span style="font-weight:600;color:#1f3a5f">${n}</span></div>`).join(''):'<div style="color:#94a3b8;font-size:14px">Không có dữ liệu</div>';
   const noteKey=RP.from+'_'+RP.to,note=(S.notes&&S.notes[noteKey])||'';
@@ -1613,7 +1633,7 @@ function renderReport(){
         <div style="${sec()};margin-bottom:12px">DIỄN BIẾN ĐẶC BIỆT</div>
         <div id="rnote" contenteditable="true" style="font-size:15px;line-height:1.6;color:${note?'#334155':'#94a3b8'};min-height:28px;white-space:pre-wrap">${note?esc(note):'Không có diễn biến đặc biệt được chọn cho kỳ này.'}</div>
       </div>
-      <div style="text-align:center;font-size:12px;color:#94a3b8;padding-top:2px">*Tuổi tồn xe được tính liên tục từ ngày nhập của chu kỳ đầu tiên cho đến lần lưu bãi mới nhất. Xe có ngày nhập = 0 (không có ngày nhập) vẫn được tính vào tồn bãi nếu chưa xuất và xếp vào nhóm &gt;31 ngày.</div>
+      <div style="text-align:center;font-size:12px;color:#94a3b8;padding-top:2px">*Tuổi tồn xe được tính liên tục từ ngày nhập đầu tiên của chu kỳ hiện tại; các lần ra/vào thông thường không làm reset tuổi tồn. Chỉ trạng thái xuất được cấu hình là giao khách mới kết thúc chu kỳ. Xe có ngày nhập = 0 (không có ngày nhập) vẫn được tính vào tồn bãi nếu chưa xuất và xếp vào nhóm &gt;31 ngày.</div>
     </div>
   </div></div>`;
   const DEF='Không có diễn biến đặc biệt được chọn cho kỳ này.',nt=$('#rnote');
@@ -1663,6 +1683,12 @@ function renderSettings(){
    ${list('statusOut','Tình trạng ra','Dùng khi xuất xe. Tình trạng mới tự hiện ở Báo cáo.')}
    ${list('models','Dòng xe','Danh mục dòng xe cho xe mới.')}
   </div>
+  <div class="card p-4 mt-4">
+   <div class="font-bold">🚚 Trạng thái xuất kết thúc chu kỳ tuổi tồn</div>
+   <div class="text-xs text-slate-500 mb-3">Chỉ các trạng thái trong danh sách này mới được xem là đã giao khách và kết thúc chu kỳ tồn. Mặc định: Giao GSM, Chuyển kho Tây Ninh. Các lần xuất với trạng thái khác không reset tuổi tồn. Sửa/xóa danh mục không thay đổi lịch sử giao dịch đã lưu.</div>
+   <div class="space-y-2">${(S.settings.customerOutStatuses||[]).map((st,i)=>`<div class="flex gap-2"><input class="inp" value="${esc(st)}" data-act="customerRen" data-i="${i}"><button class="btn btn-red btn-sm" data-act="customerDel" data-i="${i}">Xóa</button></div>`).join('')||'<div class="text-sm text-slate-400">Chưa có trạng thái nào.</div>'}</div>
+   <div class="flex gap-2 mt-3"><input id="add_customerOutStatus" class="inp" placeholder="VD: Giao khách / Chuyển kho…"><button class="btn btn-primary" data-act="customerAdd">Thêm trạng thái</button></div>
+  </div>
   <div class="grid gap-4 lg:grid-cols-2 mt-4">
    <div class="card p-4"><div class="font-bold">Vị trí bãi</div><div class="text-xs text-slate-500 mb-3">Sơ đồ: số dãy × tên cột × số hàng (hiện ${L.days*L.cols.length*L.rows} vị trí).</div>
     <div class="grid grid-cols-2 gap-3"><div>${lab('Số dãy')}<input id="ly_days" type="number" min="1" max="12" class="inp" value="${L.days}"></div><div>${lab('Số hàng mỗi cột')}<input id="ly_rows" type="number" min="1" max="60" class="inp" value="${L.rows}"></div>
@@ -1684,13 +1710,20 @@ function settingsAdd(kind){
   S.settings[kind].push(v);save();toast('Đã thêm "'+v+'"');
 }
 $('#settingsBox').addEventListener('change',e=>{
-  const t=e.target;if(t.dataset.act!=='ren')return;
+  const t=e.target;
+  if(t.dataset.act==='customerRen'){
+    const i=+t.dataset.i,old=(S.settings.customerOutStatuses||[])[i],nv=t.value.trim();
+    if(!nv||(nv!==old&&(S.settings.customerOutStatuses||[]).some((x,j)=>j!==i&&norm(x)===norm(nv)))){renderSettings();toast('Tên trạng thái không hợp lệ hoặc bị trùng');return;}
+    if(nv!==old){S.settings.customerOutStatuses[i]=nv;save();toast('Đã cập nhật cấu hình; lịch sử cũ được giữ nguyên.');}
+    return;
+  }
+  if(t.dataset.act!=='ren')return;
   const kind=t.dataset.kind,i=+t.dataset.i,old=S.settings[kind][i],nv=t.value.trim();
   if(!nv||(nv!==old&&S.settings[kind].includes(nv))){renderSettings();toast('Tên không hợp lệ hoặc bị trùng');return;}
   if(nv===old)return;
   S.settings[kind][i]=nv;
   if(kind==='statusIn')S.visits.forEach(v=>{if(v.statusIn===old)v.statusIn=nv;});
-  if(kind==='statusOut')S.visits.forEach(v=>{if(v.statusOut===old)v.statusOut=nv;});
+  if(kind==='statusOut'){S.visits.forEach(v=>{if(v.statusOut===old)v.statusOut=nv;});S.settings.customerOutStatuses=(S.settings.customerOutStatuses||[]).map(x=>x===old?nv:x);}
   if(kind==='models')Object.values(S.vehicles).forEach(v=>{if(v.model===old)v.model=nv;});
   save();toast('Đã đổi tên và cập nhật dữ liệu liên quan');
 });
@@ -1698,7 +1731,17 @@ $('#settingsBox').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.da
 $('#settingsBox').addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b||b.tagName==='INPUT')return;
   const a=b.dataset.act,kind=b.dataset.kind;
-  if(a==='add')settingsAdd(kind);
+  if(a==='customerAdd'){
+    const input=$('#add_customerOutStatus'),v=input.value.trim();if(!v)return;
+    S.settings.customerOutStatuses=S.settings.customerOutStatuses||[];
+    if(S.settings.customerOutStatuses.some(x=>norm(x)===norm(v))){toast('Trạng thái đã tồn tại');return;}
+    S.settings.customerOutStatuses.push(v);save();toast('Đã thêm trạng thái kết thúc chu kỳ');
+  }
+  else if(a==='customerDel'){
+    const i=+b.dataset.i,arr=S.settings.customerOutStatuses||[],name=arr[i];
+    if(name!==undefined&&confirm(`Xóa "${name}" khỏi cấu hình cho các lần xuất tiếp theo? Lịch sử giao dịch không bị thay đổi.`)){arr.splice(i,1);save();toast('Đã xóa trạng thái khỏi cấu hình');}
+  }
+  else if(a==='add')settingsAdd(kind);
   else if(a==='del'){const i=+b.dataset.i,name=S.settings[kind][i];if(confirm(`Xóa "${name}" khỏi danh mục?`)){S.settings[kind].splice(i,1);save();}}
   else if(a==='layout'){
     const days=Math.max(1,Math.min(12,+$('#ly_days').value||5)),rows=Math.max(1,Math.min(60,+$('#ly_rows').value||20));
@@ -1728,7 +1771,7 @@ $('#fileJson').onchange=async e=>{
 /* ================== XUẤT / NHẬP EXCEL THUẦN JS (APK READY) ================== */
 async function exportYardXlsx(){
   const act=active().sort((a,b)=>(age(b)??9999)-(age(a)??9999));
-  const hdr=['STT','Biển số / VIN','Loại xe','Dòng xe','Màu sắc','Ngày nhập đầu','Ngày nhập mới nhất','Tuổi tồn (ngày)','Vị trí','Tình trạng','Người gửi','Ghi chú'];
+  const hdr=['STT','Biển số / VIN','Loại xe','Dòng xe','Màu sắc','Ngày bắt đầu chu kỳ','Ngày nhập gần nhất','Tuổi tồn (ngày)','Vị trí','Tình trạng','Người gửi','Ghi chú'];
   const rows=[
     [{v:'DANH SÁCH XE TỒN BÃI 34',s:2}],
     ['Ngày xuất',fmt(todayISO()),'Tổng số xe tồn',{v:act.length,s:2}],
@@ -1773,7 +1816,7 @@ async function exportXlsx(){
     const x=veh(v.key);
     allRows.push([v.key,x.plate||'',x.vin||'',x.model||'',x.color||'',isValidInDate(v.inDate)?v.inDate:'0',v.pos?posLabel(v.pos):'',v.pos||'',v.party||'',v.statusIn||'',v.noteIn||'',v.outDate||'',v.statusOut||'',v.receiver||'',v.noteOut||'']);
   });
-  const yardRows=[['STT','Biển số/VIN','Loại xe','Dòng xe','Màu sắc','Ngày nhập đầu','Ngày nhập mới nhất','Tuổi tồn','Vị trí','Tình trạng','Người gửi','Ghi chú']];
+  const yardRows=[['STT','Biển số/VIN','Loại xe','Dòng xe','Màu sắc','Ngày bắt đầu chu kỳ','Ngày nhập gần nhất','Tuổi tồn','Vị trí','Tình trạng','Người gửi','Ghi chú']];
   active().forEach((v,i)=>{
     const x=veh(v.key);
     const firstIn=firstInDateOf(v.key);
