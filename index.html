@@ -3,31 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Chat ERP Bãi Xe 34</title>
+<title>ERP Bãi Xe 34</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="./html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap&subset=vietnamese" rel="stylesheet">
 <script>
-tailwind.config={theme:{extend:{colors:{navy:'#13294B',bgm:'#F4F7FA',vf:'#1E62D0'},fontFamily:{sans:['Inter','system-ui','sans-serif']}}}};
+if(window.tailwind)tailwind.config={theme:{extend:{colors:{navy:'#13294B',bgm:'#F4F7FA',vf:'#1E62D0'},fontFamily:{sans:['Inter','system-ui','sans-serif']}}}};
 </script>
 <style>
 html,body{height:100%;margin:0;font-family:Inter,system-ui,sans-serif;background:#F4F7FA;color:#1f2937}
+body{padding-top:env(safe-area-inset-top)}
 .card{background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(16,24,40,.08);border:1px solid #e8edf3}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;border-radius:10px;font-weight:600;font-size:14px;border:1px solid #cfd8e3;background:#fff;color:#1f2937;cursor:pointer;transition:.15s}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;border-radius:10px;font-weight:600;font-size:14px;border:1px solid #cfd8e3;background:#fff;color:#1f2937;cursor:pointer;transition:.15s;touch-action:manipulation}
 .btn:hover{background:#f1f5f9}
 .btn-primary{background:#1E62D0;border-color:#1E62D0;color:#fff}
 .btn-primary:hover{background:#1851ad}
 .btn-red{background:#fff;border-color:#f3c0c0;color:#c62828}
 .btn-red:hover{background:#fdeeee}
 .btn-sm{padding:5px 10px;font-size:12px;border-radius:8px}
-.inp{width:100%;border:1px solid #cfd8e3;border-radius:10px;padding:8px 12px;font-size:14px;background:#fff;outline:none}
+.inp{width:100%;border:1px solid #cfd8e3;border-radius:10px;padding:8px 12px;font-size:15px;background:#fff;outline:none}
 .inp:focus{border-color:#1E62D0;box-shadow:0 0 0 3px rgba(30,98,208,.15)}
 .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
-.nav-btn{display:flex;align-items:center;gap:12px;width:100%;padding:11px 14px;border-radius:10px;color:#dbe6f6;font-size:15px;text-align:left;transition:.15s}
-.nav-btn:hover{background:rgba(255,255,255,.08)}
-.nav-btn.active{background:#2a5ba8;color:#fff;font-weight:600}
-.bubble-bot{background:#eef2f7;border-radius:16px;padding:12px 14px}
-.bubble-user{background:#cfe1fb;border-radius:16px;padding:10px 16px}
 .cell{height:28px;border-radius:5px;font-size:10px;font-weight:700;line-height:28px;text-align:center;overflow:hidden;white-space:nowrap;cursor:pointer;border:1px solid transparent;padding:0 2px;letter-spacing:-0.2px}
 .cell.empty{background:#f1f5f9;border-color:#e2e8f0;color:#cbd5e1;font-weight:400}
 .cell.empty:hover{background:#dbeafe}
@@ -44,177 +40,103 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,sans-serif;background
 .g3{background:#f8c4c4;color:#9b1c1c;border-color:#ee9a9a}
 .gx{background:#e5e7eb;color:#374151;border-color:#cbd0d8}
 table.t{width:100%;border-collapse:collapse;font-size:13px}
-table.t th{background:#f1f5f9;text-align:left;padding:9px 10px;font-weight:700;color:#475569;white-space:nowrap;position:sticky;top:0}
+table.t th{background:#f1f5f9;text-align:left;padding:9px 10px;font-weight:700;color:#475569;white-space:nowrap;position:sticky;top:0;z-index:1}
 table.t td{padding:8px 10px;border-top:1px solid #eef2f6;vertical-align:middle}
 table.t tr:hover td{background:#fafcff}
 table.t tr.clickable{cursor:pointer}
 table.t tr.clickable:hover td{background:#eff6ff}
-#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#13294B;color:#fff;padding:10px 18px;border-radius:12px;font-size:14px;z-index:100;display:none;max-width:90vw}
-.rec{background:#fee2e2!important;color:#dc2626!important}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#13294B;color:#fff;padding:10px 18px;border-radius:12px;font-size:14px;z-index:120;display:none;max-width:90vw;box-shadow:0 8px 24px rgba(19,41,75,.28)}
 .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none;margin-top:6px}
-#sidebar{transition:transform .25s}
-@media(max-width:1023px){#sidebar{transform:translateX(-100%)}#sidebar.open{transform:translateX(0)}}
-.msg{animation:fadeIn .25s}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
 [contenteditable]:focus{outline:2px solid #1E62D0;outline-offset:4px;border-radius:6px}
-/* Tìm xe / kéo thả trên sơ đồ */
 .cell:not(.empty),.wchip{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .cell.hl{outline:3px solid #facc15;outline-offset:1px;background:#16a34a!important;color:#fff!important;animation:hlpulse 1s ease-in-out infinite;position:relative;z-index:2}
 @keyframes hlpulse{50%{box-shadow:0 0 0 6px rgba(250,204,21,.45)}}
 .cell.dragging,.wchip.dragging{opacity:.35}
 .drop-ok{outline:3px solid #16a34a!important;outline-offset:1px;background:#bbf7d0!important;color:#14532d!important}
-#dragGhost{position:fixed;z-index:90;pointer-events:none;padding:6px 12px;border-radius:10px;background:#13294B;color:#fff;font-weight:700;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,.3);transform:translate(-50%,-130%)}
-/* Thanh điều hướng dưới (điện thoại) */
+#dragGhost{position:fixed;z-index:110;pointer-events:none;padding:6px 12px;border-radius:10px;background:#13294B;color:#fff;font-weight:700;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,.3);transform:translate(-50%,-130%)}
 .qchip{padding:9px 14px;border-radius:999px;border:1.5px solid #cfd8e3;background:#fff;font-size:14px;font-weight:600;color:#1f2937;cursor:pointer}
 .qchip:hover{background:#eff6ff}
 .qchip.on{background:#13294B;border-color:#13294B;color:#fff}
 .qchip.go{background:#1E62D0;border-color:#1E62D0;color:#fff}
-.bn-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 2px 7px;font-size:11px;color:#64748b;background:none;border:0}
-.bn-btn span:first-child{font-size:20px;line-height:1.1}
-.bn-btn.active{color:#1E62D0;font-weight:700}
-@media(max-width:1023px){#toast{bottom:140px}}
+
+/* Giao diện ERP 1 trang chủ duy nhất */
+#appShell{max-width:1200px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
+.app-topbar{position:sticky;top:0;z-index:30;height:60px;background:#fff;border-bottom:1px solid #e5ebf2;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+.brand-lockup{display:flex;align-items:center;gap:10px}
+.brand-mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#13294B,#1E62D0);color:#fff;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(30,98,208,.25)}
+.brand-title{font-size:17px;font-weight:900;letter-spacing:.04em;color:#13294B;line-height:1.1}
+.brand-sub{font-size:11px;color:#64748b;font-weight:600}
+.header-status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;padding:5px 10px;border-radius:999px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#16a34a}
+
+.workspace-head{padding:14px 16px;background:#fff;border-bottom:1px solid #e5ebf2;position:relative;z-index:25}
+.global-search-wrap{position:relative;display:flex;align-items:center;border:1.5px solid #cbd5e1;border-radius:14px;background:#f8fafc;min-height:48px;transition:.15s}
+.global-search-wrap:focus-within{border-color:#1E62D0;background:#fff;box-shadow:0 0 0 3px rgba(30,98,208,.14)}
+.search-symbol{font-size:20px;color:#64748b;padding:0 10px 0 14px}
+.global-search-wrap input{flex:1;min-width:0;border:0;background:transparent;font-size:16px;font-weight:600;color:#0f172a;outline:none;padding:10px 4px}
+.global-search-wrap input::placeholder{color:#94a3b8;font-weight:400;font-size:14px}
+.search-clear{width:38px;height:38px;border:0;background:transparent;color:#64748b;font-size:22px;cursor:pointer}
+.search-suggestions{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:40;background:#fff;border:1px solid #cbd5e1;border-radius:14px;box-shadow:0 12px 30px rgba(15,23,42,.16);max-height:60vh;overflow:auto}
+
+.nav-pills{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:12px}
+.nav-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;color:#1e293b;font-size:12px;font-weight:700;cursor:pointer;transition:.15s;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.nav-pill:hover{background:#f1f5f9;border-color:#cbd5e1}
+.nav-pill.active{background:#1E62D0;border-color:#1E62D0;color:#fff;box-shadow:0 3px 10px rgba(30,98,208,.25)}
+.nav-pill .np-ico{font-size:18px;line-height:1}
+@media(max-width:640px){
+  .nav-pills{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+}
+#modal{z-index:90}
+#modalBody{overscroll-behavior:contain}
+button{-webkit-tap-highlight-color:transparent}
 </style>
 </head>
 <body>
-<!-- MÀN HÌNH ĐĂNG NHẬP ẢO -->
-<div id="authScreen" class="fixed inset-0 z-[90] bg-gradient-to-br from-navy via-[#1b3b6f] to-vf flex items-center justify-center p-4 hidden">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 relative">
-    <button type="button" onclick="closeAdminLogin()" class="absolute right-4 top-3 text-xl text-slate-400 hover:text-slate-700" title="Đóng">✕</button>
-    <div class="flex items-center gap-3 mb-6">
-      <div class="w-12 h-12 rounded-xl bg-vf text-white flex items-center justify-center text-2xl shadow">🚗</div>
+<div id="appShell">
+  <header class="app-topbar">
+    <div class="brand-lockup">
+      <div class="brand-mark">34</div>
       <div>
-        <div class="text-xl font-extrabold text-navy">Đăng nhập Quản trị viên</div>
-        <div class="text-xs text-slate-500">Chat ERP Bãi Xe 34 · Dành cho Admin</div>
+        <div class="brand-title">BÃI XE 34</div>
+        <div class="brand-sub">HỆ THỐNG QUẢN LÝ BÃI XE ERP</div>
       </div>
     </div>
-    <form id="loginForm" class="space-y-4">
-      <div>
-        <label class="text-sm font-semibold text-slate-700 block mb-1">Tài khoản (Email)</label>
-        <input type="email" id="loginUser" class="inp" placeholder="Nhập email đăng nhập..." required autocomplete="username">
-      </div>
-      <div>
-        <label class="text-sm font-semibold text-slate-700 block mb-1">Mật khẩu</label>
-        <div class="relative">
-          <input type="password" id="loginPass" class="inp pr-10" placeholder="Nhập mật khẩu..." required autocomplete="current-password">
-          <button type="button" onclick="const i=$('#loginPass');i.type=i.type==='password'?'text':'password'" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm">👁️</button>
-        </div>
-      </div>
-      <div id="loginErr" class="hidden text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2"></div>
-      <button type="submit" class="btn btn-primary w-full py-2.5 text-base shadow-sm">🔐 Đăng nhập Admin</button>
-      <button type="button" onclick="closeAdminLogin()" class="btn w-full">Tiếp tục xem với tư cách Người xem</button>
-    </form>
-  </div>
+    <div class="header-status"><span class="status-dot"></span><span>IndexedDB Offline</span></div>
+  </header>
+
+  <section class="workspace-head">
+    <div class="global-search-wrap">
+      <span class="search-symbol">🔎</span>
+      <input id="globalSearch" type="text" inputmode="text" placeholder="Nhập biển số (VD: 50H12345 hoặc 12345) hay 6 số VIN…" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false">
+      <button type="button" class="search-clear" onclick="clearGlobalSearch()" aria-label="Xóa tìm kiếm">×</button>
+      <div id="globalSuggest" class="search-suggestions hidden"></div>
+    </div>
+
+    <div class="nav-pills" role="navigation" aria-label="Chức năng chính">
+      <button type="button" class="nav-pill active" data-tab="dash" onclick="setTab('dash')"><span class="np-ico">🗺️</span><span>Sơ đồ</span></button>
+      <button type="button" class="nav-pill" data-tab="hist" onclick="setTab('hist')"><span class="np-ico">🕘</span><span>Lịch sử</span></button>
+      <button type="button" class="nav-pill" data-tab="report" onclick="setTab('report')"><span class="np-ico">📊</span><span>Báo cáo</span></button>
+      <button type="button" class="nav-pill" data-tab="settings" onclick="setTab('settings')"><span class="np-ico">⚙️</span><span>Cài đặt</span></button>
+      <button type="button" class="nav-pill" onclick="openNewImportDialog()" style="border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8"><span class="np-ico">➕</span><span>Nhập xe</span></button>
+      <button type="button" class="nav-pill" onclick="openExportDialog()" style="border-color:#fed7aa;background:#fff7ed;color:#c2410c"><span class="np-ico">📤</span><span>Xuất xe</span></button>
+    </div>
+  </section>
+
+  <main class="flex-1 p-3 sm:p-5">
+    <div id="actionPanel" class="hidden card p-3 sm:p-4 mb-4 border-2 border-blue-200 bg-blue-50/30"></div>
+    <section id="tab-dash"><div id="dashBox"></div></section>
+    <section id="tab-hist" class="hidden"><div id="histBox"></div></section>
+    <section id="tab-report" class="hidden"><div id="reportBox"></div></section>
+    <section id="tab-settings" class="hidden"><div id="settingsBox"></div></section>
+  </main>
 </div>
 
-<div id="appShell" class="flex h-full hidden" style="height:100dvh">
-  <div id="overlay" class="fixed inset-0 bg-black/40 z-30 hidden lg:hidden" onclick="toggleSidebar(false)"></div>
-  <aside id="sidebar" class="fixed lg:static z-40 inset-y-0 left-0 w-64 bg-navy text-white flex flex-col flex-none">
-    <div class="flex items-center gap-3 px-4 py-5">
-      <div class="w-11 h-11 rounded-xl bg-vf flex items-center justify-center text-2xl flex-none">🚗</div>
-      <div class="font-bold leading-tight text-lg">Chat ERP<br>Bãi Xe 34</div>
-    </div>
-    <nav class="px-3 space-y-1 flex-1 overflow-auto" id="nav">
-      <button class="nav-btn" data-tab="chat"><span>💬</span>Chat (ERP)</button>
-      <button class="nav-btn" data-tab="dash"><span>📊</span>Dashboard</button>
-      <button class="nav-btn" data-tab="yard"><span>🚘</span>Xe trong bãi</button>
-      <button class="nav-btn" data-tab="hist"><span>🕘</span>Lịch sử giao dịch</button>
-      <button class="nav-btn" data-tab="report"><span>📈</span>Báo cáo</button>
-      <button class="nav-btn" data-tab="settings"><span>⚙️</span>Cài đặt</button>
-    </nav>
-    <div class="px-4 py-3 border-t border-white/10 text-xs space-y-2" id="sidebarCloudBox">
-      <div class="flex items-center justify-between">
-        <span id="sidebarStatus" class="text-green-300 font-semibold">● Offline sẵn sàng</span>
-        <button type="button" id="btnSideConfig" onclick="setTab('settings')" class="text-blue-200 hover:text-white underline">Cấu hình</button>
-      </div>
-      <div class="flex items-center gap-1.5">
-        <button type="button" id="btnToggleCloudSide" onclick="toggleCloudMode()" class="flex-1 py-1.5 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold text-left truncate">🔌 Online: TẮT</button>
-        <button type="button" id="btnSyncNowSide" onclick="syncAllNow()" class="py-1.5 px-2.5 rounded-lg bg-vf hover:bg-blue-500 text-white font-semibold" title="Đẩy dữ liệu lên Google Sheets">🔄</button>
-      </div>
-    </div>
-    <div class="px-4 py-3 border-t border-white/10 bg-black/15 text-xs flex items-center justify-between gap-2">
-      <div class="min-w-0">
-        <div id="authUserLabel" class="font-bold text-white truncate">—</div>
-        <div id="authRoleBadge" class="text-[11px] text-blue-200">—</div>
-      </div>
-      <button type="button" id="btnAuthAction" onclick="authAction()" class="py-1.5 px-2.5 rounded-lg bg-blue-500/30 hover:bg-blue-500/50 text-blue-100 font-semibold flex-none">🔐 Admin</button>
-    </div>
-  </aside>
-
-  <div class="flex-1 min-w-0 flex flex-col">
-    <header class="bg-white border-b border-slate-200 px-3 sm:px-6 py-3 flex items-center gap-3 flex-none">
-      <button class="lg:hidden w-10 h-10 rounded-lg border border-slate-200 text-xl" onclick="toggleSidebar(true)">☰</button>
-      <div class="min-w-0 flex-1">
-        <div id="pgTitle" class="text-lg sm:text-xl font-bold truncate">Chat quản lý bãi xe</div>
-        <div id="pgSub" class="text-sm text-slate-500 truncate"></div>
-      </div>
-      <div class="flex items-center gap-1.5">
-        <button type="button" id="hdrCloudToggle" onclick="toggleCloudMode()" class="flex items-center gap-1.5 border border-slate-200 rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold bg-slate-50 hover:bg-slate-100" title="Bật/Tắt chế độ đồng bộ Online">
-          <span id="hdrCloudDot" class="w-2.5 h-2.5 rounded-full bg-slate-400 inline-block"></span>
-          <span id="hdrCloudLabel">Offline</span>
-        </button>
-        <button type="button" id="hdrSyncBtn" onclick="syncAllNow()" class="flex items-center gap-1 border border-blue-200 bg-blue-50 text-vf hover:bg-blue-100 rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold" title="Admin chủ động đẩy dữ liệu lên Google Sheets">
-          <span id="hdrSyncIcon">🔄</span><span class="hidden md:inline">Đồng bộ</span>
-        </button>
-      </div>
-      <button type="button" id="hdrAuthBtn" onclick="authAction()" class="flex items-center gap-1 border border-slate-300 rounded-full px-3 py-1.5 text-xs sm:text-sm font-semibold bg-white hover:bg-slate-100">🔐 <span id="hdrAuthLabel">Đăng nhập Admin</span></button>
-      <div class="hidden lg:flex items-center gap-2 border border-slate-200 rounded-full px-4 py-2 text-sm font-semibold">🏢 Bãi Xe 34</div>
-    </header>
-
-    <main class="flex-1 min-h-0 relative">
-      <!-- CHAT -->
-      <section id="tab-chat" class="absolute inset-0 flex flex-col">
-        <div id="chatLog" class="flex-1 overflow-auto px-3 sm:px-8 py-5 space-y-5"></div>
-        <div class="px-3 sm:px-8 pb-3 pt-1 relative flex-none">
-          <div class="bg-white border border-slate-200 rounded-2xl p-2 flex items-center gap-2 shadow-sm">
-            <button id="camBtn" class="w-10 h-10 rounded-full bg-vf text-white text-xl flex-none" title="Chụp biển số / VIN">📷</button>
-            <input id="chatInput" class="flex-1 min-w-0 bg-slate-50 border border-slate-200 rounded-full px-4 py-2.5 outline-none text-[16px]" placeholder="Gõ biển số / VIN hoặc bấm 📷…" autocomplete="off" autocapitalize="characters">
-            <button id="micBtn" class="w-10 h-10 rounded-full text-slate-500 flex-none text-lg">🎤</button>
-            <button id="sendBtn" class="w-11 h-11 rounded-xl bg-vf text-white flex-none text-lg">➤</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- DASHBOARD -->
-      <section id="tab-dash" class="absolute inset-0 overflow-auto p-3 sm:p-6 hidden"><div id="dashBox"></div></section>
-      <!-- YARD -->
-      <section id="tab-yard" class="absolute inset-0 overflow-auto p-3 sm:p-6 hidden"><div id="yardBox"></div></section>
-      <!-- HISTORY -->
-      <section id="tab-hist" class="absolute inset-0 overflow-auto p-3 sm:p-6 hidden"><div id="histBox"></div></section>
-      <!-- REPORT -->
-      <section id="tab-report" class="absolute inset-0 overflow-auto p-3 sm:p-6 hidden"><div id="reportBox"></div></section>
-      <!-- SETTINGS -->
-      <section id="tab-settings" class="absolute inset-0 overflow-auto p-3 sm:p-6 hidden"><div id="settingsBox"></div></section>
-    </main>
-    <nav id="bottomNav" class="lg:hidden flex-none flex bg-white border-t border-slate-200" style="padding-bottom:env(safe-area-inset-bottom)">
-      <button type="button" class="bn-btn" data-btab="chat"><span>💬</span><span>Chat</span></button>
-      <button type="button" class="bn-btn" data-btab="dash"><span>🗺️</span><span>Sơ đồ</span></button>
-      <button type="button" class="bn-btn" data-btab="yard"><span>🚘</span><span>Xe</span></button>
-      <button type="button" class="bn-btn" data-btab="hist"><span>🕘</span><span>Lịch sử</span></button>
-      <button type="button" class="bn-btn" data-btab="report"><span>📈</span><span>Báo cáo</span></button>
-      <button type="button" class="bn-btn" onclick="toggleSidebar(true)"><span>☰</span><span>Thêm</span></button>
-    </nav>
-  </div>
-</div>
-
-<div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-3">
-  <div class="bg-white rounded-2xl w-full max-w-xl max-h-[92vh] overflow-auto shadow-2xl" id="modalBody"></div>
-</div>
-<div id="viewerGate" class="fixed inset-0 z-[80] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 text-center">
-    <div class="w-14 h-14 rounded-2xl bg-blue-50 text-vf text-3xl flex items-center justify-center mx-auto mb-3">📋</div>
-    <h2 class="text-xl font-extrabold text-navy">Kiểm tra dữ liệu mới</h2>
-    <p class="text-sm text-slate-500 mt-2">Viewer phải kiểm tra dữ liệu trước khi xem Lịch sử giao dịch.</p>
-    <div id="viewerGateStatus" class="mt-4 rounded-xl bg-slate-50 border border-slate-200 p-3 text-sm text-slate-600">Sẵn sàng kiểm tra dữ liệu từ Google Sheets.</div>
-    <button id="viewerCheckBtn" type="button" class="btn btn-primary w-full mt-4 py-3" onclick="viewerCheckData()">🔄 Kiểm tra dữ liệu</button>
-    <div class="flex items-center gap-3 my-4"><div class="h-px bg-slate-200 flex-1"></div><span class="text-[11px] text-slate-400">HOẶC</span><div class="h-px bg-slate-200 flex-1"></div></div>
-    <button type="button" class="btn w-full py-3 border border-blue-200 text-vf bg-blue-50 hover:bg-blue-100" onclick="openAdminLogin()">🔐 Đăng nhập Admin</button>
-    <div class="text-[11px] text-slate-400 mt-3">Viewer cần kiểm tra dữ liệu mỗi lần mở ứng dụng. Admin đăng nhập để quản trị và chủ động đẩy dữ liệu.</div>
-  </div>
+<div id="modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 p-3">
+  <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[92dvh] overflow-auto shadow-2xl" id="modalBody"></div>
 </div>
 <div id="toast"></div>
 <input type="file" id="fileJson" accept=".json,application/json" class="hidden">
 <input type="file" id="fileXlsx" accept=".xlsx" class="hidden">
-<input type="file" id="fileCam" accept="image/*" capture="environment" class="hidden">
 
 <script>
 /* ================== TIỆN ÍCH ================== */
@@ -224,26 +146,40 @@ const p2=n=>String(n).padStart(2,'0');
 const isoOf=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
 const todayISO=()=>isoOf(new Date());
 const toD=iso=>{const [y,m,d]=iso.split('-').map(Number);return new Date(Date.UTC(y,m-1,d));};
-const addDays=(iso,n)=>{const d=toD(iso);d.setUTCDate(d.getUTCDate()+n);return `${d.getUTCFullYear()}-${p2(d.getUTCMonth()+1)}-${p2(d.getUTCDate())}`;};
+const addDays=(iso,n)=>{const d=toD(iso);d.setUTCDate(d.getUTCDate()+n);return `${d.getFullYear()}-${p2(d.getUTCMonth()+1)}-${p2(d.getUTCDate())}`;};
 const diff=(a,b)=>Math.round((toD(b)-toD(a))/864e5);
 const fmt=iso=>iso?iso.split('-').reverse().join('/'):'0 (Thiếu ngày)';
 const shortD=iso=>iso?iso.slice(8)+'/'+iso.slice(5,7):'';
 const mondayOf=iso=>addDays(iso,-((toD(iso).getUTCDay()+6)%7));
-const timeNow=()=>{const d=new Date();return p2(d.getHours())+':'+p2(d.getMinutes());};
 const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'d').toLowerCase().trim();
 const cleanId=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-const isPlate=s=>/^\d{2}[A-Z]{1,2}\d{4,6}$/.test(s);
+const isFullPlate=s=>/^\d{2}[A-Z]{1,2}\d{4,6}$/.test(s);
+const isShortPlate=s=>/^\d{4,5}$/.test(s);
+const isPlate=s=>isFullPlate(s)||isShortPlate(s);
+function idTypeLabel(id){
+  if(!id) return 'Chưa rõ mã';
+  if(isFullPlate(id)) return 'Xe có biển số';
+  if(isShortPlate(id)) return 'Biển thiếu đầu (5 số)';
+  if(/^\d{6}$/.test(id)) return 'Xe mới 6 số VIN';
+  return 'Mã nhận dạng';
+}
+function nextTempKey(){
+  let n=1;
+  while(S.vehicles['CHUA-RO-'+p2(n)]) n++;
+  return 'CHUA-RO-'+p2(n);
+}
 function toast(msg){const t=$('#toast');t.textContent=msg;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2600);}
 function countBy(arr,fn){const m={};arr.forEach(x=>{const k=fn(x);m[k]=(m[k]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));}
 
 /* ================== TẢI FILE / CHIA SẺ CHUẨN APK ================== */
-async function saveOrShareBlob(blob, filename, title='Bãi Xe 34'){
-  // Android: use the system "Create document" picker so the user saves a real file
-  // into Downloads or another chosen folder, instead of the app's temporary CACHE.
+async function saveOrShareBlob(blob, filename){
   const cap=window.Capacitor;
-  if(cap && typeof cap.isNativePlatform==='function' && cap.isNativePlatform() && typeof cap.registerPlugin==='function'){
+  if(cap && typeof cap.isNativePlatform==='function' && cap.isNativePlatform()){
     try{
-      const FileExport=cap.registerPlugin('FileExport');
+      const FileExport=cap.Plugins && cap.Plugins.FileExport;
+      if(!FileExport || typeof FileExport.saveFile!=='function'){
+        throw new Error('Không tìm thấy cầu nối FileExport của Android. Vui lòng cài đúng bản APK mới.');
+      }
       const base64=await new Promise((resolve,reject)=>{
         const reader=new FileReader();
         reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');
@@ -259,13 +195,12 @@ async function saveOrShareBlob(blob, filename, title='Bãi Xe 34'){
       if(!saved||!saved.uri)throw new Error('Android chưa xác nhận lưu file.');
       return true;
     }catch(e){
-      if(e && (e.name==='AbortError'||(String(e.message||'').toLowerCase().includes('cancel')||String(e.message||'').toLowerCase().includes('hủy'))))return false;
+      if(e && (e.name==='AbortError'||String(e.message||'').toLowerCase().includes('cancel')||String(e.message||'').toLowerCase().includes('hủy')))return false;
       console.error('Native file export failed:',e);
       toast('Không thể lưu file vào điện thoại: '+(e.message||e));
       return false;
     }
   }
-  // Browser fallback (GitHub Pages / desktop Chrome).
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=filename;
   document.body.appendChild(a);a.click();
@@ -293,11 +228,11 @@ function colL(i){let s='';i++;while(i>0){const m=(i-1)%26;s=String.fromCharCode(
 function colIdx(ref){const m=/^([A-Z]+)/.exec(ref||'A');let n=0;for(const ch of m[1])n=n*26+ch.charCodeAt(0)-64;return n-1;}
 function buildXlsx(sheets){
   const H='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main',RN='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
-  const files=[{name:'[Content_Types].xml',data:`${H}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`},
+  const files=[{name:'[Content_Types].xml',data:`${H}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`},
    {name:'_rels/.rels',data:`${H}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${RN}/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
    {name:'xl/workbook.xml',data:`${H}<workbook xmlns="${NS}" xmlns:r="${RN}"><sheets>${sheets.map((s,i)=>`<sheet name="${xesc(s.name.replace(/[\[\]:*?\/\\]/g,'-').slice(0,31))}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`},
    {name:'xl/_rels/workbook.xml.rels',data:`${H}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="${RN}/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length+1}" Type="${RN}/styles" Target="styles.xml"/></Relationships>`},
-   {name:'xl/styles.xml',data:`${H}<styleSheet xmlns="${NS}"><fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="13"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1E62D0"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs></styleSheet>`}];
+   {name:'xl/styles.xml',data:`${H}<styleSheet xmlns="${NS}"><fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="13"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1E62D0"/></fill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs></styleSheet>`}];
   sheets.forEach((s,i)=>{const hdr=s.hdr??0;
     const rows=s.rows.map((r,ri)=>{const cells=r.map((c,ci)=>{let v=c,sty=ri===hdr?1:0;if(c&&typeof c==='object'){v=c.v;sty=c.s??sty;}if(v===null||v===undefined||v==='')return ri===hdr?`<c r="${colL(ci)}${ri+1}" s="1"/>`:'';
       const ref=`${colL(ci)}${ri+1}`;return typeof v==='number'?`<c r="${ref}"${sty?` s="${sty}"`:''}><v>${v}</v></c>`:`<c r="${ref}"${sty?` s="${sty}"`:''} t="inlineStr"><is><t xml:space="preserve">${xesc(v)}</t></is></c>`;}).join('');
@@ -314,9 +249,9 @@ async function unzipXlsx(buf){
     const method=dv.getUint16(p+10,true),cs=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
     const name=new TextDecoder().decode(u.subarray(p+46,p+46+nl));p+=46+nl+el+cl;
     const st0=lo+30+dv.getUint16(lo+26,true)+dv.getUint16(lo+28,true),data=u.subarray(st0,st0+cs);
-    files[name]=async()=>{if(method===0)return data;if(method!==8)throw new Error('File Excel dùng kiểu nén không được hỗ trợ (ZIP method '+method+'). Hãy mở và lưu lại dưới dạng .xlsx bằng Excel.');if(typeof DecompressionStream==='undefined')throw new Error('Android System WebView quá cũ để đọc file Excel nén. Hãy cập nhật Android System WebView/Chrome rồi thử lại.');
+    files[name]=async()=>{if(method===0)return data;if(method!==8)throw new Error('File Excel dùng kiểu nén không được hỗ trợ.');if(typeof DecompressionStream==='undefined')throw new Error('WebView quá cũ để đọc file Excel nén.');
       try{return new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());}
-      catch(e){throw new Error('Không giải nén được file Excel. Hãy mở file bằng Excel và lưu lại dưới dạng .xlsx mới. '+(e.message||''));}};}
+      catch(e){throw new Error('Không giải nén được file Excel: '+(e.message||''));}};}
   return files;
 }
 async function readXlsxPure(file){
@@ -345,79 +280,86 @@ async function readXlsxPure(file){
   return out;
 }
 
-/* ================== DỮ LIỆU & QUY TẮC TÍNH TUỔI TỒN ================== */
+/* ================== INDEXEDDB LƯU TRỮ OFFLINE 100% ================== */
 const LS='erp_bai_xe_34_v1';
+const DB_NAME='Baixe34ERP',DB_VERSION=1,DB_STORE='app';
+let dbPromise=null;
 let S;
-const PRESET_CLOUD={
-  gsUrl:'https://script.google.com/macros/s/AKfycby8v61Wu8tLmf4m78cvyxkeOEmAXHmbrMYIneVe8A2FSb4to6m3fIdo1D-cxeb6z3s/exec',
-  gsSheetName:'NhatKyBaiXe34'
-};
-const DEF_CLOUD=()=>({
-  onlineEnabled:false,
-  autoSync:false,
-  gsEnabled:true,
-  gsUrl:PRESET_CLOUD.gsUrl,
-  gsSheetName:PRESET_CLOUD.gsSheetName,
-  gsLastVersion:'',
-  gsAdminToken:'',
-  lastSync:'',
-  lastSyncStatus:'Chưa đồng bộ'
-});
+
 const DEF_SETTINGS=()=>({
   statusIn:['Chờ sửa chữa','Chờ giao GSM','Lưu kho','CSM gửi','Xe mới lưu kho'],
   statusOut:['Xe mới xuất bãi','Giao GSM','Giao khách','Đã sửa xong','CSM nhận lại'],
   models:['VFe34','VF 5','Limo Green','VF 8','VF 7','Minio Green','Herio Green','EC Van','Dòng khác'],
-  layout:{days:5,rows:20,cols:['1T','1TLD','1PLD','1P']},
-  cloud:DEF_CLOUD()
+  layout:{days:5,rows:20,cols:['1T','1TLD','1PLD','1P']}
 });
-function ensureCloudCfg(){
-  if(!S.settings) S.settings=DEF_SETTINGS();
-  const prev=S.settings.cloud||{};
-  const merged=Object.assign(DEF_CLOUD(), prev);
-  merged.autoSync=false; // Chính sách: chỉ Admin chủ động đẩy dữ liệu
-  merged.gsEnabled=true;
-  S.settings.cloud=merged;
-  return S.settings.cloud;
+
+function openERPDB(){
+  if(dbPromise)return dbPromise;
+  dbPromise=new Promise((resolve,reject)=>{
+    const req=indexedDB.open(DB_NAME,DB_VERSION);
+    req.onupgradeneeded=e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains(DB_STORE))db.createObjectStore(DB_STORE);
+    };
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+  return dbPromise;
 }
-function load(){
-  try{S=JSON.parse(localStorage.getItem(LS));}catch(e){S=null;}
+async function idbGetState(){
+  const db=await openERPDB();
+  return new Promise((resolve,reject)=>{
+    const r=db.transaction(DB_STORE,'readonly').objectStore(DB_STORE).get('state');
+    r.onsuccess=()=>resolve(r.result||null);
+    r.onerror=()=>reject(r.error);
+  });
+}
+async function idbPutState(){
+  try{
+    const db=await openERPDB();
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(DB_STORE,'readwrite');
+      tx.objectStore(DB_STORE).put(S,'state');
+      tx.oncomplete=resolve;
+      tx.onerror=()=>reject(tx.error);
+    });
+  }catch(e){console.error('IndexedDB save error:',e);}
+}
+
+async function load(){
+  try{S=await idbGetState();}catch(e){S=null;}
+  if(!S){
+    try{const legacy=JSON.parse(localStorage.getItem(LS)||'null');if(legacy&&legacy.visits&&legacy.vehicles)S=legacy;}catch(e){}
+  }
   if(!S||!S.visits||!S.vehicles||!S.settings) S=sample();
-  ensureCloudCfg();
+  if(S.settings&&S.settings.cloud) delete S.settings.cloud;
+  await idbPutState();
 }
-function save(skipAutoPush){
+function save(){
   S.updatedAt=Date.now();
-  try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){toast('Không lưu được localStorage');}
-  updateCloudBadges();
+  idbPutState();
   refresh();
-  // Không tự động tải lên. Chỉ Admin chủ động bấm “Đẩy dữ liệu lên Google Sheets”.
 }
 
 const veh=k=>S.vehicles[k]||{key:k,plate:k,vin:'',model:'',color:''};
-const isNewV=v=>!v.plate;
+const isNewV=v=>!v.plate && /^\d{6}$/.test(v.vin||v.key||'');
 const active=()=>S.visits.filter(v=>!v.done);
 const activeOf=k=>S.visits.find(v=>v.key===k&&!v.done);
 const visitsOf=k=>S.visits.filter(v=>v.key===k).sort((a,b)=>(a.inDate||'').localeCompare(b.inDate||'')||a.id-b.id);
 
-/* QUY TẮC TÍNH NGÀY NHẬP GỐC & TUỔI TỒN XE:
-   - Nếu cột ngày nhập là 0 / null / rỗng -> trả về null (không có ngày nhập -> tính tuổi tồn >31 ngày, vẫn tính tồn bãi nếu chưa xuất).
-   - Nếu xe có lịch sử qua nhiều chu kỳ vào/ra: lấy ngày nhập sớm nhất (chu kỳ đầu tiên) làm mốc tính tuổi tồn xe cho đến hiện tại (hoặc ngày báo cáo refDate).
-   - Nếu chu kỳ đầu tiên bị thiếu ngày nhập (0/null), coi như thiếu ngày nhập (null -> nhóm >31 ngày). */
 const isValidInDate=d=>Boolean(d && String(d).trim() && String(d).trim()!=='0' && /^\d{4}-\d{2}-\d{2}$/.test(String(d).trim()));
-
 function firstInDateOf(k, upToDate){
   const vs=visitsOf(k).filter(x=>!upToDate || !isValidInDate(x.inDate) || x.inDate<=upToDate);
   if(!vs.length) return null;
   if(vs.some(x=>!isValidInDate(x.inDate))) return null;
   return vs[0].inDate;
 }
-
 function age(v, refDate){
   const ref=refDate||todayISO();
   const baseDate=firstInDateOf(v.key, ref);
-  if(!isValidInDate(baseDate)) return null; // Ngày nhập = 0 / thiếu ngày -> null (xếp vào nhóm >31 ngày)
+  if(!isValidInDate(baseDate)) return null;
   return Math.max(0, diff(baseDate, ref));
 }
-
 const ageGroup=a=>a===null?3:a<=10?0:a<=20?1:a<=30?2:3;
 const posLabel=p=>{if(!p)return 'Chưa có vị trí';const [d,c,r]=p.split('|');return `Dãy ${d} · ${c} · ${p2(r)}`;};
 const posDay=p=>p?p.split('|')[0]:'';
@@ -441,7 +383,7 @@ function ageBadge(v){
   return `<span class="badge g${ageGroup(a)}">${a} ngày</span>`;
 }
 
-/* ---- dữ liệu mẫu ---- */
+/* ---- Dữ liệu mẫu khởi tạo lần đầu ---- */
 function sample(){
   let seed=34;const rnd=()=>(seed=(seed*1664525+1013904223)%4294967296)/4294967296;
   const pick=a=>a[Math.floor(rnd()*a.length)];
@@ -462,8 +404,8 @@ function sample(){
   const L=st.settings.layout;
   let pool=[];for(let d=1;d<=L.days;d++)L.cols.forEach(c=>{for(let r=1;r<=L.rows;r++)pool.push(`${d}|${c}|${r}`);});
   for(let i=pool.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
-  const addVisit=o=>{st.visits.push(Object.assign({id:nextIdS(),done:false,outDate:null,statusOut:'',receiver:'',noteOut:'',noteIn:'',pos:'',party:'',statusIn:'',inDate:null,created:Date.now()},o));};
   const nextIdS=()=>++st.seq;
+  const addVisit=o=>{st.visits.push(Object.assign({id:nextIdS(),done:false,outDate:null,statusOut:'',receiver:'',noteOut:'',noteIn:'',pos:'',party:'',statusIn:'',inDate:null,created:Date.now()},o));};
   const ageList=[];
   [0,0,0,1,1,1].forEach(a=>ageList.push(a));
   for(let i=0;i<20;i++)ageList.push(ri(2,10));
@@ -471,7 +413,7 @@ function sample(){
   for(let i=0;i<5;i++)ageList.push(ri(21,24));
   for(let i=0;i<5;i++)ageList.push(ri(25,30));
   for(let i=0;i<14;i++)ageList.push(ri(31,70));
-  for(let i=0;i<5;i++)ageList.push(null); // Xe có ngày nhập = 0 (thiếu ngày nhập)
+  for(let i=0;i<5;i++)ageList.push(null);
   ageList.forEach((a,i)=>{
     const isNew=(i%8===3&&a!==null&&a<=10);
     const model=pickModel(),color=pick(colors);
@@ -494,331 +436,42 @@ function sample(){
   return st;
 }
 
-
-/* ================== GOOGLE SHEETS: ADMIN ĐẨY THỦ CÔNG / VIEWER KIỂM TRA ================== */
-let cloudSyncing=false;
-function updateCloudBadges(){
-  const c=ensureCloudCfg();
-  const activeOnline=!!(c.gsUrl||'').trim();
-  const dot=$('#hdrCloudDot'), lbl=$('#hdrCloudLabel');
-  if(dot&&lbl){dot.className='w-2.5 h-2.5 rounded-full '+(cloudSyncing?'bg-amber-500':'bg-green-500')+' inline-block';lbl.textContent=cloudSyncing?'Đang xử lý...':(activeOnline?'Google Sheets':'Chưa cấu hình');}
-  ['hdrCloudToggle','btnToggleCloudSide'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});
-  const sideSt=$('#sidebarStatus');if(sideSt)sideSt.textContent=cloudSyncing?'● Đang xử lý...':(activeOnline?'● Google Sheets':'● Chưa cấu hình Sheet');
-  const sub=$('#pgSub');if(sub&&TAB==='chat')sub.textContent='Lưu Offline trên thiết bị · Google Sheets chỉ cập nhật khi Admin chủ động đẩy';
-}
-function toggleCloudMode(){toast('Đã khóa bật/tắt Online. Admin sử dụng nút Đẩy dữ liệu lên Google Sheets khi cần.');}
-function scheduleAutoPush(){/* cố ý vô hiệu hóa tự động tải lên */}
-function buildCloudPayload(){
-  const cleanSettings=JSON.parse(JSON.stringify(S.settings));
-  delete cleanSettings.cloud;
-  const rows=S.visits.slice().sort((a,b)=>a.id-b.id).map(v=>{
-    const x=veh(v.key);
-    return {id:v.id,key:v.key,plate:x.plate||'',vin:x.vin||'',model:x.model||'',color:x.color||'',inDate:isValidInDate(v.inDate)?v.inDate:'0',pos:v.pos||'',posLabel:v.pos?posLabel(v.pos):'Chưa có vị trí',party:v.party||'',statusIn:v.statusIn||'',noteIn:v.noteIn||'',done:!!v.done,outDate:v.outDate||'',statusOut:v.statusOut||'',receiver:v.receiver||'',noteOut:v.noteOut||''};
-  });
-  return {app:'ChatERP_BaiXe34',updatedAt:S.updatedAt||Date.now(),sheetName:ensureCloudCfg().gsSheetName||'NhatKyBaiXe34',vehicles:S.vehicles,visits:S.visits,notes:S.notes||{},seq:S.seq||0,settings:cleanSettings,flatRows:rows};
-}
-function applyRemoteSnapshot(remote,persist=true){
-  if(!remote||!remote.vehicles||!remote.visits) return false;
-  const keepCloud=Object.assign({},ensureCloudCfg());
-  S.vehicles=remote.vehicles;S.visits=remote.visits;S.notes=remote.notes||{};
-  S.seq=remote.seq||Math.max(0,...S.visits.map(v=>v.id||0));
-  if(remote.settings) S.settings=Object.assign(DEF_SETTINGS(),remote.settings,{cloud:keepCloud});
-  else S.settings.cloud=keepCloud;
-  S.updatedAt=remote.updatedAt||Date.now();
-  if(persist){try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}}
-  return true;
-}
-async function gsRequest(action,extra={}){
-  const c=ensureCloudCfg(),base=(c.gsUrl||'').trim();
-  if(!base)throw new Error('Chưa cấu hình URL Web App Google Apps Script trong Cài đặt.');
-  const url=new URL(base);url.searchParams.set('action',action);
-  Object.entries(extra).forEach(([k,v])=>url.searchParams.set(k,String(v)));
-  const res=await fetch(url.toString(),{method:'GET',cache:'no-store'});
-  if(!res.ok)throw new Error('Google Sheets HTTP '+res.status);
-  const data=await res.json();if(data&&data.error)throw new Error(data.error);
-  return data;
-}
-async function gsPull(version){
-  const data=await gsRequest('pull',{version});
-  return data&&data.payload?data.payload:data;
-}
-async function gsPush(payload){
-  const c=ensureCloudCfg(),base=(c.gsUrl||'').trim();
-  if(!base)throw new Error('Chưa nhập URL Google Apps Script');
-  const res=await fetch(base,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'push',token:c.gsAdminToken||'',payload})});
-  if(!res.ok)throw new Error('Google Sheets HTTP '+res.status);
-  const data=await res.json();if(data&&data.error)throw new Error(data.error);return data;
-}
-async function syncAllNow(mode='push'){
-  if(!AUTH_USER||AUTH_USER.role!=='admin'){toast('Chỉ Admin mới được đẩy dữ liệu.');return;}
-  if(mode!=='push'){toast('Đã tắt chức năng đồng bộ hai chiều.');return;}
-  const c=ensureCloudCfg();if(!c.gsUrl.trim()){toast('Vui lòng cấu hình URL Google Apps Script.');setTab('settings');return;}
-  if(!String(c.gsAdminToken||'').trim()){toast('Bạn đã đăng nhập Admin, nhưng chưa nhập Mã bảo vệ kết nối Google Sheets. Hãy vào Cài đặt.');setTab('settings');setTimeout(()=>$('#cl_gsAdminToken')?.focus(),150);return;}
-  if(!navigator.onLine){toast('Mất Internet — dữ liệu vẫn được lưu Offline trên thiết bị.');return;}
-  if(cloudSyncing)return;
-  cloudSyncing=true;updateCloudBadges();toast('Đang đẩy dữ liệu lên Google Sheets...');
-  try{
-    const result=await gsPush(buildCloudPayload());
-    c.gsLastVersion=result.version||'';c.lastSync=timeNow()+' '+fmt(todayISO());
-    c.lastSyncStatus='Đã đẩy thành công · '+(result.chunkCount||0)+' phần dữ liệu';
-    try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}
-    toast('Đã đẩy dữ liệu lên Google Sheets thành công.');
-  }catch(e){
-    const msg=String(e&&e.message||e);
-    c.lastSyncStatus='Lỗi đẩy dữ liệu: '+msg;
-    if(/mã Admin không hợp lệ|mã admin không hợp lệ|ADMIN_TOKEN/i.test(msg)){
-      toast('Mã bảo vệ Google Sheets không khớp. Mã này khác mật khẩu đăng nhập Admin. Hãy kiểm tra Cài đặt và Script Properties.');
-      setTab('settings');setTimeout(()=>$('#cl_gsAdminToken')?.focus(),150);
-    }else toast('Đẩy dữ liệu thất bại: '+msg);
-  }
-  finally{cloudSyncing=false;updateCloudBadges();if(TAB==='settings')renderSettings();}
-}
-const VIEWER_CACHE_LS='erp_bai_xe_34_viewer_snapshot_v1';
-let viewerVerified=false;
-let viewerLastCheckedAt=0;
-async function viewerCheckData(){
-  if(cloudSyncing)return;
-  const btn=$('#viewerCheckBtn'),status=$('#viewerGateStatus');
-  if(!navigator.onLine){status.textContent='Không có Internet. Không thể xác nhận dữ liệu mới nhất; hãy kết nối mạng rồi thử lại.';return;}
-  cloudSyncing=true;if(btn){btn.disabled=true;btn.textContent='Đang kiểm tra...';}status.textContent='Đang kiểm tra phiên bản dữ liệu trên Google Sheets...';
-  try{
-    const meta=await gsRequest('check');
-    if(!meta||!meta.version)throw new Error('Google Sheets chưa có bản dữ liệu được Admin đẩy lên.');
-    const c=ensureCloudCfg();
-    let cached=null;try{cached=JSON.parse(localStorage.getItem(VIEWER_CACHE_LS)||'null');}catch(e){}
-    if(!cached||cached.version!==meta.version||!cached.payload){
-      status.textContent='Phát hiện phiên bản mới hoặc chưa có bản lưu Viewer. Đang tải dữ liệu...';
-      const remote=await gsPull(meta.version);
-      if(!remote||!remote.vehicles||!remote.visits)throw new Error('Dữ liệu tải về không hợp lệ.');
-      cached={version:meta.version,payload:remote};
-      try{localStorage.setItem(VIEWER_CACHE_LS,JSON.stringify(cached));}catch(e){}
-      status.textContent='Đã tải dữ liệu mới nhất · '+new Date(Number(meta.updatedAt)||Date.now()).toLocaleString('vi-VN');
-    }else{
-      status.textContent='Phiên bản trên thiết bị trùng với Google Sheets. Đang mở bản dữ liệu đã xác nhận...';
-    }
-    if(!applyRemoteSnapshot(cached.payload,false))throw new Error('Không thể áp dụng dữ liệu Viewer đã tải.');
-    c.gsLastVersion=meta.version;
-    viewerLastCheckedAt=Date.now();
-    viewerVerified=true;
-    setTimeout(()=>{$('#viewerGate').classList.add('hidden');setTab('hist');toast('Đã xác nhận dữ liệu mới nhất.');},450);
-  }catch(e){status.textContent='Không thể kiểm tra dữ liệu: '+e.message;viewerVerified=false;}
-  finally{cloudSyncing=false;if(btn){btn.disabled=false;btn.textContent='🔄 Kiểm tra lại dữ liệu';}updateCloudBadges();}
-}
-
-// Viewer đã vào màn hình tra cứu có thể chủ động làm mới ngay tại đây.
-// Chỉ tải JSON khi phiên bản trên Google Sheets thay đổi hoặc thiết bị chưa có cache hợp lệ.
-async function viewerRefreshData(){
-  if(!AUTH_USER||AUTH_USER.role!=='viewer'||!viewerVerified){toast('Viewer cần xác nhận dữ liệu trước khi làm mới.');return;}
-  if(cloudSyncing)return;
-  if(!navigator.onLine){toast('Không có Internet. Dữ liệu đang hiển thị vẫn được giữ nguyên; hãy kết nối mạng rồi thử lại.');return;}
-  const btn=$('#viewerRefreshBtn'),label=$('#viewerRefreshStatus');
-  cloudSyncing=true;
-  if(btn){btn.disabled=true;btn.textContent='⏳ Đang làm mới...';}
-  if(label)label.textContent='Đang kiểm tra phiên bản dữ liệu trên Google Sheets...';
-  updateCloudBadges();
-  try{
-    const meta=await gsRequest('check');
-    if(!meta||!meta.version)throw new Error('Google Sheets chưa có bản dữ liệu được Admin đẩy lên.');
-    let cached=null;
-    try{cached=JSON.parse(localStorage.getItem(VIEWER_CACHE_LS)||'null');}catch(e){}
-    const changed=!cached||cached.version!==meta.version||!cached.payload;
-    if(changed){
-      if(label)label.textContent='Có dữ liệu mới. Đang tải bản cập nhật...';
-      const remote=await gsPull(meta.version);
-      if(!remote||!remote.vehicles||!remote.visits)throw new Error('Dữ liệu tải về không hợp lệ.');
-      cached={version:meta.version,payload:remote};
-      try{localStorage.setItem(VIEWER_CACHE_LS,JSON.stringify(cached));}catch(e){}
-    }
-    if(!applyRemoteSnapshot(cached.payload,false))throw new Error('Không thể áp dụng dữ liệu mới.');
-    ensureCloudCfg().gsLastVersion=meta.version;
-    viewerLastCheckedAt=Date.now();
-    viewerVerified=true;
-    if(TAB==='hist')renderHist();
-    const msg=changed?'Đã cập nhật dữ liệu mới nhất.':'Dữ liệu đã mới nhất, không cần tải lại.';
-    const status=$('#viewerRefreshStatus');
-    if(status)status.textContent=msg+' · '+new Date(viewerLastCheckedAt).toLocaleTimeString('vi-VN');
-    toast(msg);
-  }catch(e){
-    const status=$('#viewerRefreshStatus');
-    if(status)status.textContent='Làm mới thất bại: '+e.message;
-    toast('Không thể làm mới dữ liệu: '+e.message);
-  }finally{
-    cloudSyncing=false;
-    const b=$('#viewerRefreshBtn');if(b){b.disabled=false;b.textContent='🔄 Làm mới dữ liệu';}
-    updateCloudBadges();
-  }
-}
-
-function showGasCodeModal(){
-  const code=`// Google Apps Script cho Bãi Xe 34
-// Lưu snapshot JSON thành nhiều phần <= 40.000 ký tự/phần để tránh giới hạn 50.000 ký tự/ô.
-// 1) Đổi chuỗi bí mật bên dưới, chạy setupAdminToken() đúng 1 lần.
-// 2) Nhập cùng chuỗi vào ô Mã bảo vệ Admin trong Cài đặt của app.
-// 3) Triển khai > Ứng dụng web > Execute as: Me > Who has access: Anyone.
-
-function setupAdminToken() {
-  PropertiesService.getScriptProperties().setProperty('ADMIN_TOKEN', 'THAY_BANG_CHUOI_BI_MAT_DAI_IT_NHAT_32_KY_TU');
-}
-
-const DATA_SHEET = '_ERP_JSON';
-const META_SHEET = '_ERP_META';
-const CHUNK_SIZE = 40000;
-
-function doGet(e) {
-  try {
-    const action = (e && e.parameter && e.parameter.action) || 'check';
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const metaSh = ss.getSheetByName(META_SHEET);
-    if (action === 'check') {
-      if (!metaSh || metaSh.getLastRow() < 2) return jsonOut({ok:true, version:'', message:'Chưa có dữ liệu'});
-      const m = metaSh.getRange(2,1,1,4).getValues()[0];
-      return jsonOut({ok:true, version:String(m[0]||''), updatedAt:Number(m[1]||0), chunkCount:Number(m[2]||0), recordCount:Number(m[3]||0)});
-    }
-    if (action === 'pull') {
-      const version = String((e.parameter && e.parameter.version) || '');
-      if (!version) throw new Error('Thiếu version cần tải');
-      const sh = ss.getSheetByName(DATA_SHEET);
-      if (!sh || sh.getLastRow() < 2) throw new Error('Chưa có dữ liệu');
-      const values = sh.getRange(2,1,sh.getLastRow()-1,3).getValues();
-      const parts = values.filter(r => String(r[0]) === version).sort((a,b)=>Number(a[1])-Number(b[1]));
-      if (!parts.length) throw new Error('Không tìm thấy phiên bản dữ liệu yêu cầu');
-      const raw = parts.map(r=>String(r[2]||'')).join('');
-      return jsonOut({ok:true, version:version, payload:JSON.parse(raw)});
-    }
-    throw new Error('Action không hợp lệ');
-  } catch (err) { return jsonOut({error:err.message}); }
-}
-
-function doPost(e) {
-  const lock = LockService.getScriptLock();
-  try {
-    lock.waitLock(30000);
-    const body = JSON.parse(e.postData.contents || '{}');
-    if (body.action !== 'push' || !body.payload) throw new Error('Yêu cầu đẩy dữ liệu không hợp lệ');
-    const expected = PropertiesService.getScriptProperties().getProperty('ADMIN_TOKEN');
-    if (!expected || !body.token || body.token !== expected) throw new Error('Không có quyền đẩy dữ liệu: mã Admin không hợp lệ');
-    const p = body.payload;
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sh = ss.getSheetByName(DATA_SHEET) || ss.insertSheet(DATA_SHEET);
-    const meta = ss.getSheetByName(META_SHEET) || ss.insertSheet(META_SHEET);
-    if (sh.getLastRow() === 0) sh.getRange(1,1,1,3).setValues([['version','chunk_index','json_chunk']]);
-    if (meta.getLastRow() === 0) meta.getRange(1,1,1,4).setValues([['version','updated_at_ms','chunk_count','record_count']]);
-
-    const raw = JSON.stringify(p);
-    const chunks = [];
-    for (let i=0; i<raw.length;) {
-      let end = Math.min(i + CHUNK_SIZE, raw.length);
-      // Không cắt đôi cặp surrogate Unicode
-      const last = raw.charCodeAt(end-1);
-      if (last >= 0xD800 && last <= 0xDBFF) end--;
-      chunks.push(raw.slice(i,end)); i=end;
-    }
-    const version = String(Date.now()) + '-' + Utilities.getUuid().slice(0,8);
-    const rows = chunks.map((chunk,i)=>[version,i,chunk]);
-    const writeAt = sh.getLastRow()+1;
-    sh.getRange(writeAt,1,rows.length,3).setValues(rows);
-
-    // Công bố phiên bản sau khi toàn bộ các phần dữ liệu đã ghi xong.
-    const updatedAt = Date.now();
-    meta.getRange(2,1,1,4).setValues([[version,updatedAt,chunks.length,(p.flatRows||[]).length]]);
-
-    // Bảng nhật ký dễ đọc, không lưu toàn bộ JSON vào một ô.
-    const name = String(p.sheetName || 'NhatKyBaiXe34').slice(0,90);
-    const log = ss.getSheetByName(name) || ss.insertSheet(name);
-    const headers = ['ID','Biển số/VIN','Biển số','VIN','Dòng xe','Màu sắc','Ngày nhập','Vị trí','Người gửi','Tình trạng vào','Ghi chú nhập','Trạng thái','Ngày xuất','Tình trạng ra','Người nhận','Ghi chú xuất'];
-    const safeCell = v => { const t = (v===null || v===undefined) ? '' : String(v); return t.length>45000 ? t.slice(0,44980)+'… [đã rút gọn ở bảng xem; bản JSON đầy đủ vẫn được lưu]' : v; };
-    const dataRows = (p.flatRows || []).map(r=>[r.id,r.key,r.plate,r.vin,r.model,r.color,r.inDate,r.posLabel,r.party,r.statusIn,safeCell(r.noteIn),r.done?'Đã xuất':'Trong bãi',r.outDate,r.statusOut,r.receiver,safeCell(r.noteOut)]);
-    log.clearContents();
-    log.getRange(1,1,1,headers.length).setValues([headers]);
-    if (dataRows.length) log.getRange(2,1,dataRows.length,headers.length).setValues(dataRows);
-
-    // Giữ phiên bản hiện tại và phiên bản ngay trước để tránh race khi Viewer đang tải.
-    const all = sh.getLastRow()>1 ? sh.getRange(2,1,sh.getLastRow()-1,3).getValues() : [];
-    const versions = [...new Set(all.map(r=>String(r[0])))].filter(Boolean);
-    const keep = new Set([version]);
-    if (versions.length>1) keep.add(versions[versions.length-2]);
-    const retained = all.filter(r=>keep.has(String(r[0])));
-    sh.clearContents();
-    sh.getRange(1,1,1,3).setValues([['version','chunk_index','json_chunk']]);
-    if (retained.length) sh.getRange(2,1,retained.length,3).setValues(retained);
-    return jsonOut({ok:true,version:version,updatedAt:updatedAt,chunkCount:chunks.length,recordCount:dataRows.length});
-  } catch (err) { return jsonOut({error:err.message}); }
-  finally { try { lock.releaseLock(); } catch (_) {} }
-}
-
-function jsonOut(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
-}`;
-  showModal(`<div class="p-5">
-    <div class="flex justify-between items-center mb-2">
-      <h3 class="text-lg font-bold">📋 Mã Google Apps Script kết nối Sheet</h3>
-      <button onclick="closeModal()" class="text-xl">✕</button>
-    </div>
-    <p class="text-xs text-slate-600 mb-2">1. Mở Google Sheet → <b>Tiện ích mở rộng → Apps Script</b>, dán toàn bộ mã.<br>2. Thay chuỗi bí mật mẫu trong <b>setupAdminToken()</b> bằng chuỗi ngẫu nhiên dài ít nhất 32 ký tự, chọn hàm <b>setupAdminToken</b> và chạy 1 lần để cấp quyền.<br>3. Triển khai → <b>Ứng dụng web</b> (Thực thi với tư cách: Tôi; Ai có quyền truy cập: Bất kỳ ai).<br>4. Dán URL Web App vào app và nhập cùng chuỗi bí mật trong ô Mã bảo vệ Admin.</p>
-    <textarea id="gasCodeBox" rows="12" class="inp font-mono text-xs bg-slate-50" readonly>${esc(code)}</textarea>
-    <div class="flex gap-2 mt-3">
-      <button class="btn btn-primary" onclick="navigator.clipboard.writeText($('#gasCodeBox').value);toast('Đã sao chép mã Apps Script')">📋 Sao chép mã</button>
-      <button class="btn" onclick="closeModal()">Đóng</button>
-    </div>
-  </div>`);
-}
-
-/* ================== ĐIỀU HƯỚNG ================== */
-let TAB='chat';
-const TITLES={
-  chat:['Chat quản lý bãi xe','<span class="text-green-600">●</span> Kết nối ERP (miễn phí)'],
-  dash:['Dashboard sơ đồ bãi','5 dãy · 4 cột · 20 hàng — cập nhật theo thời gian thực'],
-  yard:['Xe trong bãi','Danh sách xe đang lưu bãi'],
-  hist:['Lịch sử giao dịch','Từng lượt nhập / xuất'],
-  report:['Báo cáo','Tổng quan bãi xe theo kỳ'],
-  settings:['Cài đặt','Danh mục động & dữ liệu']
-};
-function toggleSidebar(o){$('#sidebar').classList.toggle('open',o);$('#overlay').classList.toggle('hidden',!o);}
-function canAccessTab(t){
-  if(!AUTH_USER) return false;
-  if(AUTH_USER.role==='admin') return true;
-  return t==='hist' && viewerVerified;
-}
+/* ================== ĐIỀU HƯỚNG 1 TRANG CHỦ DUY NHẤT ================== */
+let TAB='dash';
 function setTab(t){
-  if(!canAccessTab(t)){
-    toast('Viewer cần bấm Kiểm tra dữ liệu trước và chỉ được xem Lịch sử giao dịch.');
-    t=AUTH_USER&&AUTH_USER.role==='viewer'?'hist':'chat';
-  }
+  if(!['dash','hist','report','settings'].includes(t)) t='dash';
   TAB=t;
-  ['chat','dash','yard','hist','report','settings'].forEach(x=>$('#tab-'+x).classList.toggle('hidden',x!==t));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
-  document.querySelectorAll('.bn-btn[data-btab]').forEach(b=>b.classList.toggle('active',b.dataset.btab===t));
-  $('#pgTitle').textContent=TITLES[t][0];$('#pgSub').innerHTML=TITLES[t][1];
-  toggleSidebar(false);refresh();
-  if(t==='chat')setTimeout(()=>{const l=$('#chatLog');l.scrollTop=l.scrollHeight;},50);
+  ['dash','hist','report','settings'].forEach(x=>$('#tab-'+x).classList.toggle('hidden',x!==t));
+  document.querySelectorAll('.nav-pill[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  refresh();
 }
 function refresh(){
-  if(TAB==='dash')renderDash();else if(TAB==='yard')renderYard();else if(TAB==='hist')renderHist();else if(TAB==='report')renderReport();else if(TAB==='settings')renderSettings();
+  if(TAB==='dash')renderDash();
+  else if(TAB==='hist')renderHist();
+  else if(TAB==='report')renderReport();
+  else if(TAB==='settings')renderSettings();
 }
-document.querySelectorAll('.nav-btn').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
-document.querySelectorAll('.bn-btn[data-btab]').forEach(b=>b.onclick=()=>setTab(b.dataset.btab));
 
-/* ================== MODAL ================== */
+/* ================== MODAL & PANEL THAO TÁC ERP ================== */
 function showModal(h){$('#modalBody').innerHTML=h;$('#modal').classList.remove('hidden');$('#modal').classList.add('flex');}
 function closeModal(){$('#modal').classList.add('hidden');$('#modal').classList.remove('flex');}
 $('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
-/* ================== CHAT ================== */
-const log=$('#chatLog');
 const FORMS={};let uidc=0,pendingPos='';
 const carSvg=`<div class="w-16 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-3xl flex-none">🚙</div>`;
-function scrollLog(){setTimeout(()=>{log.scrollTop=log.scrollHeight;},30);}
-function userSay(t){
-  const d=document.createElement('div');d.className='flex justify-end gap-3 msg';
-  d.innerHTML=`<div class="bubble-user max-w-[80%]"><div class="text-lg break-words">${esc(t)}</div><div class="text-right text-xs text-slate-500">${timeNow()}</div></div><div class="w-10 h-10 rounded-full bg-slate-500 text-white flex items-center justify-center flex-none">👤</div>`;
-  log.append(d);scrollLog();
+function showActionPanel(html){
+  const panel=$('#actionPanel');
+  panel.classList.remove('hidden');
+  panel.innerHTML=`<div class="flex justify-between items-center mb-2 pb-1.5 border-b border-blue-200"><b class="text-sm text-navy">📋 THAO TÁC NGHIỆP VỤ BÃI XE</b><button type="button" class="btn btn-sm" onclick="closeActionPanel()">✕ Đóng</button></div><div>${html}</div>`;
+  panel.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
-function botSay(html){
-  const d=document.createElement('div');d.className='flex gap-3 items-start msg';
-  d.innerHTML=`<div class="w-10 h-10 rounded-full bg-vf text-white flex items-center justify-center flex-none">🤖</div><div class="min-w-0 flex-1 max-w-3xl"><div class="text-sm font-semibold">Bãi Xe 34 (Chat ERP) <span class="text-slate-400 font-normal ml-1">${timeNow()}</span></div><div class="bubble-bot mt-1 text-[15px]">${html}</div></div>`;
-  log.append(d);scrollLog();return d;
+function closeActionPanel(){
+  const panel=$('#actionPanel');
+  panel.classList.add('hidden');
+  panel.innerHTML='';
 }
+
 function vehCard(v){
   const vs=visitsOf(v.key),last=vs[vs.length-1],a=activeOf(v.key);
   const firstIn=firstInDateOf(v.key);
@@ -834,137 +487,112 @@ function vehCard(v){
    </div></div>`;
 }
 function findVeh(id){
-  if(S.vehicles[id])return S.vehicles[id];
-  return Object.values(S.vehicles).find(v=>v.plate===id||v.vin===id)||null;
+  const k=cleanId(id);
+  if(!k)return null;
+  if(S.vehicles[k])return S.vehicles[k];
+  return Object.values(S.vehicles).find(v=>cleanId(v.plate)===k||cleanId(v.vin)===k)||null;
+}
+function findPartialSuffixVehs(shortId){
+  const k=cleanId(shortId);
+  if(!isShortPlate(k))return [];
+  return Object.values(S.vehicles).filter(v=>v.key!==k && cleanId(v.key).endsWith(k));
 }
 function statusSelect(uid,kind,sel){
-  const opts=S.settings[kind].map(s=>`<option ${s===sel?'selected':''}>${esc(s)}</option>`).join('');
+  const opts=`<option value="">— Không chọn / Để trống —</option>`+S.settings[kind].map(s=>`<option ${s===sel?'selected':''}>${esc(s)}</option>`).join('');
   return `<select id="${uid}_status" class="inp">${opts}</select>
    <div class="flex gap-1 mt-1"><input id="${uid}_newst" class="inp" style="padding:5px 10px;font-size:13px" placeholder="Tình trạng mới…"><button type="button" class="btn btn-sm" onclick="addSt('${uid}','${kind}')">+ Thêm</button></div>`;
 }
 function addSt(uid,kind){
   const i=document.getElementById(uid+'_newst'),v=i.value.trim();if(!v)return;
   if(!S.settings[kind].includes(v))S.settings[kind].push(v);
-  try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}
+  idbPutState();
   const s=document.getElementById(uid+'_status');
-  s.innerHTML=S.settings[kind].map(x=>`<option ${x===v?'selected':''}>${esc(x)}</option>`).join('');
+  s.innerHTML=`<option value="">— Không chọn / Để trống —</option>`+S.settings[kind].map(x=>`<option ${x===v?'selected':''}>${esc(x)}</option>`).join('');
   i.value='';toast('Đã thêm tình trạng "'+v+'"');
 }
-const lab=(t,req)=>`<label class="text-sm font-medium block mb-1">${req?'<span class="text-red-500">* </span>':''}${t}</label>`;
-function startImport(id){
-  const v=findVeh(id),a=v&&activeOf(v.key);
-  if(a){botSay(`⚠️ Xe <b>${esc(v.key)}</b> hiện <b>đang trong bãi</b> (nhập ${fmt(a.inDate)}, ${esc(posLabel(a.pos))}). Không thể nhập lại khi chưa xuất.${vehCard(v)}<div class="mt-2"><button class="btn btn-sm btn-primary" onclick="runCmd('Xuất xe ${esc(v.key)}')">Xuất xe này</button></div>`);return;}
-  const uid='f'+(++uidc),isNew=!v,vs=v?visitsOf(v.key).length:0;
-  FORMS[uid]={kind:'in',id,key:v?v.key:id,isNew};
-  const pp=pendingPos;pendingPos='';
-  const head=isNew
-   ?`<div class="font-semibold">🔎 Không tìm thấy hồ sơ <b>${esc(id)}</b>.</div><div class="inline-block mt-2 px-3 py-1 rounded-lg bg-amber-100 text-amber-800 font-semibold text-sm">✦ Xe mới (chưa có hồ sơ) — ${isPlate(id)?'có biển số':'chưa có biển, dùng số khung/VIN'}</div>`
-   :`<div class="font-semibold">🔎 Đã tìm thấy xe <b>${esc(v.key)}</b> trong hệ thống.</div><div class="inline-block mt-2 px-3 py-1 rounded-lg bg-green-100 text-green-700 font-semibold text-sm">✔ Xe cũ (đã có hồ sơ)</div>${vehCard(v)}`;
-  const newFields=isNew?`<div>${lab('Dòng xe',1)}<select id="${uid}_model" class="inp">${S.settings.models.map(m=>`<option>${esc(m)}</option>`).join('')}</select></div>
-    <div>${lab('Màu sắc')}<input id="${uid}_color" class="inp" list="colorList" placeholder="VD: Trắng"></div>`:'';
-  botSay(`${head}
-  <div class="mt-3 rounded-xl overflow-hidden border border-blue-100" id="${uid}_wrap">
-   <div class="bg-blue-100 px-3 py-2 font-semibold text-blue-900">✏️ Vui lòng bổ sung thông tin cho lần nhập mới:</div>
-   <div class="bg-white p-3 grid sm:grid-cols-2 gap-3">
-    ${newFields}
-    <div>${lab('Ngày nhập (để trống = 0 / thiếu ngày)')}<input type="date" id="${uid}_date" class="inp" value="${todayISO()}"></div>
-    <div>${lab('Vị trí bãi')}<select id="${uid}_pos" class="inp">${posOptions(pp)}</select></div>
-    <div>${lab('Tên/Bộ phận người gửi',1)}<input id="${uid}_party" class="inp" placeholder="Tên/Bộ phận (VD: Thông/Kho)"></div>
-    <div>${lab('Tình trạng vào',1)}${statusSelect(uid,'statusIn')}</div>
-    <div class="sm:col-span-2">${lab('Ghi chú')}<textarea id="${uid}_note" rows="2" class="inp" placeholder="VD: Chờ sửa chữa, kiểm tra..."></textarea></div>
-    <div class="sm:col-span-2 flex gap-2 justify-center" id="${uid}_act">
-      <button class="btn btn-primary" onclick="confirmIn('${uid}')">✓ Xác nhận nhập xe</button>
-      <button class="btn" onclick="cancelForm('${uid}')">✕ Hủy</button>
-    </div>
-   </div></div>
-  <div class="mt-2 text-sm bg-blue-50 rounded-lg px-3 py-2">ℹ️ Sau khi xác nhận, hệ thống sẽ tạo một lần lưu bãi mới (lần ${vs+1}) cho xe <b>${esc(id)}</b> và cập nhật vào ERP.</div>`);
+const lab=(t)=>`<label class="text-sm font-medium block mb-1">${t}</label>`;
+
+/* ================== TÌM KIẾM TỔNG HỢP TRANG CHỦ ================== */
+function globalMatches(q){
+  const k=cleanId(q);if(k.length<2)return [];
+  const t=norm(q);
+  return Object.values(S.vehicles).map(v=>{
+    const vs=visitsOf(v.key);
+    const idMatch=[v.key,v.plate,v.vin].some(x=>cleanId(x||'').includes(k));
+    const metaFields=[v.model,v.color,...vs.flatMap(x=>[x.party,x.receiver,x.statusIn,x.statusOut,x.noteIn,x.noteOut,x.pos?posLabel(x.pos):''])];
+    const metaMatch=t.length>=2 && metaFields.some(x=>norm(x||'').includes(t));
+    return {v,score:(idMatch?2:0)+(metaMatch?1:0)};
+  }).filter(x=>x.score>0)
+    .sort((a,b)=>b.score-a.score || (activeOf(a.v.key)?0:1)-(activeOf(b.v.key)?0:1))
+    .slice(0,15).map(x=>x.v);
 }
-function lockForm(uid,msg){
-  const w=document.getElementById(uid+'_wrap');if(!w)return;
-  w.querySelectorAll('input,select,textarea,button').forEach(e=>e.disabled=true);
-  const a=document.getElementById(uid+'_act');if(a)a.innerHTML=`<div class="text-sm font-semibold ${msg.ok?'text-green-700':'text-slate-500'}">${msg.t}</div>`;
+function clearGlobalSearch(){
+  const i=$('#globalSearch'),b=$('#globalSuggest');
+  i.value='';b.classList.add('hidden');b.innerHTML='';i.focus();
 }
-function cancelForm(uid){lockForm(uid,{t:'Đã hủy thao tác.'});botSay('Đã hủy thao tác.');}
-function confirmIn(uid){
-  const f=FORMS[uid],g=n=>document.getElementById(uid+'_'+n);
-  const date=g('date').value||null,pos=g('pos').value,party=g('party').value.trim(),st=g('status').value,note=g('note').value.trim();
-  if(!party||!st){toast('Vui lòng điền đủ người gửi và tình trạng vào (*)');return;}
-  if(f.isNew&&activeOf(f.key))return;
-  if(pos&&active().some(v=>v.pos===pos)){toast('Vị trí này đã có xe, vui lòng chọn vị trí khác');return;}
-  let v=findVeh(f.key);
-  if(!v){const id=f.key;S.vehicles[id]={key:id,plate:isPlate(id)?id:'',vin:isPlate(id)?'':id,model:g('model')?g('model').value:'',color:g('color')?g('color').value.trim():''};v=S.vehicles[id];}
-  if(activeOf(v.key)){toast('Xe đã trong bãi');return;}
-  S.visits.push({id:nextId(),key:v.key,inDate:date,pos,party,statusIn:st,noteIn:note,done:false,outDate:null,statusOut:'',receiver:'',noteOut:'',created:Date.now()});
-  const n=visitsOf(v.key).length;
-  lockForm(uid,{ok:1,t:'✔ Đã xác nhận nhập xe'});
-  save();
-  botSay(`✅ <b>Nhập xe thành công!</b><br>Xe <b>${esc(v.key)}</b>${v.model?' ('+esc(v.model)+')':''} đã vào bãi ngày ${fmt(date)} · ${esc(posLabel(pos))} · <b>${esc(st)}</b> · lần lưu bãi thứ <b>${n}</b>.`);
-}
-function startExport(id){
-  const v=findVeh(id);
-  if(!v){botSay(`🔎 Không tìm thấy xe <b>${esc(id)}</b> trong hệ thống.`);return;}
+function chooseGlobalResult(key){
+  const box=$('#globalSuggest');box.classList.add('hidden');
+  const v=findVeh(key);if(!v)return;
   const a=activeOf(v.key);
-  if(!a){botSay(`⚠️ Xe <b>${esc(v.key)}</b> hiện <b>không ở trong bãi</b> (đã xuất).${vehCard(v)}<div class="mt-2"><button class="btn btn-sm btn-primary" onclick="runCmd('Nhập xe ${esc(v.key)}')">Nhập xe này</button></div>`);return;}
-  const uid='f'+(++uidc);FORMS[uid]={kind:'out',key:v.key};
-  botSay(`<div class="font-semibold">🔎 Xe <b>${esc(v.key)}</b> đang trong bãi.</div>${vehCard(v)}
-  <div class="mt-3 rounded-xl overflow-hidden border border-blue-100" id="${uid}_wrap">
-   <div class="bg-blue-100 px-3 py-2 font-semibold text-blue-900">📤 Xác nhận xuất xe:</div>
-   <div class="bg-white p-3 grid sm:grid-cols-2 gap-3">
-    <div>${lab('Ngày xuất',1)}<input type="date" id="${uid}_date" class="inp" value="${todayISO()}"></div>
-    <div>${lab('Tình trạng ra',1)}${statusSelect(uid,'statusOut')}</div>
-    <div class="sm:col-span-2">${lab('Người nhận/Bộ phận')}<input id="${uid}_party" class="inp" placeholder="VD: Khách hàng / GSM"></div>
-    <div class="sm:col-span-2">${lab('Ghi chú')}<textarea id="${uid}_note" rows="2" class="inp"></textarea></div>
-    <div class="sm:col-span-2 flex gap-2 justify-center" id="${uid}_act">
-      <button class="btn btn-primary" onclick="confirmOut('${uid}')">✓ Xác nhận xuất xe</button>
-      <button class="btn" onclick="cancelForm('${uid}')">✕ Hủy</button>
-    </div></div></div>`);
+  showModal(`<div class="p-4 sm:p-5">
+    <div class="flex justify-between items-center mb-2">
+      <div class="flex items-center gap-2"><b class="text-xl text-navy">${esc(v.key)}</b>${a?'<span class="badge bg-orange-100 text-orange-700">Đang trong bãi</span>':'<span class="badge bg-green-100 text-green-700">Đã xuất</span>'}</div>
+      <button class="btn btn-sm" onclick="closeModal()">✕</button>
+    </div>
+    ${vehCard(v)}
+    <div class="grid grid-cols-3 gap-2 mt-4">
+      <button class="btn btn-primary" onclick="closeModal();quickImport('${esc(v.key)}')" ${a?'disabled style="opacity:.45"':''}>➕ Nhập xe</button>
+      <button class="btn" style="border-color:#fdba74;background:#fff7ed;color:#c2410c" onclick="closeModal();quickExport('${esc(v.key)}')" ${!a?'disabled style="opacity:.45"':''}>📤 Xuất xe</button>
+      <button class="btn" onclick="closeModal();openVehicleDetail('${esc(v.key)}')">📋 Chi tiết</button>
+    </div>
+  </div>`);
 }
-function confirmOut(uid){
-  const f=FORMS[uid],g=n=>document.getElementById(uid+'_'+n);
-  const date=g('date').value,st=g('status').value;
-  if(!date||!st){toast('Vui lòng điền đủ các trường bắt buộc (*)');return;}
-  const a=activeOf(f.key);if(!a){toast('Xe không còn trong bãi');return;}
-  if(isValidInDate(a.inDate)&&date<a.inDate){toast('Ngày xuất không được trước ngày nhập');return;}
-  Object.assign(a,{done:true,outDate:date,statusOut:st,receiver:g('party').value.trim(),noteOut:g('note').value.trim()});
-  lockForm(uid,{ok:1,t:'✔ Đã xác nhận xuất xe'});save();
-  const days=isValidInDate(a.inDate)?diff(a.inDate,date):null;
-  botSay(`✅ <b>Xuất xe thành công!</b><br>Xe <b>${esc(f.key)}</b> đã ra bãi ngày ${fmt(date)} · <b>${esc(st)}</b>${days!==null?` · lượt này ${days} ngày`:''}. Vị trí ${esc(posLabel(a.pos))} đã được giải phóng.`);
-}
-function searchCmd(id){
-  const exact=findVeh(id);
-  let list=exact?[exact]:Object.values(S.vehicles).filter(v=>v.key.includes(id)||(v.vin&&v.vin.includes(id)));
-  if(!list.length){botSay(`🔎 Không tìm thấy xe nào khớp với <b>${esc(id)}</b>.`);return;}
-  if(list.length===1){
-    const v=list[0],a=activeOf(v.key),vs=visitsOf(v.key);
-    const hist=vs.slice(-5).reverse().map(x=>`<li>${fmt(x.inDate)} → ${x.done?fmt(x.outDate):'<b>đang trong bãi</b>'} · ${esc(x.statusIn||'—')}${x.done?' / '+esc(x.statusOut||'—'):''}</li>`).join('');
-    botSay(`🔎 Kết quả cho <b>${esc(id)}</b>:${vehCard(v)}<div class="text-sm mt-2"><b>Lịch sử các chu kỳ gần đây:</b><ul class="list-disc ml-5">${hist}</ul></div>
-    <div class="mt-2">${a?`<button class="btn btn-sm btn-primary" onclick="runCmd('Xuất xe ${esc(v.key)}')">Xuất xe</button>`:`<button class="btn btn-sm btn-primary" onclick="runCmd('Nhập xe ${esc(v.key)}')">Nhập xe</button>`}</div>`);
-    return;
-  }
-  botSay(`🔎 Tìm thấy <b>${list.length}</b> xe khớp "${esc(id)}":<div class="mt-2 space-y-1">${list.slice(0,12).map(v=>{const a=activeOf(v.key);return `<div class="flex items-center justify-between bg-white rounded-lg border px-3 py-1.5 text-sm"><span><b>${esc(v.key)}</b> · ${esc(v.model||'—')} · ${a?'<span class="text-orange-600">trong bãi</span>':'đã xuất'}</span><button class="btn btn-sm" onclick="runCmd('Tìm ${esc(v.key)}')">Xem</button></div>`;}).join('')}</div>${list.length>12?'<div class="text-xs text-slate-500 mt-1">… và '+(list.length-12)+' xe khác. Hãy nhập chính xác hơn.</div>':''}`);
-}
-function agedCmd(n){
-  const list=active().filter(v=>{const a=age(v);return a===null?n<=31:a>n;}).sort((a,b)=>(age(b)??9999)-(age(a)??9999));
-  if(!list.length){botSay(`✅ Không có xe nào tồn trên ${n} ngày.`);return;}
-  botSay(`⏳ Có <b>${list.length}</b> xe tồn trên ${n} ngày (tính từ chu kỳ nhập đầu tiên${n<=31?', bao gồm xe ngày nhập = 0':''}):<div class="mt-2 text-sm bg-white rounded-lg border divide-y max-h-72 overflow-auto">${list.slice(0,40).map(v=>`<div class="px-3 py-1.5 flex justify-between gap-2"><span><b>${esc(v.key)}</b> · ${esc(veh(v.key).model||'—')} · ${esc(posLabel(v.pos))}</span><span>${ageBadge(v)}</span></div>`).join('')}</div>${list.length>40?`<div class="text-xs text-slate-500 mt-1">Hiển thị 40/${list.length} xe.</div>`:''}`);
-}
-function reportCmd(){
-  const act=active(),k=calcKPI();
-  botSay(`📊 <b>Tóm tắt bãi xe hôm nay (${fmt(todayISO())})</b><ul class="list-disc ml-5 mt-1 text-sm"><li>Tổng xe tồn bãi: <b>${k.total}</b> (xe có biển ${k.old}, xe mới chưa biển ${k.nw})</li><li>Xe cũ tồn từ 11 ngày (tính từ chu kỳ đầu): <b class="text-red-600">${k.old11}</b></li><li>Xe tồn trên 30 ngày: <b>${act.filter(v=>age(v)>30).length}</b> · ngày nhập = 0 (thiếu ngày): <b>${act.filter(v=>age(v)===null).length}</b></li><li>Xe chưa có vị trí: <b>${act.filter(v=>!v.pos).length}</b></li></ul><div class="mt-2"><button class="btn btn-sm btn-primary" onclick="setTab('report')">Mở trang Báo cáo</button></div>`);
-}
-function noPosCmd(){
-  const l=active().filter(v=>!v.pos);
-  botSay(l.length?`📍 Có <b>${l.length}</b> xe chưa có vị trí: ${l.map(v=>`<b>${esc(v.key)}</b>`).join(', ')}`:'✅ Tất cả xe trong bãi đã có vị trí.');
-}
-function helpMsg(){
-  botSay('Gõ biển số / VIN (hoặc bấm 📷) để nhập hoặc xuất xe.');
+function bindGlobalSearch(){
+  const input=$('#globalSearch'),box=$('#globalSuggest');
+  if(!input||!box)return;
+  input.addEventListener('input',()=>{
+    const q=input.value.trim();
+    if(q.length<2){box.classList.add('hidden');box.innerHTML='';return;}
+    const hits=globalMatches(q);
+    const cleanQ=cleanId(q);
+    let html=hits.map(v=>{
+      const a=activeOf(v.key);
+      const z=a||visitsOf(v.key).slice(-1)[0]||{};
+      return `<button type="button" class="w-full text-left px-3.5 py-2.5 border-b border-slate-100 hover:bg-blue-50 flex items-center justify-between gap-2" onclick="chooseGlobalResult('${esc(v.key)}')">
+        <div class="min-w-0">
+          <div class="font-bold text-slate-900">${esc(v.key)} <span class="font-normal text-xs text-slate-500">· ${esc(v.model||'Chưa rõ dòng xe')} ${v.color?'('+esc(v.color)+')':''}</span></div>
+          <div class="text-xs text-slate-500 truncate">${a?esc(posLabel(a.pos))+' · '+esc(statIn(a)):esc(z.statusOut||'Đã xuất')} · ${esc(a?(z.party||'—'):(z.receiver||z.party||'—'))}</div>
+        </div>
+        <span class="badge ${a?'bg-orange-100 text-orange-700':'bg-green-100 text-green-700'}">${a?'Trong bãi':'Đã xuất'}</span>
+      </button>`;
+    }).join('');
+    if(cleanQ.length>=3 && !hits.some(v=>v.key===cleanQ)){
+      html+=`<button type="button" class="w-full text-left px-3.5 py-3 bg-blue-50/70 hover:bg-blue-100 text-vf font-bold text-sm flex items-center justify-between" onclick="$('#globalSuggest').classList.add('hidden');quickImport('${esc(cleanQ)}')">
+        <span>➕ Nhập xe "${esc(cleanQ)}" (${esc(idTypeLabel(cleanQ))}) vào bãi</span><span>→</span>
+      </button>`;
+    }
+    if(!html) html=`<div class="px-3.5 py-3 text-sm text-slate-500">Không tìm thấy kết quả phù hợp "${esc(q)}"</div>`;
+    box.innerHTML=html;
+    box.classList.remove('hidden');
+  });
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){
+      const h=globalMatches(input.value);
+      if(h[0]) chooseGlobalResult(h[0].key);
+      else if(cleanId(input.value).length>=3){box.classList.add('hidden');quickImport(cleanId(input.value));}
+    }
+    if(e.key==='Escape') box.classList.add('hidden');
+  });
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('#globalSearch')&&!e.target.closest('#globalSuggest')) box.classList.add('hidden');
+  });
 }
 
-/* ================== NHẬP / XUẤT NHANH (1 Ô DUY NHẤT) ================== */
+/* ================== NHẬP / XUẤT XE ERP (TẤT CẢ KHÔNG BẮT BUỘC) ================== */
 const LAST_LS='erp_bai_xe_34_last_v1';
 const lastPrefs=()=>{try{return JSON.parse(localStorage.getItem(LAST_LS))||{};}catch(e){return {};}};
 const savePrefs=o=>{try{localStorage.setItem(LAST_LS,JSON.stringify(Object.assign(lastPrefs(),o)));}catch(e){}};
-function recentParties(n){
+function recentParties(){
   const m=[];
   S.visits.slice().sort((a,b)=>b.id-a.id).forEach(v=>{if(v.party&&!m.includes(v.party))m.push(v.party);});
   const lp=lastPrefs().party;
@@ -975,56 +603,165 @@ function qchips(uid,field,opts,sel){
   return `<div class="flex flex-wrap gap-2" id="${uid}_c_${field}">${opts.map(o=>`<button type="button" class="qchip ${o===sel?'on':''}" data-v="${esc(o)}" onclick="pickQ('${uid}','${field}',this)">${esc(o)}</button>`).join('')}</div>`;
 }
 function pickQ(uid,field,btn){
-  FORMS[uid][field]=btn.dataset.v;
-  btn.parentElement.querySelectorAll('.qchip').forEach(b=>b.classList.toggle('on',b===btn));
-  if(field==='party'){const i=document.getElementById(uid+'_party');if(i)i.value=btn.dataset.v;}
+  const isAlreadyOn=btn.classList.contains('on');
+  FORMS[uid][field]=isAlreadyOn?'':btn.dataset.v;
+  btn.parentElement.querySelectorAll('.qchip').forEach(b=>b.classList.toggle('on',!isAlreadyOn && b===btn));
+  if(field==='party'){const i=document.getElementById(uid+'_party');if(i)i.value=FORMS[uid][field];}
 }
-function smartId(id){
-  const v=findVeh(id);
-  if(v&&activeOf(v.key))quickExport(v.key);else quickImport(id);
+function openNewImportDialog(){
+  const q=cleanId($('#globalSearch').value);
+  if(q.length>=3){
+    const v=findVeh(q);
+    if(v&&activeOf(v.key)){toast(`Xe ${v.key} đang trong bãi!`);chooseGlobalResult(v.key);return;}
+    quickImport(q);return;
+  }
+  quickImport('');
 }
+function openExportDialog(){
+  const q=cleanId($('#globalSearch').value);
+  if(q.length>=3){
+    const v=findVeh(q);
+    if(v&&activeOf(v.key)){quickExport(v.key);return;}
+  }
+  const act=active();
+  showModal(`<div class="p-4 sm:p-5">
+    <div class="flex justify-between items-center mb-3"><b class="text-lg text-navy">📤 Chọn xe xuất bãi</b><button class="btn btn-sm" onclick="closeModal()">✕</button></div>
+    <input id="expFilterInp" class="inp mb-3" placeholder="Gõ biển số (VD: 50H12345 hoặc 12345) hay 6 số VIN..." autocomplete="off" autocapitalize="characters">
+    <div id="expActList" class="max-h-72 overflow-auto divide-y border border-slate-200 rounded-xl">
+      ${act.slice(0,50).map(v=>{const vv=veh(v.key);return `<button type="button" class="w-full text-left px-3 py-2.5 hover:bg-blue-50 flex justify-between items-center" onclick="closeModal();quickExport('${esc(v.key)}')">
+        <div><b>${esc(v.key)}</b> <span class="text-xs text-slate-500">· ${esc(vv.model||'—')} · ${esc(posLabel(v.pos))}</span></div>
+        ${ageBadge(v)}
+      </button>`;}).join('')||'<div class="p-4 text-sm text-slate-400 text-center">Hiện không có xe nào trong bãi</div>'}
+    </div>
+  </div>`);
+  const inp=$('#expFilterInp');
+  if(inp){
+    inp.focus();
+    inp.oninput=()=>{
+      const k=cleanId(inp.value);
+      const filtered=act.filter(v=>!k||v.key.includes(k)).slice(0,50);
+      $('#expActList').innerHTML=filtered.map(v=>{const vv=veh(v.key);return `<button type="button" class="w-full text-left px-3 py-2.5 hover:bg-blue-50 flex justify-between items-center" onclick="closeModal();quickExport('${esc(v.key)}')">
+        <div><b>${esc(v.key)}</b> <span class="text-xs text-slate-500">· ${esc(vv.model||'—')} · ${esc(posLabel(v.pos))}</span></div>
+        ${ageBadge(v)}
+      </button>`;}).join('')||'<div class="p-4 text-sm text-slate-400 text-center">Không tìm thấy xe phù hợp</div>';
+    };
+  }
+}
+
 function quickImport(id){
-  const v=findVeh(id);
-  if(v&&activeOf(v.key)){startImport(id);return;}
+  const clean=cleanId(id);
+  const v=clean?findVeh(clean):null;
+  if(v&&activeOf(v.key)){startImport(v.key);return;}
   const uid='f'+(++uidc),isNew=!v,lp=lastPrefs();
   const stIn=S.settings.statusIn,mods=S.settings.models;
-  const selSt=stIn.includes(lp.statusIn)?lp.statusIn:stIn[0];
-  const selMd=mods.includes(lp.model)?lp.model:mods[0];
-  const parties=recentParties(6),selParty=lp.party||'';
-  FORMS[uid]={kind:'qin',key:v?v.key:id,isNew,statusIn:selSt,model:selMd,party:selParty};
+  const selSt=stIn.includes(lp.statusIn)?lp.statusIn:'';
+  const selMd=mods.includes(lp.model)?lp.model:'';
+  const parties=recentParties(),selParty=lp.party||'';
+  FORMS[uid]={kind:'qin',key:v?v.key:clean,isNew,statusIn:selSt,model:selMd,party:selParty};
   const vs=v?visitsOf(v.key).length:0;
-  botSay(`<div id="${uid}_wrap" class="space-y-3">
-    <div class="flex items-center justify-between gap-2"><div><span class="text-xl font-extrabold">${esc(v?v.key:id)}</span> <span class="badge ${isNew?'bg-amber-100 text-amber-800':'bg-green-100 text-green-700'}">${isNew?'Xe mới':'Xe cũ · lần '+(vs+1)}</span>${v&&v.model?` <span class="text-xs text-slate-500">${esc(v.model)}</span>`:''}</div><div class="text-xs text-slate-500">Nhập hôm nay ${fmt(todayISO())}</div></div>
-    ${isNew?`<div><div class="text-xs font-semibold text-slate-500 mb-1">Dòng xe</div>${qchips(uid,'model',mods,selMd)}</div>`:''}
-    <div><div class="text-xs font-semibold text-slate-500 mb-1">Tình trạng vào</div>${qchips(uid,'statusIn',stIn,selSt)}</div>
-    <div><div class="text-xs font-semibold text-slate-500 mb-1">Người gửi</div>${parties.length?qchips(uid,'party',parties,selParty)+'<div class="h-2"></div>':''}<input id="${uid}_party" class="inp" style="font-size:16px" placeholder="Tên/Bộ phận gửi xe" value="${esc(selParty)}"></div>
-    <div id="${uid}_act" class="flex flex-wrap gap-2"><button class="qchip go" onclick="confirmQuickIn('${uid}')">✓ Nhập xe</button><button class="qchip" onclick="startImport('${esc(id)}')">Chi tiết…</button><button class="qchip" onclick="cancelForm('${uid}')">✕ Hủy</button></div>
+  const suffixMatches=(!v && isShortPlate(clean))?findPartialSuffixVehs(clean):[];
+  const suffixAlert=suffixMatches.length?`<div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
+    <div class="font-bold mb-1">💡 Tìm thấy xe có sẵn trùng 5 số cuối "${esc(clean)}":</div>
+    <div class="flex flex-wrap gap-1.5">${suffixMatches.map(m=>{const inB=activeOf(m.key);return `<button type="button" class="btn btn-sm" onclick="${inB?`chooseGlobalResult('${esc(m.key)}')`:`quickImport('${esc(m.key)}')`}">${esc(m.key)} (${inB?'Đang trong bãi':'Chọn xe này'})</button>`;}).join('')}</div>
+  </div>`:'';
+
+  showActionPanel(`<div id="${uid}_wrap" class="space-y-3">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="text-lg font-extrabold text-navy">${v?esc(v.key):(clean?esc(clean):'Nhập nhanh xe mới')}</span>
+        <span class="badge ${isNew?'bg-amber-100 text-amber-800':'bg-green-100 text-green-700'}">${isNew?(clean?idTypeLabel(clean):'Không bắt buộc'):'Xe cũ · lần '+(vs+1)}</span>
+      </div>
+      <div class="text-xs text-slate-500">Ngày nhập: ${fmt(todayISO())} · Tất cả đều không bắt buộc</div>
+    </div>
+    ${suffixAlert}
+    ${!v?`<div><div class="text-xs font-semibold text-slate-500 mb-1">Biển số (VD: 50H12345 hoặc nhập trước 12345) / 6 số VIN — có thể để trống</div><input id="${uid}_key" class="inp font-bold" value="${esc(clean)}" placeholder="VD: 12345 hoặc 50H12345 hoặc 716717" autocapitalize="characters"></div>`:''}
+    ${isNew?`<div><div class="text-xs font-semibold text-slate-500 mb-1">Dòng xe (không bắt buộc)</div>${qchips(uid,'model',mods,selMd)}</div>`:''}
+    <div><div class="text-xs font-semibold text-slate-500 mb-1">Tình trạng vào (không bắt buộc)</div>${qchips(uid,'statusIn',stIn,selSt)}</div>
+    <div><div class="text-xs font-semibold text-slate-500 mb-1">Tên/Bộ phận người gửi (không bắt buộc)</div>${parties.length?qchips(uid,'party',parties,selParty)+'<div class="h-2"></div>':''}<input id="${uid}_party" class="inp" placeholder="VD: Thông/Kho (có thể bỏ trống)" value="${esc(selParty)}"></div>
+    <div id="${uid}_act" class="flex flex-wrap gap-2"><button class="qchip go" onclick="confirmQuickIn('${uid}')">✓ Xác nhận nhập xe</button><button class="qchip" onclick="startImport(cleanId((document.getElementById('${uid}_key')||{value:'${esc(v?v.key:clean)}'}).value))">Nhập chi tiết (chọn ngày/vị trí)…</button><button class="qchip" onclick="closeActionPanel()">✕ Hủy</button></div>
   </div>`);
 }
 function confirmQuickIn(uid){
-  const f=FORMS[uid],party=document.getElementById(uid+'_party').value.trim(),st=f.statusIn;
-  if(!party){toast('Chọn hoặc gõ người gửi');document.getElementById(uid+'_party').focus();return;}
-  let v=findVeh(f.key);
-  if(v&&activeOf(v.key)){toast('Xe đã trong bãi');return;}
-  if(!v){S.vehicles[f.key]={key:f.key,plate:isPlate(f.key)?f.key:'',vin:isPlate(f.key)?'':f.key,model:f.model||'',color:''};v=S.vehicles[f.key];}
+  const f=FORMS[uid];
+  const keyInput=document.getElementById(uid+'_key');
+  const rawKey=keyInput?cleanId(keyInput.value):f.key;
+  const finalKey=rawKey||nextTempKey();
+  const party=(document.getElementById(uid+'_party')||{value:''}).value.trim();
+  const st=f.statusIn||'';
+  let v=findVeh(finalKey);
+  if(v&&activeOf(v.key)){toast(`Xe ${v.key} đang trong bãi!`);return;}
+  if(!v){
+    S.vehicles[finalKey]={key:finalKey,plate:isPlate(finalKey)?finalKey:'',vin:isPlate(finalKey)?'':(rawKey?finalKey:''),model:f.model||'',color:''};
+    v=S.vehicles[finalKey];
+  }
   const date=todayISO();
   S.visits.push({id:nextId(),key:v.key,inDate:date,pos:'',party,statusIn:st,noteIn:'',done:false,outDate:null,statusOut:'',receiver:'',noteOut:'',created:Date.now()});
   savePrefs({party,statusIn:st,model:f.model||lastPrefs().model});
-  lockForm(uid,{ok:1,t:'✔ Đã nhập'});
   save();
-  botSay(`✅ Đã nhập <b>${esc(v.key)}</b>${v.model?' ('+esc(v.model)+')':''} · ${esc(st)} · ${esc(party)} · lần ${visitsOf(v.key).length}. <span class="text-xs text-slate-500">Chưa có vị trí — kéo vào sơ đồ ở tab Sơ đồ.</span>`);
+  closeActionPanel();
+  toast(`✅ Đã nhập ${v.key}${st?' ('+st+')':''} — lần ${visitsOf(v.key).length}`);
 }
+
+function startImport(id){
+  const clean=cleanId(id);
+  const v=clean?findVeh(clean):null,a=v&&activeOf(v.key);
+  if(a){showActionPanel(`⚠️ Xe <b>${esc(v.key)}</b> hiện <b>đang trong bãi</b> (nhập ${fmt(a.inDate)}, ${esc(posLabel(a.pos))}).${vehCard(v)}<div class="mt-2"><button class="btn btn-sm btn-primary" onclick="quickExport('${esc(v.key)}')">Xuất xe này</button></div>`);return;}
+  const uid='f'+(++uidc),isNew=!v;
+  FORMS[uid]={kind:'in',id:clean,key:v?v.key:clean,isNew};
+  const pp=pendingPos;pendingPos='';
+  const head=clean
+    ?(isNew
+      ?`<div class="font-semibold">🔎 Hồ sơ mới: <b>${esc(clean)}</b> <span class="badge bg-amber-100 text-amber-800">${esc(idTypeLabel(clean))}</span> <span class="text-xs font-normal text-slate-500">· Tất cả đều không bắt buộc</span></div>`
+      :`<div class="font-semibold">🔎 Đã tìm thấy xe <b>${esc(v.key)}</b> trong hệ thống.</div>${vehCard(v)}`)
+    :`<div class="font-semibold text-navy">➕ Nhập xe vào bãi <span class="text-xs font-normal text-slate-500">· Tất cả nội dung đều không bắt buộc</span></div>`;
+  const newFields=isNew?`<div>${lab('Dòng xe')}<select id="${uid}_model" class="inp"><option value="">— Không chọn / Để trống —</option>${S.settings.models.map(m=>`<option>${esc(m)}</option>`).join('')}</select></div>
+    <div>${lab('Màu sắc')}<input id="${uid}_color" class="inp" list="colorList" placeholder="VD: Trắng (không bắt buộc)"></div>`:'';
+  showActionPanel(`${head}
+  <div class="mt-3 rounded-xl overflow-hidden border border-blue-100" id="${uid}_wrap">
+   <div class="bg-white p-3 grid sm:grid-cols-2 gap-3">
+    <div class="sm:col-span-2">${lab('Biển số (VD: 50H12345 hoặc nhập trước 12345) / 6 số VIN — để trống sẽ tạo mã tạm')}<input id="${uid}_key" class="inp" value="${esc(clean||'')}" placeholder="VD: 12345 hoặc 50H12345 hoặc 716717" autocapitalize="characters"></div>
+    ${newFields}
+    <div>${lab('Ngày nhập (để trống = 0 / thiếu ngày)')}<input type="date" id="${uid}_date" class="inp" value="${todayISO()}"></div>
+    <div>${lab('Vị trí bãi')}<select id="${uid}_pos" class="inp">${posOptions(pp)}</select></div>
+    <div>${lab('Tên/Bộ phận người gửi')}<input id="${uid}_party" class="inp" placeholder="VD: Thông/Kho"></div>
+    <div>${lab('Tình trạng vào')}${statusSelect(uid,'statusIn')}</div>
+    <div class="sm:col-span-2">${lab('Ghi chú')}<textarea id="${uid}_note" rows="2" class="inp" placeholder="VD: Chờ sửa chữa, kiểm tra..."></textarea></div>
+    <div class="sm:col-span-2 flex gap-2 justify-center" id="${uid}_act">
+      <button class="btn btn-primary" onclick="confirmIn('${uid}')">✓ Xác nhận nhập xe</button>
+      <button class="btn" onclick="closeActionPanel()">✕ Hủy</button>
+    </div>
+   </div></div>`);
+}
+function confirmIn(uid){
+  const f=FORMS[uid],g=n=>document.getElementById(uid+'_'+n);
+  const entered=cleanId(g('key')?.value||f.key||'');
+  const finalKey=entered||nextTempKey();
+  f.key=finalKey;
+  const date=g('date').value||null,pos=g('pos').value,party=g('party').value.trim(),st=g('status').value,note=g('note').value.trim();
+  if(activeOf(f.key)){toast('Xe này đang trong bãi!');return;}
+  if(pos&&active().some(v=>v.pos===pos)){toast('Vị trí này đã có xe, vui lòng chọn vị trí khác');return;}
+  let v=findVeh(f.key);
+  if(!v){
+    const id=f.key;
+    S.vehicles[id]={key:id,plate:isPlate(id)?id:'',vin:isPlate(id)?'':(entered?id:''),model:g('model')?g('model').value:'',color:g('color')?g('color').value.trim():''};
+    v=S.vehicles[id];
+  }
+  S.visits.push({id:nextId(),key:v.key,inDate:date,pos,party,statusIn:st,noteIn:note,done:false,outDate:null,statusOut:'',receiver:'',noteOut:'',created:Date.now()});
+  save();
+  closeActionPanel();
+  toast(`✅ Nhập xe ${v.key} thành công (lần ${visitsOf(v.key).length})`);
+}
+
 function quickExport(id){
   const v=findVeh(id),a=v&&activeOf(v.key);
   if(!a){startExport(id);return;}
   const uid='f'+(++uidc);FORMS[uid]={kind:'qout',key:v.key};
-  const ag=age(a);
-  botSay(`<div id="${uid}_wrap" class="space-y-3">
-    <div class="flex items-center justify-between gap-2"><div><span class="text-xl font-extrabold">${esc(v.key)}</span> <span class="badge bg-orange-100 text-orange-700">Đang trong bãi</span> ${ageBadge(a)}</div><div class="text-xs text-slate-500">Xuất hôm nay ${fmt(todayISO())}</div></div>
-    <div class="text-xs text-slate-500">${esc(v.model||'—')} · ${esc(posLabel(a.pos))} · ${esc(statIn(a))}</div>
-    <div><div class="text-xs font-semibold text-slate-500 mb-1">Chạm tình trạng ra để xuất ngay</div><div class="flex flex-wrap gap-2">${S.settings.statusOut.map(s=>`<button type="button" class="qchip go" data-v="${esc(s)}" onclick="confirmQuickOut('${uid}',this.dataset.v)">${esc(s)}</button>`).join('')}</div></div>
-    <input id="${uid}_recv" class="inp" style="font-size:16px" placeholder="Người nhận (không bắt buộc)">
-    <div id="${uid}_act" class="flex flex-wrap gap-2"><button class="qchip" onclick="startExport('${esc(v.key)}')">Chi tiết…</button><button class="qchip" onclick="cancelForm('${uid}')">✕ Hủy</button></div>
+  showActionPanel(`<div id="${uid}_wrap" class="space-y-3">
+    <div class="flex items-center justify-between gap-2"><div><span class="text-xl font-extrabold text-navy">${esc(v.key)}</span> <span class="badge bg-orange-100 text-orange-700">Đang trong bãi</span> ${ageBadge(a)}</div><div class="text-xs text-slate-500">Xuất hôm nay ${fmt(todayISO())}</div></div>
+    <div class="text-xs text-slate-600">${esc(v.model||'—')} · ${esc(posLabel(a.pos))} · ${esc(statIn(a))}</div>
+    <div><div class="text-xs font-semibold text-slate-500 mb-1">Chạm tình trạng ra để xuất ngay (hoặc bấm Xuất nhanh không cần chọn):</div><div class="flex flex-wrap gap-2">${S.settings.statusOut.map(s=>`<button type="button" class="qchip go" data-v="${esc(s)}" onclick="confirmQuickOut('${uid}',this.dataset.v)">${esc(s)}</button>`).join('')}</div></div>
+    <input id="${uid}_recv" class="inp" placeholder="Tên/Bộ phận người nhận (không bắt buộc)">
+    <div id="${uid}_act" class="flex flex-wrap gap-2"><button class="qchip go" onclick="confirmQuickOut('${uid}','')">✓ Xuất nhanh (không cần tình trạng)</button><button class="qchip" onclick="startExport('${esc(v.key)}')">Xuất chi tiết (chọn ngày)…</button><button class="qchip" onclick="closeActionPanel()">✕ Hủy</button></div>
   </div>`);
 }
 function confirmQuickOut(uid,st){
@@ -1033,120 +770,42 @@ function confirmQuickOut(uid,st){
   const date=todayISO();
   if(isValidInDate(a.inDate)&&date<a.inDate){toast('Ngày xuất không được trước ngày nhập');return;}
   const recv=(document.getElementById(uid+'_recv')||{value:''}).value.trim();
-  Object.assign(a,{done:true,outDate:date,statusOut:st,receiver:recv,noteOut:''});
-  lockForm(uid,{ok:1,t:'✔ Đã xuất'});save();
-  const days=isValidInDate(a.inDate)?diff(a.inDate,date):null;
-  botSay(`✅ Đã xuất <b>${esc(f.key)}</b> · ${esc(st)}${days!==null?` · lượt này ${days} ngày`:''}. Vị trí ${esc(posLabel(a.pos))} đã giải phóng.`);
+  Object.assign(a,{done:true,outDate:date,statusOut:st||'',receiver:recv,noteOut:''});
+  save();
+  closeActionPanel();
+  toast(`✅ Đã xuất xe ${f.key}${st?' ('+st+')':''}`);
+}
+function startExport(id){
+  const v=findVeh(id);
+  if(!v){toast(`Không tìm thấy xe ${id}`);return;}
+  const a=activeOf(v.key);
+  if(!a){toast(`Xe ${v.key} hiện không ở trong bãi`);return;}
+  const uid='f'+(++uidc);FORMS[uid]={kind:'out',key:v.key};
+  showActionPanel(`<div class="font-semibold">📤 Xuất xe <b>${esc(v.key)}</b> <span class="text-xs font-normal text-slate-500">· Tất cả đều không bắt buộc</span></div>${vehCard(v)}
+  <div class="mt-3 rounded-xl overflow-hidden border border-blue-100" id="${uid}_wrap">
+   <div class="bg-white p-3 grid sm:grid-cols-2 gap-3">
+    <div>${lab('Ngày xuất')}<input type="date" id="${uid}_date" class="inp" value="${todayISO()}"></div>
+    <div>${lab('Tình trạng ra')}${statusSelect(uid,'statusOut')}</div>
+    <div class="sm:col-span-2">${lab('Tên/Bộ phận người nhận')}<input id="${uid}_party" class="inp" placeholder="VD: Khách hàng / GSM"></div>
+    <div class="sm:col-span-2">${lab('Ghi chú')}<textarea id="${uid}_note" rows="2" class="inp"></textarea></div>
+    <div class="sm:col-span-2 flex gap-2 justify-center" id="${uid}_act">
+      <button class="btn btn-primary" onclick="confirmOut('${uid}')">✓ Xác nhận xuất xe</button>
+      <button class="btn" onclick="closeActionPanel()">✕ Hủy</button>
+    </div></div></div>`);
+}
+function confirmOut(uid){
+  const f=FORMS[uid],g=n=>document.getElementById(uid+'_'+n);
+  const date=g('date').value||todayISO(),st=g('status').value||'';
+  const a=activeOf(f.key);if(!a){toast('Xe không còn trong bãi');return;}
+  if(isValidInDate(a.inDate)&&date<a.inDate){toast('Ngày xuất không được trước ngày nhập');return;}
+  Object.assign(a,{done:true,outDate:date,statusOut:st,receiver:g('party').value.trim(),noteOut:g('note').value.trim()});
+  save();
+  closeActionPanel();
+  toast(`✅ Đã xuất xe ${f.key} thành công`);
 }
 
-/* ================== CHỤP ẢNH → ĐỌC BIỂN SỐ/VIN (OCR chạy trên máy, KHÔNG lưu ảnh) ================== */
-let ocrLoading=null,ocrWorker=null;
-function loadTesseract(){
-  if(window.Tesseract)return Promise.resolve();
-  if(ocrLoading)return ocrLoading;
-  ocrLoading=new Promise((res,rej)=>{
-    const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-    s.onload=res;s.onerror=()=>{ocrLoading=null;rej(new Error('Chưa tải được bộ đọc chữ (cần mạng lần đầu)'));};
-    document.head.appendChild(s);
-  });
-  return ocrLoading;
-}
-async function imgToCanvas(file){
-  const url=URL.createObjectURL(file);
-  try{
-    const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error('Không mở được ảnh'));i.src=url;});
-    const sc=Math.min(1,1400/Math.max(img.width,img.height));
-    const c=document.createElement('canvas');c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);
-    const g=c.getContext('2d');g.drawImage(img,0,0,c.width,c.height);
-    const d=g.getImageData(0,0,c.width,c.height),p=d.data;
-    for(let i=0;i<p.length;i+=4){let y=0.3*p[i]+0.59*p[i+1]+0.11*p[i+2];y=Math.max(0,Math.min(255,(y-110)*1.5+128));p[i]=p[i+1]=p[i+2]=y;}
-    g.putImageData(d,0,0);
-    return c;
-  }finally{URL.revokeObjectURL(url);}
-}
-function plateCandidates(text){
-  const out=[];const add=x=>{if(x&&!out.includes(x))out.push(x);};
-  const up=String(text||'').toUpperCase();
-  const lines=up.split(/\n+/).map(l=>l.replace(/[^A-Z0-9]/g,'')).filter(Boolean);
-  const pools=[...lines,lines.join('')];
-  pools.forEach(t=>{for(const m of t.matchAll(/\d{2}[A-Z]{1,2}\d{4,6}/g))add(m[0]);});
-  pools.forEach(t=>{for(const m of t.matchAll(/[A-HJ-NPR-Z0-9]{17}/g))if(/\d/.test(m[0])&&/[A-Z]/.test(m[0]))add(m[0]);});
-  pools.forEach(t=>{for(const m of t.matchAll(/\d{6}/g))add(m[0]);});
-  return out.slice(0,5);
-}
-async function scanPhoto(file){
-  if(TAB!=='chat')setTab('chat');
-  userSay('📷 Quét ảnh…');
-  const wait=botSay('⏳ Đang đọc biển số/VIN… (lần đầu có thể mất 10–20 giây để tải bộ đọc chữ)');
-  try{
-    await loadTesseract();
-    const canvas=await imgToCanvas(file);
-    if(!ocrWorker){
-      ocrWorker=await Tesseract.createWorker('eng');
-      await ocrWorker.setParameters({tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-. ',tessedit_pageseg_mode:'11'});
-    }
-    const {data}=await ocrWorker.recognize(canvas);
-    canvas.width=canvas.height=0; // bỏ ảnh khỏi bộ nhớ, không lưu ở đâu cả
-    wait.remove();
-    const c=plateCandidates(data.text);
-    if(!c.length){botSay('😕 Không đọc được biển số/VIN. Hãy chụp gần hơn, đủ sáng, thẳng góc — hoặc gõ tay.');return;}
-    if(c.length===1){botSay(`📷 Đọc được <b>${esc(c[0])}</b> — kiểm tra đúng chưa rồi xác nhận bên dưới (sai thì bấm Hủy và gõ tay).`);smartId(c[0]);return;}
-    botSay(`📷 Đọc được nhiều kết quả, chọn đúng xe:<div class="flex flex-wrap gap-2 mt-2">${c.map(x=>`<button class="qchip go" onclick="runCmd('${esc(x)}')">${esc(x)}</button>`).join('')}</div>`);
-  }catch(err){
-    wait.remove();
-    botSay('⚠️ '+esc(err.message||'Không đọc được ảnh')+'. Bạn có thể gõ biển số trực tiếp.');
-  }
-}
-$('#camBtn').onclick=()=>$('#fileCam').click();
-$('#fileCam').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)scanPhoto(f);};
-function idFrom(s){
-  const toks=s.split(/\s+/).filter(Boolean);
-  const t=toks.find(x=>/\d/.test(x)&&x.replace(/[^a-z0-9]/g,'').length>=5)||toks.join('');
-  return cleanId(t);
-}
-function handle(raw){
-  const n=norm(raw);let m;
-  if(!n)return;
-  if(/^(dong bo|sync|day du lieu|tai du lieu)/.test(n)){
-    if(/tai/.test(n)){botSay('ℹ️ Bản Viewer được tải bằng nút Kiểm tra dữ liệu. Admin không tải ngược từ Sheet trong quy trình này.');}
-    else{botSay('🔄 Đang đẩy dữ liệu Offline lên Google Sheets...');syncAllNow('push');}
-    return;
-  }
-  if(/^(bat online|che do online|online on|tat online|che do offline|offline on)/.test(n)){botSay('ℹ️ Hệ thống luôn lưu Offline. Chỉ Admin chủ động đẩy dữ liệu lên Google Sheets bằng thao tác Đẩy dữ liệu.');return;}
-  if((m=n.match(/ton\s*(?:tren|qua|>)?\s*(\d+)\s*ngay/))){agedCmd(parseInt(m[1]));return;}
-  if(/(chua co vi tri|khong co vi tri|thieu vi tri)/.test(n)){noPosCmd();return;}
-  if(/^(bao cao|thong ke|tong quan|bao nhieu xe|tong so xe)/.test(n)){reportCmd();return;}
-  if((m=n.match(/^(nhap|xuat|tim|tra cuu|kiem tra)\s*(?:xe)?\s*(.*)$/))){
-    const id=idFrom(m[2]);
-    if(!id){botSay('Vui lòng nhập kèm biển số/VIN. Ví dụ: <b>'+(m[1]==='nhap'?'Nhập xe 50H12345':m[1]==='xuat'?'Xuất xe 50H12345':'Tìm 50H12345')+'</b>');return;}
-    if(m[1]==='nhap')quickImport(id);else if(m[1]==='xuat')quickExport(id);else searchCmd(id);
-    return;
-  }
-  const id=idFrom(n);
-  if(id&&/\d/.test(id)&&id.length>=5){
-    if(/(nhap|vao bai|gui xe)/.test(n)){quickImport(id);return;}
-    if(/(xuat|ra bai|giao xe|tra xe)/.test(n)){quickExport(id);return;}
-    smartId(id);return;
-  }
-  helpMsg();
-}
-function runCmd(t){if(TAB!=='chat')setTab('chat');userSay(t);setTimeout(()=>handle(t),150);}
-function sendChat(){const i=$('#chatInput'),t=i.value.trim();if(!t)return;i.value='';userSay(t);setTimeout(()=>handle(t),200);}
-$('#sendBtn').onclick=sendChat;
-$('#chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-$('#micBtn').onclick=()=>{
-  if(!SR){toast('Trình duyệt không hỗ trợ nhận diện giọng nói');return;}
-  const r=new SR();r.lang='vi-VN';r.interimResults=false;
-  r.onresult=e=>{$('#chatInput').value=e.results[0][0].transcript;$('#chatInput').focus();};
-  r.onerror=()=>toast('Không nhận diện được giọng nói');
-  r.onend=()=>$('#micBtn').classList.remove('rec');
-  $('#micBtn').classList.add('rec');try{r.start();}catch(e){}
-};
-
-/* ================== DASHBOARD ================== */
+/* ================== DASHBOARD & SƠ ĐỒ BÃI ================== */
 let selectedWaitId=null;
-
 function assignPos(visitId, pos){
   const v=S.visits.find(x=>x.id===visitId && !x.done);
   if(!v)return;
@@ -1163,20 +822,23 @@ function renderDash(){
   const L=S.settings.layout,act=active(),byPos={};act.forEach(v=>{if(v.pos)byPos[v.pos]=v;});
   const total=L.days*L.cols.length*L.rows,used=Object.keys(byPos).filter(p=>allPositions().includes(p)).length;
   const waitList=act.filter(v=>!v.pos);
+  const kpi=calcKPI();
   if(selectedWaitId && !waitList.some(v=>v.id===selectedWaitId)) selectedWaitId=null;
   const selObj=selectedWaitId ? waitList.find(v=>v.id===selectedWaitId) : null;
 
-  let h=`<div class="card p-3 mb-4">
-     <input id="dashSearch" class="inp" style="font-size:16px" placeholder="🔎 Tìm xe nhanh: gõ biển số hoặc VIN (VD: 12345)…" autocomplete="off" oninput="dashSearch(this.value)">
-     <div id="dashSearchRes" class="flex flex-wrap gap-2 mt-2"></div>
-   </div>
-   <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-   ${[['Tổng vị trí',total,'text-slate-800'],['Đang có xe',used,'text-vf'],['Còn trống',total-used,'text-green-600'],['Xe chưa có vị trí',waitList.length,'text-orange-600']].map(x=>`<div class="card p-4"><div class="text-xs text-slate-500 uppercase font-semibold">${x[0]}</div><div class="text-3xl font-extrabold ${x[2]}">${x[1]}</div></div>`).join('')}</div>
+  let h=`<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+   ${[
+     ['Tổng xe tồn bãi',kpi.total,'text-navy',`Biển: ${kpi.old} · VIN: ${kpi.nw}`],
+     ['Vị trí đang có xe',used,'text-vf',`Còn trống ${total-used} / ${total} ô`],
+     ['Xe chưa có vị trí',waitList.length,'text-orange-600','Chờ xếp vào sơ đồ'],
+     ['Xe cũ tồn ≥ 11 ngày',kpi.old11,'text-red-600','Tính từ chu kỳ đầu']
+   ].map(x=>`<div class="card p-3.5 sm:p-4"><div class="text-xs text-slate-500 uppercase font-bold">${x[0]}</div><div class="text-3xl font-extrabold ${x[2]} my-0.5">${x[1]}</div><div class="text-[11px] text-slate-400 font-medium">${x[3]}</div></div>`).join('')}
+  </div>
 
    <div class="card p-3 sm:p-4 mb-4" data-drop="wait" style="background:#fffbeb;border:1.5px dashed #f59e0b">
      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
        <div class="font-bold text-amber-900 text-sm">📍 Danh sách xe chưa có vị trí (${waitList.length} xe)</div>
-       <div class="text-xs text-amber-800">${selObj ? `Đang chọn <b>${esc(selObj.key)}</b> — chạm vào ô trống bất kỳ bên dưới để xếp vị trí` : 'Kéo xe thả vào ô trống (hoặc chạm xe rồi chạm ô trống). Kéo xe từ sơ đồ về đây để bỏ vị trí'}</div>
+       <div class="text-xs text-amber-800">${selObj ? `Đang chọn <b>${esc(selObj.key)}</b> — chạm vào ô trống bất kỳ bên dưới để xếp vị trí` : 'Chạm xe rồi chạm ô trống (hoặc giữ 0,3s để kéo thả)'}</div>
      </div>
      <div class="flex flex-wrap gap-2">
        ${waitList.length ? waitList.map(v=>{
@@ -1190,7 +852,7 @@ function renderDash(){
 
    <div class="flex flex-wrap gap-3 text-xs mb-3 items-center">
      <span class="font-semibold">Phân loại màu trên sơ đồ:</span>
-     <span class="inline-flex items-center gap-1.5 font-semibold"><span class="w-3.5 h-3.5 rounded inline-block" style="background:#ea580c"></span>Xe có biển số (VD: 50H12345)</span>
+     <span class="inline-flex items-center gap-1.5 font-semibold"><span class="w-3.5 h-3.5 rounded inline-block" style="background:#ea580c"></span>Xe có biển số (VD: 50H12345 hoặc 12345)</span>
      <span class="inline-flex items-center gap-1.5 font-semibold"><span class="w-3.5 h-3.5 rounded inline-block" style="background:#2563eb"></span>Xe mới 6 số VIN (VD: 123456)</span>
      <span class="inline-flex items-center gap-1.5 text-slate-500"><span class="w-3.5 h-3.5 rounded inline-block border border-slate-300 bg-slate-100"></span>Ô trống</span>
    </div>
@@ -1217,21 +879,7 @@ function renderDash(){
   $('#dashBox').innerHTML=h+'</div>';
 }
 
-/* ---- Tìm xe nhanh trên sơ đồ ---- */
-function dashSearch(q){
-  const box=$('#dashSearchRes');if(!box)return;
-  document.querySelectorAll('#dashBox .cell.hl').forEach(c=>c.classList.remove('hl'));
-  const k=cleanId(q);
-  if(!k){box.innerHTML='';return;}
-  const hits=active().filter(v=>v.key.includes(k)).slice(0,10);
-  if(!hits.length){box.innerHTML=`<span class="text-xs text-slate-500">Không có xe nào đang trong bãi khớp "${esc(q)}"</span>`;return;}
-  box.innerHTML=hits.map(v=>`<button type="button" class="wchip ${isNewV(veh(v.key))?'v-vin':'v-plate'}" data-find="${v.id}">${esc(v.key)} · ${v.pos?esc(posLabel(v.pos)):'Chưa có vị trí'}</button>`).join('');
-  let first=null;
-  hits.forEach(v=>{if(v.pos){const el=document.querySelector(`#dashBox .cell[data-pos="${v.pos}"]`);if(el){el.classList.add('hl');first=first||el;}}});
-  if(first&&hits.length<=3)first.scrollIntoView({block:'center',inline:'center',behavior:'smooth'});
-}
-
-/* ---- Kéo thả xe trên sơ đồ (chuột + cảm ứng: giữ ~0,3 giây rồi kéo) ---- */
+/* ---- Kéo thả xe trên sơ đồ ---- */
 function moveVisit(id,pos){
   const v=S.visits.find(x=>x.id===id&&!x.done);if(!v)return;
   if(!pos){assignPos(id,'');return;}
@@ -1265,7 +913,6 @@ function endDragUI(st){
 }
 $('#dashBox').addEventListener('pointerdown',e=>{
   if(e.button>0)return;
-  if(!AUTH_USER||AUTH_USER.role!=='admin')return;
   const src=e.target.closest('.cell:not(.empty), [data-wait-id]');if(!src)return;
   let id,label;
   if(src.dataset.waitId){id=+src.dataset.waitId;label=src.textContent.trim();}
@@ -1304,13 +951,6 @@ $('#dashBox').addEventListener('contextmenu',e=>{if(DRAG&&DRAG.touch)e.preventDe
 $('#dashBox').addEventListener('click',e=>{if(dragSuppress){e.stopImmediatePropagation();e.preventDefault();}},true);
 
 $('#dashBox').addEventListener('click',e=>{
-  const fBtn=e.target.closest('[data-find]');
-  if(fBtn){
-    const v=active().find(x=>x.id===+fBtn.dataset.find);
-    if(v&&v.pos){const el=document.querySelector(`#dashBox .cell[data-pos="${v.pos}"]`);if(el){el.scrollIntoView({block:'center',inline:'center',behavior:'smooth'});el.classList.add('hl');}}
-    else if(v)toast(`Xe ${v.key} chưa có vị trí — kéo xe từ danh sách chờ vào ô trống`);
-    return;
-  }
   const wBtn=e.target.closest('[data-wait-id]');
   if(wBtn){
     const id=+wBtn.dataset.waitId;
@@ -1322,14 +962,12 @@ $('#dashBox').addEventListener('click',e=>{
     }
     return;
   }
-
   const c=e.target.closest('[data-pos]');if(!c)return;
   const p=c.dataset.pos,v=active().find(x=>x.pos===p);
-
   if(v){
     const vv=veh(v.key);
     const firstIn=firstInDateOf(v.key);
-    showModal(`<div class="p-5"><div class="flex justify-between items-center"><h3 class="text-lg font-bold">${esc(v.key)} <span class="badge ml-1 ${isNewV(vv)?'bg-blue-100 text-blue-800':'bg-orange-100 text-orange-800'}">${isNewV(vv)?'Xe mới VIN':'Xe có biển'}</span></h3><button onclick="closeModal()" class="text-xl">✕</button></div>
+    showModal(`<div class="p-5"><div class="flex justify-between items-center"><h3 class="text-lg font-bold">${esc(v.key)} <span class="badge ml-1 ${isNewV(vv)?'bg-blue-100 text-blue-800':'bg-orange-100 text-orange-800'}">${esc(idTypeLabel(v.key))}</span></h3><button onclick="closeModal()" class="text-xl">✕</button></div>
     <div class="mt-3 text-sm space-y-1.5">
       <div>Vị trí: <b>${esc(posLabel(p))}</b></div>
       <div>Dòng xe: <b>${esc(vv.model||'—')}</b> · Màu: <b>${esc(vv.color||'—')}</b></div>
@@ -1340,8 +978,8 @@ $('#dashBox').addEventListener('click',e=>{
       <div>Ghi chú: ${esc(v.noteIn||'—')}</div>
     </div>
     <div class="flex flex-wrap gap-2 mt-4">
-      <button class="btn btn-primary" onclick="closeModal();runCmd('Xuất xe ${esc(v.key)}')">📤 Xuất xe</button>
-      <button class="btn" style="border-color:#f59e0b;color:#b45309;background:#fffbeb" onclick="closeModal();assignPos(${v.id},'')">↩ Đưa về danh sách chưa có vị trí</button>
+      <button class="btn btn-primary" onclick="closeModal();quickExport('${esc(v.key)}')">📤 Xuất xe</button>
+      <button class="btn" style="border-color:#f59e0b;color:#b45309;background:#fffbeb" onclick="closeModal();assignPos(${v.id},'')">↩ Bỏ vị trí</button>
       <button class="btn" onclick="editVisit(${v.id})">✏️ Sửa</button>
     </div></div>`);
   }else{
@@ -1359,52 +997,16 @@ $('#dashBox').addEventListener('click',e=>{
          </div>`;}).join('')}
          </div></div>`
       : `<div class="text-xs text-slate-500 mt-3">Hiện không có xe nào trong danh sách chưa có vị trí.</div>`;
-
     showModal(`<div class="p-5"><div class="flex justify-between"><h3 class="text-lg font-bold">Vị trí trống · ${esc(posLabel(p))}</h3><button onclick="closeModal()" class="text-xl">✕</button></div>
     ${waitHtml}
     <div class="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between gap-2">
       <span class="text-xs text-slate-500">Hoặc nhập xe mới trực tiếp vào ô này:</span>
-      <button class="btn btn-sm" onclick="pendingPos='${p}';closeModal();setTab('chat');$('#chatInput').value='Nhập xe ';$('#chatInput').focus()">+ Nhập xe mới</button>
+      <button class="btn btn-sm btn-primary" onclick="pendingPos='${p}';closeModal();quickImport('')">+ Nhập xe vào ô này</button>
     </div></div>`);
   }
 });
 
-/* ================== XE TRONG BÃI ================== */
-const YF={q:'',st:'',model:'',day:'',age:''};
-function renderYard(){
-  const act=active();
-  const sts=[...new Set(act.map(statIn))],mds=[...new Set(act.map(v=>veh(v.key).model||'Dòng khác'))];
-  let list=act.filter(v=>{
-    const vv=veh(v.key);
-    if(YF.q){const q=cleanId(YF.q),t=norm(YF.q);if(!(v.key.includes(q)&&q)&&!norm((vv.model||'')+' '+(vv.color||'')+' '+(v.party||'')+' '+(v.noteIn||'')).includes(t))return false;}
-    if(YF.st&&statIn(v)!==YF.st)return false;
-    if(YF.model&&(vv.model||'Dòng khác')!==YF.model)return false;
-    if(YF.day==='none'&&v.pos)return false;
-    if(YF.day&&YF.day!=='none'&&posDay(v.pos)!==YF.day)return false;
-    if(YF.age!==''&&ageGroup(age(v))!==+YF.age)return false;
-    return true;
-  }).sort((a,b)=>(age(b)??9999)-(age(a)??9999));
-  const opt=(arr,sel)=>arr.map(x=>`<option value="${esc(x)}" ${x===sel?'selected':''}>${esc(x)}</option>`).join('');
-  $('#yardBox').innerHTML=`<div class="card p-3 sm:p-4">
-   <div class="grid grid-cols-2 lg:grid-cols-6 gap-2 mb-3">
-    <input id="yq" class="inp col-span-2" placeholder="🔎 Tìm biển số, dòng xe, người gửi…" value="${esc(YF.q)}">
-    <select id="yst" class="inp"><option value="">Tình trạng: tất cả</option>${opt(sts,YF.st)}</select>
-    <select id="ymd" class="inp"><option value="">Dòng xe: tất cả</option>${opt(mds,YF.model)}</select>
-    <select id="yday" class="inp"><option value="">Vị trí: tất cả</option>${Array.from({length:S.settings.layout.days},(_,i)=>`<option value="${i+1}" ${YF.day==String(i+1)?'selected':''}>Dãy ${i+1}</option>`).join('')}<option value="none" ${YF.day==='none'?'selected':''}>Chưa có vị trí</option></select>
-    <select id="yage" class="inp"><option value="">Thời gian: tất cả</option>${['0–10 ngày','11–20 ngày','21–30 ngày','Trên 30 / ngày nhập = 0'].map((x,i)=>`<option value="${i}" ${YF.age===String(i)?'selected':''}>${x}</option>`).join('')}</select>
-   </div>
-   <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-     <div class="text-sm text-slate-500">Hiển thị <b>${list.length}</b> / ${act.length} xe · <span class="text-xs text-vf font-medium">Chạm vào một hàng để xem chi tiết & thao tác</span></div>
-     <button class="btn btn-sm btn-primary" onclick="exportYardXlsx()">⬇️ Xuất danh sách tồn ra Excel</button>
-   </div>
-   <div class="overflow-auto" style="max-height:calc(100dvh - 260px)"><table class="t" style="min-width:1040px"><thead><tr><th>#</th><th>Biển số / VIN</th><th>Dòng xe</th><th>Màu</th><th>Ngày nhập đầu</th><th>Nhập mới nhất</th><th>Tuổi tồn</th><th>Vị trí</th><th>Tình trạng</th><th>Người gửi</th><th>Lần</th><th></th></tr></thead><tbody>
-   ${list.map((v,i)=>{const vv=veh(v.key);const firstIn=firstInDateOf(v.key);return `<tr class="clickable" onclick="openVehicleDetail('${esc(v.key)}', ${v.id})"><td>${i+1}</td><td><b>${esc(v.key)}</b>${isNewV(vv)?' <span class="badge bg-blue-100 text-blue-800">Mới</span>':''}</td><td>${esc(vv.model||'—')}</td><td>${esc(vv.color||'—')}</td><td>${fmt(firstIn)}</td><td>${fmt(v.inDate)}</td><td>${ageBadge(v)}</td><td>${esc(posLabel(v.pos))}</td><td>${esc(statIn(v))}</td><td>${esc(v.party||'—')}</td><td>${visitsOf(v.key).length}</td><td class="whitespace-nowrap" onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="editVisit(${v.id})">Sửa</button> <button class="btn btn-sm btn-primary" onclick="runCmd('Xuất xe ${esc(v.key)}')">Xuất</button></td></tr>`;}).join('')||'<tr><td colspan="12" class="text-center text-slate-400 py-8">Không có xe phù hợp</td></tr>'}
-   </tbody></table></div></div>`;
-  const bind=(id,k,ev)=>{const e=$('#'+id);e.addEventListener(ev,()=>{YF[k]=e.value;const pos=e.selectionStart;renderYard();if(id==='yq'){const n=$('#yq');n.focus();n.setSelectionRange(pos,pos);}});};
-  bind('yq','q','input');bind('yst','st','change');bind('ymd','model','change');bind('yday','day','change');bind('yage','age','change');
-}
-
-/* ================== CHI TIẾT HỒ SƠ XE & CHỨC NĂNG ================== */
+/* ================== CHI TIẾT HỒ SƠ XE & SỬA LƯỢT ================== */
 function openVehicleDetail(key, focusVisitId){
   const v=findVeh(key);
   if(!v){toast('Không tìm thấy hồ sơ xe');return;}
@@ -1413,7 +1015,6 @@ function openVehicleDetail(key, focusVisitId){
   const last=vs[vs.length-1]||null;
   const targetVisit=focusVisitId ? (vs.find(x=>x.id===focusVisitId)||act||last) : (act||last);
   const firstIn=firstInDateOf(v.key);
-  const isViewer=AUTH_USER && AUTH_USER.role==='viewer';
 
   const historyRows=vs.slice().reverse().map((x,idx)=>{
     const nth=vs.length-idx;
@@ -1421,10 +1022,10 @@ function openVehicleDetail(key, focusVisitId){
     return `<div class="rounded-xl border ${isCur?'border-orange-200 bg-orange-50/40':'border-slate-200 bg-slate-50/60'} p-3 text-xs space-y-1.5">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div class="font-bold text-slate-800">Lần ${nth} · ${isCur?'<span class="badge bg-orange-100 text-orange-700">Đang trong bãi</span>':'<span class="badge bg-green-100 text-green-700">Đã xuất</span>'}</div>
-        ${!isViewer?`<div class="flex gap-1.5">
+        <div class="flex gap-1.5">
           <button class="btn btn-sm" onclick="editVisit(${x.id})">✏️ Sửa lượt này</button>
           <button class="btn btn-sm btn-red" onclick="delVisit(${x.id}, true)">🗑️ Xóa</button>
-        </div>`:''}
+        </div>
       </div>
       <div class="grid sm:grid-cols-2 gap-x-4 gap-y-1 text-slate-700">
         <div><span class="text-slate-500">Ngày nhập:</span> <b>${fmt(x.inDate)}</b></div>
@@ -1447,7 +1048,7 @@ function openVehicleDetail(key, focusVisitId){
       <div>
         <div class="flex flex-wrap items-center gap-2">
           <h3 class="text-xl font-extrabold text-navy">${esc(v.key)}</h3>
-          <span class="badge ${isNewV(v)?'bg-blue-100 text-blue-800':'bg-slate-100 text-slate-700'}">${isNewV(v)?'Xe mới (VIN)':'Xe có biển số'}</span>
+          <span class="badge ${isNewV(v)?'bg-blue-100 text-blue-800':'bg-slate-100 text-slate-700'}">${esc(idTypeLabel(v.key))}</span>
           ${act?'<span class="badge bg-orange-100 text-orange-700">● Đang trong bãi</span>':'<span class="badge bg-green-100 text-green-700">✔ Đã xuất</span>'}
         </div>
         <div class="text-xs text-slate-500 mt-1">Hồ sơ chi tiết phương tiện & lịch sử vào/ra bãi (${vs.length} lượt)</div>
@@ -1471,14 +1072,13 @@ function openVehicleDetail(key, focusVisitId){
 
     <div class="flex flex-wrap gap-2 mt-3">
       ${act
-        ? `<button class="btn btn-primary btn-sm" onclick="closeModal();runCmd('Xuất xe ${esc(v.key)}')">📤 Xuất xe</button>
-           ${!isViewer?`<button class="btn btn-sm" onclick="editVisit(${act.id})">✏️ Sửa thông tin</button>`:''}
-           ${!isViewer&&act.pos?`<button class="btn btn-sm" style="border-color:#f59e0b;color:#b45309;background:#fffbeb" onclick="closeModal();assignPos(${act.id},'')">↩ Bỏ vị trí</button>`:''}`
-        : `<button class="btn btn-primary btn-sm" onclick="closeModal();runCmd('Nhập xe ${esc(v.key)}')">📥 Nhập lại vào bãi</button>
-           ${!isViewer&&targetVisit?`<button class="btn btn-sm" onclick="editVisit(${targetVisit.id})">✏️ Sửa lượt cuối</button>`:''}`
+        ? `<button class="btn btn-primary btn-sm" onclick="closeModal();quickExport('${esc(v.key)}')">📤 Xuất xe</button>
+           <button class="btn btn-sm" onclick="editVisit(${act.id})">✏️ Sửa / Bổ sung biển số</button>
+           ${act.pos?`<button class="btn btn-sm" style="border-color:#f59e0b;color:#b45309;background:#fffbeb" onclick="closeModal();assignPos(${act.id},'')">↩ Bỏ vị trí</button>`:''}`
+        : `<button class="btn btn-primary btn-sm" onclick="closeModal();quickImport('${esc(v.key)}')">📥 Nhập lại vào bãi</button>
+           ${targetVisit?`<button class="btn btn-sm" onclick="editVisit(${targetVisit.id})">✏️ Sửa / Bổ sung biển số</button>`:''}`
       }
-      <button class="btn btn-sm" onclick="closeModal();runCmd('Tìm ${esc(v.key)}')">💬 Mở trong Chat</button>
-      ${!isViewer&&targetVisit?`<button class="btn btn-sm btn-red ml-auto" onclick="delVisit(${targetVisit.id}, true)">🗑️ Xóa lượt gần nhất</button>`:''}
+      ${targetVisit?`<button class="btn btn-sm btn-red ml-auto" onclick="delVisit(${targetVisit.id}, true)">🗑️ Xóa lượt gần nhất</button>`:''}
     </div>
 
     <div class="mt-4">
@@ -1490,12 +1090,12 @@ function openVehicleDetail(key, focusVisitId){
   </div>`);
 }
 
-/* ================== SỬA LƯỢT ================== */
 function editVisit(id){
   const v=S.visits.find(x=>x.id===id);if(!v)return;const vv=veh(v.key);
   const dl=(n,arr)=>`<datalist id="${n}">${arr.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>`;
-  showModal(`<div class="p-5"><div class="flex justify-between"><h3 class="text-lg font-bold">Sửa lượt lưu bãi · ${esc(v.key)}</h3><button onclick="closeModal()" class="text-xl">✕</button></div>
+  showModal(`<div class="p-5"><div class="flex justify-between"><h3 class="text-lg font-bold">Sửa hồ sơ & lượt lưu bãi · ${esc(v.key)}</h3><button onclick="closeModal()" class="text-xl">✕</button></div>
   <div class="grid sm:grid-cols-2 gap-3 mt-3">
+   <div class="sm:col-span-2">${lab('Biển số (VD: 50H12345 hoặc 12345) / 6 số VIN')}<input id="e_key" class="inp font-bold" value="${esc(v.key)}" autocapitalize="characters"></div>
    <div>${lab('Dòng xe')}<input id="e_model" class="inp" list="dl_models" value="${esc(vv.model)}"></div>
    <div>${lab('Màu sắc')}<input id="e_color" class="inp" list="colorList" value="${esc(vv.color)}"></div>
    <div>${lab('Ngày nhập (trống = 0 / thiếu ngày)')}<input type="date" id="e_in" class="inp" value="${isValidInDate(v.inDate)?v.inDate:''}"></div>
@@ -1511,7 +1111,29 @@ function editVisit(id){
   <div class="flex gap-2 mt-4"><button class="btn btn-primary" onclick="saveEdit(${id})">Lưu thay đổi</button><button class="btn" onclick="closeModal()">Hủy</button></div></div>`);
 }
 function saveEdit(id){
-  const v=S.visits.find(x=>x.id===id),g=n=>$('#'+n),vv=S.vehicles[v.key];
+  const v=S.visits.find(x=>x.id===id),g=n=>$('#'+n);
+  const oldKey=v.key;
+  const newKey=cleanId(g('e_key').value)||oldKey;
+  if(newKey!==oldKey){
+    const existingTarget=S.vehicles[newKey];
+    if(existingTarget && !v.done && activeOf(newKey) && activeOf(newKey).id!==v.id){
+      toast(`Biển số ${newKey} hiện đã có xe khác đang trong bãi!`);return;
+    }
+    const oldVeh=S.vehicles[oldKey]||{key:oldKey,plate:'',vin:'',model:'',color:''};
+    if(!existingTarget){
+      S.vehicles[newKey]={
+        key:newKey,
+        plate:isPlate(newKey)?newKey:'',
+        vin:isPlate(newKey)?'':newKey,
+        model:oldVeh.model||'',
+        color:oldVeh.color||''
+      };
+    }
+    S.visits.forEach(x=>{if(x.key===oldKey)x.key=newKey;});
+    delete S.vehicles[oldKey];
+    v.key=newKey;
+  }
+  const vv=S.vehicles[v.key];
   if(vv){vv.model=g('e_model').value.trim();vv.color=g('e_color').value.trim();
     if(vv.model&&!S.settings.models.includes(vv.model))S.settings.models.push(vv.model);}
   v.inDate=g('e_in').value||null;v.party=g('e_party').value.trim();v.statusIn=g('e_stin').value.trim();v.noteIn=g('e_nin').value.trim();
@@ -1521,10 +1143,52 @@ function saveEdit(id){
     if(v.statusOut&&!S.settings.statusOut.includes(v.statusOut))S.settings.statusOut.push(v.statusOut);}
   closeModal();save();toast('Đã lưu thay đổi');
 }
+function delVisit(id, reopenDetail){
+  const target=S.visits.find(v=>v.id===id);
+  const key=target?target.key:null;
+  if(!confirm('Xóa toàn bộ lượt lưu bãi này (cả nhập và xuất)?'))return;
+  S.visits=S.visits.filter(v=>v.id!==id);
+  save();
+  toast('Đã xóa lượt lưu bãi');
+  if(reopenDetail && key && visitsOf(key).length) openVehicleDetail(key);
+  else if(reopenDetail) closeModal();
+}
 
-/* ================== LỊCH SỬ (1 XE = 1 HỒ SƠ TỔNG HỢP) ================== */
+/* ================== LỊCH SỬ (GIỮ INPUT CỐ ĐỊNH — KHÔNG MẤT BÀN PHÍM SỐ/CHỮ MOBILE) ================== */
 const HF={q:'',status:'',from:'',to:''};
 function renderHist(){
+  const box=$('#histBox');
+  if(!box.dataset.ready){
+    box.dataset.ready='1';
+    box.innerHTML=`<div class="card p-3 sm:p-4">
+     <div class="grid grid-cols-2 lg:grid-cols-5 gap-2 mb-3">
+      <input id="hq" type="text" inputmode="text" class="inp col-span-2" placeholder="🔎 Tìm biển số (50H12345 / 12345), VIN, dòng xe, người giao/nhận…" value="${esc(HF.q)}" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false">
+      <select id="ht" class="inp">
+        <option value="">Trạng thái cuối: tất cả</option>
+        <option value="in">Trong bãi</option>
+        <option value="out">Đã xuất</option>
+      </select>
+      <input type="date" id="hf" class="inp" value="${HF.from}" title="Từ ngày">
+      <input type="date" id="hto" class="inp" value="${HF.to}" title="Đến ngày">
+     </div>
+     <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+       <div id="histSummary" class="text-sm text-slate-500"></div>
+       <button type="button" class="btn btn-sm btn-primary" onclick="exportYardXlsx()">⬇️ Xuất Excel tồn bãi</button>
+     </div>
+     <div id="histTableWrap" class="overflow-auto" style="max-height:calc(100dvh - 280px)"></div>
+    </div>`;
+    $('#hq').addEventListener('input',e=>{HF.q=e.target.value;updateHistTable();});
+    $('#ht').addEventListener('change',e=>{HF.status=e.target.value;updateHistTable();});
+    $('#hf').addEventListener('change',e=>{HF.from=e.target.value;updateHistTable();});
+    $('#hto').addEventListener('change',e=>{HF.to=e.target.value;updateHistTable();});
+  }
+  $('#ht').value=HF.status;
+  $('#hf').value=HF.from;
+  $('#hto').value=HF.to;
+  updateHistTable();
+}
+
+function updateHistTable(){
   const keys=new Set([...Object.keys(S.vehicles), ...S.visits.map(v=>v.key)]);
   let records=[];
   keys.forEach(k=>{
@@ -1535,15 +1199,7 @@ function renderHist(){
     const last=act||vs[vs.length-1];
     const inYard=!!act;
     const lastDate=inYard ? last.inDate : (last.outDate || last.inDate);
-    records.push({
-      key:k,
-      veh:vv,
-      visits:vs,
-      last,
-      inYard,
-      lastDate,
-      firstIn:firstInDateOf(k)
-    });
+    records.push({key:k,veh:vv,visits:vs,last,inYard,lastDate,firstIn:firstInDateOf(k)});
   });
 
   records=records.filter(r=>{
@@ -1560,23 +1216,12 @@ function renderHist(){
   }).sort((a,b)=>(b.lastDate||'').localeCompare(a.lastDate||'') || b.last.id-a.last.id);
 
   const shown=records.slice(0,400);
-  const isViewer=AUTH_USER && AUTH_USER.role==='viewer';
+  const sumEl=$('#histSummary');
+  if(sumEl) sumEl.innerHTML=`Tổng <b>${records.length}</b> hồ sơ xe${records.length>400?' (hiển thị 400 mới nhất)':''} · <span class="text-xs text-vf font-medium">Chạm vào hàng bất kỳ để xem chi tiết</span>`;
 
-  $('#histBox').innerHTML=`<div class="card p-3 sm:p-4">
-   <div class="grid grid-cols-2 lg:grid-cols-5 gap-2 mb-3">
-    <input id="hq" class="inp col-span-2" placeholder="🔎 Tìm biển số, VIN, dòng xe, người giao/nhận…" value="${esc(HF.q)}">
-    <select id="ht" class="inp">
-      <option value="">Trạng thái cuối: tất cả</option>
-      <option value="in" ${HF.status==='in'?'selected':''}>Trong bãi</option>
-      <option value="out" ${HF.status==='out'?'selected':''}>Đã xuất</option>
-    </select>
-    <input type="date" id="hf" class="inp" value="${HF.from}" title="Từ ngày"><input type="date" id="hto" class="inp" value="${HF.to}" title="Đến ngày">
-   </div>
-   <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-     <div class="text-sm text-slate-500">Tổng <b>${records.length}</b> hồ sơ xe${records.length>400?' (hiển thị 400 mới nhất)':''} · <span class="text-xs text-vf font-medium">Mỗi xe 1 hồ sơ — chạm vào hàng bất kỳ để xem chi tiết</span></div>
-     ${isViewer?`<div class="flex flex-wrap items-center gap-2"><span id="viewerRefreshStatus" class="text-[11px] text-slate-500">${viewerLastCheckedAt?'Kiểm tra lúc '+new Date(viewerLastCheckedAt).toLocaleTimeString('vi-VN'):'Dữ liệu đã xác nhận'}</span><button id="viewerRefreshBtn" type="button" class="btn btn-sm btn-primary" onclick="viewerRefreshData()">🔄 Làm mới dữ liệu</button></div>`:''}
-   </div>
-   <div class="overflow-auto" style="max-height:calc(100dvh - 260px)"><table class="t" style="min-width:940px"><thead><tr><th>#</th><th>Biển số / VIN</th><th>Dòng xe</th><th>Màu</th><th>Cập nhật cuối</th><th>Vị trí / Tình trạng cuối</th><th>Người gửi / nhận</th><th>Số lượt</th><th>Trạng thái cuối</th><th></th></tr></thead><tbody>
+  const wrap=$('#histTableWrap');
+  if(!wrap) return;
+  wrap.innerHTML=`<table class="t" style="min-width:940px"><thead><tr><th>#</th><th>Biển số / VIN</th><th>Dòng xe</th><th>Màu</th><th>Cập nhật cuối</th><th>Tuổi tồn</th><th>Vị trí / Tình trạng cuối</th><th>Người gửi / nhận</th><th>Lượt</th><th>Trạng thái</th><th></th></tr></thead><tbody>
    ${shown.map((r,i)=>{
      const v=r.last, vv=r.veh;
      const statusBadge=r.inYard
@@ -1586,38 +1231,25 @@ function renderHist(){
        ? `${esc(posLabel(v.pos))} · ${esc(v.statusIn||'—')}`
        : `${esc(v.statusOut||'Đã xuất')}`;
      const person=r.inYard ? (v.party||'—') : (v.receiver||v.party||'—');
+     const tag=isNewV(vv)?' <span class="badge bg-blue-100 text-blue-800">Mới</span>':(isShortPlate(r.key)?' <span class="badge bg-amber-100 text-amber-800">5 số</span>':'');
      return `<tr class="clickable" onclick="openVehicleDetail('${esc(r.key)}', ${v.id})">
        <td>${i+1}</td>
-       <td><b>${esc(r.key)}</b>${isNewV(vv)?' <span class="badge bg-blue-100 text-blue-800">Mới</span>':''}</td>
+       <td><b>${esc(r.key)}</b>${tag}</td>
        <td>${esc(vv.model||'—')}</td>
        <td>${esc(vv.color||'—')}</td>
        <td>${fmt(r.lastDate)}</td>
+       <td>${r.inYard?ageBadge(v):'—'}</td>
        <td>${detailSummary}</td>
        <td>${esc(person)}</td>
-       <td><span class="badge bg-slate-100 text-slate-700">${r.visits.length} lượt</span></td>
+       <td><span class="badge bg-slate-100 text-slate-700">${r.visits.length}</span></td>
        <td>${statusBadge}</td>
        <td class="whitespace-nowrap" onclick="event.stopPropagation()">
          <button class="btn btn-sm btn-primary" onclick="openVehicleDetail('${esc(r.key)}', ${v.id})">Chi tiết</button>
-         ${!isViewer?` <button class="btn btn-sm" onclick="editVisit(${v.id})">Sửa</button>`:''}
+         <button class="btn btn-sm" onclick="editVisit(${v.id})">Sửa</button>
        </td>
      </tr>`;
-   }).join('')||'<tr><td colspan="10" class="text-center text-slate-400 py-8">Chưa có hồ sơ xe</td></tr>'}
-   </tbody></table></div></div>`;
-  const bind=(id,k,ev2)=>{const e=$('#'+id);e.addEventListener(ev2,()=>{HF[k]=e.value;const p=e.selectionStart;renderHist();if(id==='hq'){const n=$('#hq');n.focus();n.setSelectionRange(p,p);}});};
-  bind('hq','q','input');bind('ht','status','change');bind('hf','from','change');bind('hto','to','change');
-}
-function delVisit(id, reopenDetail){
-  const target=S.visits.find(v=>v.id===id);
-  const key=target?target.key:null;
-  if(!confirm('Xóa toàn bộ lượt lưu bãi này (cả nhập và xuất)?'))return;
-  S.visits=S.visits.filter(v=>v.id!==id);
-  save();
-  toast('Đã xóa lượt lưu bãi');
-  if(reopenDetail && key && visitsOf(key).length){
-    openVehicleDetail(key);
-  }else if(reopenDetail){
-    closeModal();
-  }
+   }).join('')||'<tr><td colspan="11" class="text-center text-slate-400 py-8">Chưa có hồ sơ xe phù hợp</td></tr>'}
+   </tbody></table>`;
 }
 
 /* ================== BÁO CÁO ================== */
@@ -1625,7 +1257,6 @@ let RP={from:mondayOf(todayISO()),to:addDays(mondayOf(todayISO()),6)};
 function calcKPI(){
   const act=active();
   const old=act.filter(v=>!isNewV(veh(v.key)));
-  // Tuổi tồn xe cũ tính từ chu kỳ nhập đầu tiên; nếu ngày nhập = 0 (null) -> tính vào >31 ngày (>=11 ngày)
   return {total:act.length,old:old.length,nw:act.length-old.length,old11:old.filter(v=>age(v)===null||age(v)>=11).length};
 }
 function computeReport(from,to){
@@ -1636,7 +1267,6 @@ function computeReport(from,to){
     if(d>T)return {d,o:null,n:null};
     let o=0,n=0;
     S.visits.forEach(v=>{
-      // Xe có ngày nhập = 0 (không hợp lệ) mà vẫn còn trong bãi (!v.done) thì vẫn được tính là tồn bãi
       const inOk=!isValidInDate(v.inDate) || v.inDate<=d;
       const outOk=!v.done || (isValidInDate(v.outDate) && v.outDate>d);
       if(inOk && outOk){isNewV(veh(v.key))?n++:o++;}
@@ -1651,7 +1281,7 @@ function computeReport(from,to){
   R.g=[0,0,0,0];
   act.forEach(v=>R.g[ageGroup(age(v))]++);
   R.over30=act.filter(v=>age(v)>30).sort((a,b)=>age(b)-age(a));
-  R.missing=act.filter(v=>age(v)===null); // Ngày nhập = 0 -> tuổi tồn >31 ngày & vẫn tính tồn bãi
+  R.missing=act.filter(v=>age(v)===null);
   R.near=act.filter(v=>age(v)>=25&&age(v)<=30);
   R.noPos=act.filter(v=>!v.pos);
   R.stat=countBy(act,statIn);
@@ -1749,7 +1379,7 @@ function renderReport(){
   </div></div>`;
   const DEF='Không có diễn biến đặc biệt được chọn cho kỳ này.',nt=$('#rnote');
   nt.addEventListener('focus',()=>{if(nt.textContent.trim()===DEF){nt.textContent='';nt.style.color='#334155';}});
-  nt.addEventListener('blur',()=>{const t=nt.innerText.trim();S.notes=S.notes||{};if(t&&t!==DEF)S.notes[noteKey]=t;else{delete S.notes[noteKey];nt.textContent=DEF;nt.style.color='#94a3b8';}try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}});
+  nt.addEventListener('blur',()=>{const t=nt.innerText.trim();S.notes=S.notes||{};if(t&&t!==DEF)S.notes[noteKey]=t;else{delete S.notes[noteKey];nt.textContent=DEF;nt.style.color='#94a3b8';}idbPutState();});
   $('#rfrom').onchange=e=>{if(e.target.value){RP.from=e.target.value;if(RP.to<RP.from)RP.to=RP.from;renderReport();}};
   $('#rto').onchange=e=>{if(e.target.value){RP.to=e.target.value;if(RP.to<RP.from)RP.from=RP.to;renderReport();}};
 }
@@ -1759,13 +1389,13 @@ function shiftWeek(d){
 }
 async function exportPNG(){
   const el=$('#reportArea');
-  if(typeof html2canvas==='undefined'){toast('Chưa tải được thư viện xuất ảnh (cần mạng lần đầu)');return;}
-  toast('Đang tạo ảnh báo cáo…');
+  if(typeof html2canvas==='undefined'){toast('Chưa tải được thư viện xuất ảnh');return;}
+  toast('Đang tạo ảnh báo cáo 1080p…');
   try{
     const c=await html2canvas(el,{scale:2,backgroundColor:'#EEF3F7',useCORS:true,windowWidth:1200,
-      onclone:doc=>{const e=doc.getElementById('reportArea');doc.body.innerHTML='';doc.body.style.cssText='margin:0;height:auto;overflow:visible;background:#EEF3F7';doc.documentElement.style.height='auto';doc.body.appendChild(e);e.style.width='1100px';}});
+      onclone:doc=>{const e=doc.getElementById('reportArea');doc.body.innerHTML='';doc.body.style.cssText='margin:0;height:auto;overflow:visible;background:#EEF3F7';doc.documentElement.style.height='auto';doc.body.appendChild(e);e.style.width='1080px';}});
     const blob=await new Promise(res=>c.toBlob(res,'image/png'));
-    const ok=await saveOrShareBlob(blob, `bao-cao-bai-xe-34_${RP.from}_${RP.to}.png`, 'Báo cáo Bãi Xe 34');
+    const ok=await saveOrShareBlob(blob, `bao-cao-bai-xe-34_${RP.from}_${RP.to}.png`);
     if(ok) toast('Đã xuất ảnh báo cáo PNG');
   }catch(e){toast('Lỗi xuất ảnh: '+e.message);}
 }
@@ -1786,30 +1416,14 @@ function renderSettings(){
     <div class="grid grid-cols-2 gap-3"><div>${lab('Số dãy')}<input id="ly_days" type="number" min="1" max="12" class="inp" value="${L.days}"></div><div>${lab('Số hàng mỗi cột')}<input id="ly_rows" type="number" min="1" max="60" class="inp" value="${L.rows}"></div>
     <div class="col-span-2">${lab('Tên các cột (cách nhau bằng dấu phẩy)')}<input id="ly_cols" class="inp" value="${esc(L.cols.join(', '))}"></div></div>
     <button class="btn btn-primary mt-3" data-act="layout">Áp dụng sơ đồ</button></div>
-   <div class="card p-4"><div class="font-bold">Dữ liệu</div><div class="text-xs text-slate-500 mb-3">Lưu cục bộ trong trình duyệt / APK. Hỗ trợ xuất Excel & JSON offline 100%.</div>
+   <div class="card p-4"><div class="font-bold">Dữ liệu Offline (IndexedDB)</div><div class="text-xs text-slate-500 mb-3">Lưu cục bộ 100% trên thiết bị. Hỗ trợ sao lưu / khôi phục JSON & Excel (.xlsx).</div>
     <div class="grid sm:grid-cols-2 gap-2">
      <button class="btn" data-act="expJson">⬇️ Xuất JSON</button><button class="btn" data-act="impJson">⬆️ Nhập JSON</button>
      <button class="btn" data-act="expXlsx">⬇️ Xuất Excel (.xlsx)</button><button class="btn" data-act="impXlsx">⬆️ Nhập Excel (.xlsx)</button>
      <button class="btn" data-act="sample">🔄 Khôi phục dữ liệu mẫu</button><button class="btn btn-red" data-act="clear">🗑️ Xóa toàn bộ dữ liệu</button>
     </div>
     <div class="text-xs text-slate-500 mt-3">Tổng: ${Object.keys(S.vehicles).length} xe · ${S.visits.length} lượt lưu bãi · ${active().length} xe đang trong bãi.</div></div>
-  </div>
-
-  <!-- GOOGLE SHEETS: CHỈ ĐẨY KHI ADMIN CHỦ ĐỘNG -->
-  ${(()=>{const c=ensureCloudCfg();return `<div class="card p-4 mt-4 border-2 border-green-200">
-    <div class="font-bold text-base">📊 Google Sheets · Kho dữ liệu trung tâm</div>
-    <p class="text-xs text-slate-500 mt-1">Dữ liệu vẫn lưu Offline trên thiết bị. Chỉ khi Admin bấm Đẩy dữ liệu, bản sao mới được tải lên Google Sheets. Viewer phải kiểm tra dữ liệu trước khi xem lịch sử.</p>
-    <div class="mt-3">${lab('URL Web App Google Apps Script')}<input id="cl_gsUrl" class="inp text-xs" placeholder="https://script.google.com/macros/s/.../exec" value="${esc(c.gsUrl)}"></div>
-    <div class="mt-2">${lab('Tên Sheet nhật ký dễ đọc')}<input id="cl_gsSheetName" class="inp text-xs" value="${esc(c.gsSheetName||'NhatKyBaiXe34')}"></div>
-    <div class="mt-2">${lab('Mã bảo vệ kết nối Google Sheets (KHÁC mật khẩu đăng nhập Admin)')}<input id="cl_gsAdminToken" type="password" class="inp text-xs" autocomplete="new-password" value="${esc(c.gsAdminToken||'')}" placeholder="Nhập đúng chuỗi ADMIN_TOKEN đã cài trong Apps Script"><p class="text-[11px] text-amber-700 mt-1">Đây là mã bí mật dùng để cho phép Apps Script nhận dữ liệu. Không phải email/mật khẩu tài khoản Admin. Phải trùng chính xác với chuỗi trong Script Properties.</p></div>
-    <div class="flex flex-wrap gap-2 mt-3">
-      <button type="button" class="btn btn-primary" data-act="saveCloudCfg">💾 Lưu cấu hình</button>
-      <button type="button" class="btn" onclick="showGasCodeModal()">📋 Lấy mã Apps Script mới</button>
-      <button type="button" class="btn btn-primary" data-act="syncPush">⬆️ Đẩy dữ liệu lên Google Sheets</button>
-    </div>
-    <div class="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-600">Trạng thái: <b>${esc(c.lastSyncStatus||'Chưa đồng bộ')}</b>${c.lastSync?' · '+esc(c.lastSync):''}<br>Phiên bản đã công bố trên thiết bị này: ${esc(c.gsLastVersion||'Chưa có')}</div>
-  </div>`;})()}
-  <datalist id="colorList">${['Trắng','Đen','Xanh','Đỏ','Xám','Bạc','Cam','Vàng'].map(c=>`<option value="${c}">`).join('')}</datalist>`;
+  </div>`;
 }
 const colorDL=document.createElement('datalist');colorDL.id='colorList';colorDL.innerHTML=['Trắng','Đen','Xanh','Đỏ','Xám','Bạc','Cam','Vàng'].map(c=>`<option value="${c}">`).join('');
 function settingsAdd(kind){
@@ -1833,7 +1447,7 @@ $('#settingsBox').addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b||b.tagName==='INPUT')return;
   const a=b.dataset.act,kind=b.dataset.kind;
   if(a==='add')settingsAdd(kind);
-  else if(a==='del'){const i=+b.dataset.i,name=S.settings[kind][i];if(confirm(`Xóa "${name}" khỏi danh mục?\n(Các giao dịch cũ đã dùng giá trị này vẫn được giữ nguyên.)`)){S.settings[kind].splice(i,1);save();}}
+  else if(a==='del'){const i=+b.dataset.i,name=S.settings[kind][i];if(confirm(`Xóa "${name}" khỏi danh mục?`)){S.settings[kind].splice(i,1);save();}}
   else if(a==='layout'){
     const days=Math.max(1,Math.min(12,+$('#ly_days').value||5)),rows=Math.max(1,Math.min(60,+$('#ly_rows').value||20));
     const cols=$('#ly_cols').value.split(',').map(s=>s.trim()).filter(Boolean);
@@ -1842,29 +1456,20 @@ $('#settingsBox').addEventListener('click',e=>{
     const valid=new Set(allPositions());const bad=active().filter(v=>v.pos&&!valid.has(v.pos)).length;
     save();toast(bad?`Đã áp dụng. ${bad} xe đang ở vị trí ngoài sơ đồ mới — hãy sửa vị trí.`:'Đã áp dụng sơ đồ mới');
   }
-  else if(a==='expJson'){const backup=JSON.parse(JSON.stringify(S));if(backup.settings&&backup.settings.cloud)delete backup.settings.cloud.gsAdminToken;saveOrShareBlob(new Blob([JSON.stringify(backup,null,1)],{type:'application/json'}),`bai-xe-34_${todayISO()}.json`,'Sao lưu JSON Bãi Xe 34').then(ok=>{if(ok)toast('Đã lưu bản sao lưu JSON vào điện thoại');});}
+  else if(a==='expJson'){const backup=JSON.parse(JSON.stringify(S));saveOrShareBlob(new Blob([JSON.stringify(backup,null,1)],{type:'application/json'}),`bai-xe-34_${todayISO()}.json`).then(ok=>{if(ok)toast('Đã lưu bản sao lưu JSON vào điện thoại');});}
   else if(a==='impJson')$('#fileJson').click();
   else if(a==='expXlsx')exportXlsx();
   else if(a==='impXlsx')$('#fileXlsx').click();
-  else if(a==='sample'){if(confirm('Khôi phục dữ liệu mẫu? Dữ liệu hiện tại sẽ bị thay thế.')){const keepC=ensureCloudCfg();S=sample();S.settings.cloud=keepC;save();toast('Đã khôi phục dữ liệu mẫu');}}
+  else if(a==='sample'){if(confirm('Khôi phục dữ liệu mẫu? Dữ liệu hiện tại sẽ bị thay thế.')){S=sample();save();toast('Đã khôi phục dữ liệu mẫu');}}
   else if(a==='clear'){if(confirm('Xóa TOÀN BỘ xe và giao dịch? Danh mục cài đặt được giữ lại.')){S.vehicles={};S.visits=[];S.notes={};save();toast('Đã xóa dữ liệu');}}
-  else if(a==='saveCloudCfg'){
-    const c=ensureCloudCfg();
-    c.gsUrl=$('#cl_gsUrl').value.trim();
-    c.gsSheetName=$('#cl_gsSheetName').value.trim()||'NhatKyBaiXe34';
-    c.gsAdminToken=$('#cl_gsAdminToken').value.trim();
-    save(true);toast('Đã lưu cấu hình Google Sheets');
-  }
-  else if(a==='syncPush'){syncAllNow('push');}
-  else if(a==='syncPull'||a==='syncBoth'){toast('Đã tắt đồng bộ hai chiều.');}
 });
 $('#fileJson').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
   try{const d=JSON.parse(await f.text());if(!d||!Array.isArray(d.visits)||!d.vehicles||typeof d.vehicles!=='object'||!d.settings)throw new Error('File JSON không đúng cấu trúc sao lưu Bãi Xe 34.');
     if(!confirm('Nhập dữ liệu sẽ thay thế toàn bộ dữ liệu hiện tại. Tiếp tục?'))return;
-    const currentCloud=ensureCloudCfg();
     S=d;S.notes=S.notes||{};S.seq=S.seq||Math.max(0,...S.visits.map(v=>v.id||0));
-    S.settings=S.settings||DEF_SETTINGS();S.settings.cloud=Object.assign(DEF_CLOUD(),S.settings.cloud||{}, {gsAdminToken:currentCloud.gsAdminToken||''});
+    S.settings=S.settings||DEF_SETTINGS();
+    if(S.settings.cloud) delete S.settings.cloud;
     save();toast('Đã nhập JSON');}catch(err){toast('Lỗi nhập JSON: '+err.message);}
 };
 
@@ -1885,7 +1490,7 @@ async function exportYardXlsx(){
     rows.push([
       i+1,
       v.key,
-      isNewV(x)?'Xe mới (6 số VIN)':'Xe có biển số',
+      idTypeLabel(v.key),
       x.model||'',
       x.color||'',
       isValidInDate(firstIn)?fmt(firstIn):'0',
@@ -1897,18 +1502,16 @@ async function exportYardXlsx(){
       v.noteIn||''
     ]);
   });
-  // Include the transaction sheet too, so the stock workbook can be imported again
-  // without silently losing the vehicle cycle history.
   const allRows=[['Biển số/VIN','Biển số','VIN','Dòng xe','Màu sắc','Ngày nhập','Vị trí','Mã vị trí','Người gửi','Tình trạng vào','Ghi chú nhập','Ngày xuất','Tình trạng ra','Người nhận','Ghi chú xuất']];
   S.visits.slice().sort((a,b)=>a.id-b.id).forEach(v=>{
     const x=veh(v.key);
     allRows.push([v.key,x.plate||'',x.vin||'',x.model||'',x.color||'',isValidInDate(v.inDate)?v.inDate:'0',v.pos?posLabel(v.pos):'',v.pos||'',v.party||'',v.statusIn||'',v.noteIn||'',v.outDate||'',v.statusOut||'',v.receiver||'',v.noteOut||'']);
   });
   const blob=buildXlsx([
-    {name:'Xe trong bãi',rows,hdr:3,widths:[6,16,18,16,12,16,16,16,18,20,18,28]},
+    {name:'Xe trong bãi',rows,hdr:3,widths:[6,16,20,16,12,16,16,16,18,20,18,28]},
     {name:'Lượt lưu bãi',rows:allRows,hdr:0,widths:[16,14,14,16,12,14,18,12,18,20,24,14,20,18,24]}
   ]);
-  const ok=await saveOrShareBlob(blob,`TonBai_Xe34_${todayISO()}.xlsx`,'Danh sách tồn Bãi Xe 34');
+  const ok=await saveOrShareBlob(blob,`TonBai_Xe34_${todayISO()}.xlsx`);
   if(ok) toast(`Đã xuất ${act.length} xe tồn bãi ra Excel`);
 }
 
@@ -1923,13 +1526,13 @@ async function exportXlsx(){
     const x=veh(v.key);
     const firstIn=firstInDateOf(v.key);
     const a=age(v);
-    yardRows.push([i+1,v.key,isNewV(x)?'Xe mới':'Xe cũ',x.model||'',x.color||'',isValidInDate(firstIn)?firstIn:'0',isValidInDate(v.inDate)?v.inDate:'0',a===null?'>31 ngày (0)':a,posLabel(v.pos),statIn(v),v.party||'',v.noteIn||'']);
+    yardRows.push([i+1,v.key,idTypeLabel(v.key),x.model||'',x.color||'',isValidInDate(firstIn)?firstIn:'0',isValidInDate(v.inDate)?v.inDate:'0',a===null?'>31 ngày (0)':a,posLabel(v.pos),statIn(v),v.party||'',v.noteIn||'']);
   });
   const blob=buildXlsx([
-    {name:'Xe trong bãi',rows:yardRows,hdr:0,widths:[6,16,12,16,12,16,16,14,18,20,18,28]},
+    {name:'Xe trong bãi',rows:yardRows,hdr:0,widths:[6,16,20,16,12,16,16,14,18,20,18,28]},
     {name:'Lượt lưu bãi',rows:allRows,hdr:0,widths:[16,14,14,16,12,14,18,12,18,20,24,14,20,18,24]}
   ]);
-  const ok=await saveOrShareBlob(blob,`DuLieu_BaiXe34_${todayISO()}.xlsx`,'Dữ liệu Bãi Xe 34');
+  const ok=await saveOrShareBlob(blob,`DuLieu_BaiXe34_${todayISO()}.xlsx`);
   if(ok) toast('Đã xuất toàn bộ dữ liệu ra Excel');
 }
 
@@ -1947,7 +1550,7 @@ $('#fileXlsx').onchange=async e=>{
   try{
     const sheets=await readXlsxPure(f);
     const rows=sheets['Lượt lưu bãi'];
-    if(!rows||!rows.length)throw new Error('File Excel thiếu sheet “Lượt lưu bãi”. Hãy dùng file Xuất Excel toàn bộ dữ liệu hoặc Xuất Excel tồn bãi từ phiên bản mới.');
+    if(!rows||!rows.length)throw new Error('File Excel thiếu sheet “Lượt lưu bãi”.');
     if(!confirm(`Nhập ${rows.length} dòng sẽ thay thế toàn bộ xe & giao dịch hiện tại. Tiếp tục?`))return;
     const nv={},visits=[];let seq=0;
     rows.forEach(r=>{
@@ -1959,7 +1562,7 @@ $('#fileXlsx').onchange=async e=>{
       const pos=String(pick('Mã vị trí')||'');
       visits.push({id:++seq,key,inDate:parseAnyDate(pick('Ngày nhập')),pos:/^\d+\|[^|]+\|\d+$/.test(pos)?pos:'',party:String(pick('Người gửi')||''),statusIn:String(pick('Tình trạng vào')||''),noteIn:String(pick('Ghi chú nhập')||''),done:!!(outD||stOut),outDate:outD,statusOut:stOut,receiver:String(pick('Người nhận')||''),noteOut:String(pick('Ghi chú xuất')||''),created:Date.now()});
     });
-    if(!visits.length)throw new Error('Không tìm thấy dòng xe hợp lệ trong sheet “Lượt lưu bãi”. Dữ liệu hiện tại được giữ nguyên.');
+    if(!visits.length)throw new Error('Không tìm thấy dòng xe hợp lệ trong sheet “Lượt lưu bãi”.');
     S.vehicles=nv;S.visits=visits;S.seq=seq;
     visits.forEach(v=>{if(v.statusIn&&!S.settings.statusIn.includes(v.statusIn))S.settings.statusIn.push(v.statusIn);if(v.statusOut&&!S.settings.statusOut.includes(v.statusOut))S.settings.statusOut.push(v.statusOut);});
     Object.values(nv).forEach(v=>{if(v.model&&!S.settings.models.includes(v.model))S.settings.models.push(v.model);});
@@ -1967,105 +1570,15 @@ $('#fileXlsx').onchange=async e=>{
   }catch(err){toast('Lỗi nhập Excel: '+err.message);}
 };
 
-/* ================== ĐĂNG NHẬP ẢO & PHÂN QUYỀN ================== */
-const AUTH_LS='erp_bai_xe_34_auth_v1';
-const AUTH_ACCOUNTS=[
-  {email:'hoangthong@qlbx.com',pass:'Nghi1990@',role:'admin',label:'Quản trị viên (Admin)'}
-];
-/* Mặc định mở link luôn ở chế độ Người xem (không cần mật khẩu) */
-const VIEWER_USER={email:'Khách',role:'viewer',label:'Người xem (Viewer)'};
-let AUTH_USER=null, APP_BOOTED=false;
-function openAdminLogin(){
-  closeModal();toggleSidebar(false);
-  $('#loginErr').classList.add('hidden');
-  $('#authScreen').classList.remove('hidden');
-  setTimeout(()=>$('#loginUser').focus(),50);
-}
-function closeAdminLogin(){$('#authScreen').classList.add('hidden');$('#loginPass').value='';}
-function authAction(){
-  if(AUTH_USER && AUTH_USER.role==='admin'){ if(confirm('Đăng xuất Admin và quay về chế độ Người xem?')) logoutAuth(); }
-  else openAdminLogin();
-}
-
-function applyRolePermissions(){
-  if(!AUTH_USER) return;
-  const isViewer=AUTH_USER.role==='viewer';
-  $('#authUserLabel').textContent=AUTH_USER.email;
-  $('#authRoleBadge').textContent=AUTH_USER.label;
-  const btnA=$('#btnAuthAction'), hdrL=$('#hdrAuthLabel');
-  if(btnA){
-    btnA.textContent=isViewer?'🔐 Admin':'🚪 Thoát';
-    btnA.className='py-1.5 px-2.5 rounded-lg font-semibold flex-none '+(isViewer?'bg-blue-500/30 hover:bg-blue-500/50 text-blue-100':'bg-red-500/20 hover:bg-red-500/35 text-red-200');
-  }
-  if(hdrL) hdrL.textContent=isViewer?'Đăng nhập Admin':'Admin · Đăng xuất';
-
-  // Ẩn/hiện các tab theo quyền: Viewer chỉ dùng được Chat (ERP) và Lịch sử giao dịch
-  document.querySelectorAll('#nav .nav-btn').forEach(btn=>{
-    const t=btn.dataset.tab;
-    const allow=!isViewer || t==='hist';
-    btn.classList.toggle('hidden', !allow);
-  });
-
-  document.querySelectorAll('.bn-btn[data-btab]').forEach(btn=>{
-    const t=btn.dataset.btab;
-    btn.classList.toggle('hidden', isViewer && t!=='hist');
-  });
-
-  // Viewer chỉ thấy lịch sử; ẩn toàn bộ điều khiển đồng bộ và cấu hình.
-  ['sidebarCloudBox','hdrCloudToggle','hdrSyncBtn','btnSideConfig'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('hidden',isViewer);});
-  const gate=$('#viewerGate');if(gate)gate.classList.toggle('hidden',!isViewer||viewerVerified);
-}
-
-function enterAppWithUser(acc){
-  AUTH_USER=acc;
-  if(acc.role==='admin'){try{const saved=JSON.parse(localStorage.getItem(LS)||'null');if(saved&&saved.vehicles&&saved.visits&&saved.settings)S=saved;ensureCloudCfg();}catch(e){}}
-  try{
-    if(acc.role==='admin') sessionStorage.setItem(AUTH_LS, JSON.stringify({email:acc.email}));
-    else sessionStorage.removeItem(AUTH_LS);
-  }catch(e){}
-  closeAdminLogin();
-  $('#appShell').classList.remove('hidden');
-  applyRolePermissions();
-  if(!APP_BOOTED){APP_BOOTED=true;if(acc.role==='admin')botSay(`Xin chào! Gõ <b>biển số / VIN</b> hoặc bấm <b>📷</b> để nhập hoặc xuất xe ngay.`);}
-  if(acc.role==='viewer'){viewerVerified=false;setTab('hist');$('#viewerGate').classList.remove('hidden');$('#viewerGateStatus').textContent='Hãy bấm “Kiểm tra dữ liệu” để xác nhận phiên bản mới nhất.';}
-  else setTab('chat');
-}
-
-function logoutAuth(){
-  try{sessionStorage.removeItem(AUTH_LS);}catch(e){}
-  closeModal();
-  enterAppWithUser(VIEWER_USER);
-  toast('Đã đăng xuất — quay về chế độ Người xem');
-}
-
-$('#loginForm').addEventListener('submit', e=>{
-  e.preventDefault();
-  const u=$('#loginUser').value.trim().toLowerCase();
-  const p=$('#loginPass').value;
-  const err=$('#loginErr');
-  const found=AUTH_ACCOUNTS.find(a=>a.email.toLowerCase()===u && a.pass===p);
-  if(!found){
-    err.textContent='Sai tài khoản hoặc mật khẩu. Vui lòng kiểm tra lại!';
-    err.classList.remove('hidden');
-    return;
-  }
-  err.classList.add('hidden');
-  enterAppWithUser(found);
-  toast('Đăng nhập thành công: '+found.label);
-});
-
 /* ================== KHỞI ĐỘNG ================== */
-load();
 document.body.appendChild(colorDL);
-try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}
-updateCloudBadges();
-let bootUser=VIEWER_USER;
-try{
-  const savedAuth=JSON.parse(sessionStorage.getItem(AUTH_LS)||'null');
-  const validSaved=savedAuth && AUTH_ACCOUNTS.find(a=>a.email===savedAuth.email);
-  if(validSaved) bootUser=validSaved;
-}catch(e){}
-enterAppWithUser(bootUser);
+load().then(()=>{
+  bindGlobalSearch();
+  setTab('dash');
+}).catch(e=>{
+  console.error(e);
+  toast('Lỗi khởi tạo IndexedDB: '+(e.message||e));
+});
 </script>
 </body>
 </html>
