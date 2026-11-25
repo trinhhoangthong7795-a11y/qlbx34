@@ -62,7 +62,7 @@ jobs:
               raise SystemExit(f"Expected exactly one MainActivity.java, found {len(main_files)}")
           main = main_files[0]
           src = main.read_text(encoding="utf-8")
-          m = re.search(r"^package\\s+([\\w.]+);", src, re.M)
+          m = re.search(r"^package\s+([\w.]+);", src, re.M)
           if not m:
               raise SystemExit("Could not determine MainActivity package")
           package = m.group(1)
@@ -140,23 +140,23 @@ jobs:
           manifest = Path("android/app/src/main/AndroidManifest.xml")
           xml = manifest.read_text(encoding="utf-8")
           if "android:windowSoftInputMode=" not in xml:
-              xml, n = re.subn(r"<activity\\b([^>]*)>", lambda m: '<activity' + m.group(1) + ' android:windowSoftInputMode="adjustResize">', xml, count=1)
+              xml, n = re.subn(r"<activity\b([^>]*)>", lambda m: '<activity' + m.group(1) + ' android:windowSoftInputMode="adjustResize">', xml, count=1)
               if n != 1: raise SystemExit("Could not locate Android activity")
           xml = re.sub(r'android:label="[^"]*"', 'android:label="Bãi Xe 34"', xml, count=1)
           manifest.write_text(xml, encoding="utf-8")
           gradle = Path("android/variables.gradle")
           gs = gradle.read_text(encoding="utf-8")
-          gs, n = re.subn(r"targetSdkVersion\\s*=\\s*\\d+", "targetSdkVersion = 34", gs, count=1)
+          gs, n = re.subn(r"targetSdkVersion\s*=\s*\d+", "targetSdkVersion = 34", gs, count=1)
           if n != 1: raise SystemExit("Could not set targetSdkVersion=34")
           gradle.write_text(gs, encoding="utf-8")
           for name in glob.glob("android/app/src/main/res/values*/styles.xml") + glob.glob("android/app/src/main/res/values*/themes.xml"):
               p = Path(name); src = p.read_text(encoding="utf-8")
-              pat = r'(<style\\s+name="AppTheme(?:\\.[^"]*)?"[^>]*>)(.*?)(</style>)'
+              pat = r'(<style\s+name="AppTheme(?:\.[^"]*)?"[^>]*>)(.*?)(</style>)'
               def patch(m):
                   body = m.group(2)
                   for key in ("android:windowFullscreen", "android:statusBarColor", "android:windowLightStatusBar", "android:windowDrawsSystemBarBackgrounds"):
-                      body = re.sub(r'<item\\s+name="' + re.escape(key) + r'">.*?</item>', '', body, flags=re.S)
-                  body += '\\n<item name="android:windowFullscreen">false</item>\\n<item name="android:statusBarColor">#FFFFFF</item>\\n<item name="android:windowLightStatusBar">true</item>\\n<item name="android:windowDrawsSystemBarBackgrounds">true</item>\\n'
+                      body = re.sub(r'<item\s+name="' + re.escape(key) + r'">.*?</item>', '', body, flags=re.S)
+                  body += '\n<item name="android:windowFullscreen">false</item>\n<item name="android:statusBarColor">#FFFFFF</item>\n<item name="android:windowLightStatusBar">true</item>\n<item name="android:windowDrawsSystemBarBackgrounds">true</item>\n'
                   return m.group(1) + body + m.group(3)
               out, n = re.subn(pat, patch, src, count=1, flags=re.S)
               if n: p.write_text(out, encoding="utf-8")
