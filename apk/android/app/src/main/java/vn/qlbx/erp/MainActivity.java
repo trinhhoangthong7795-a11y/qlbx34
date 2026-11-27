@@ -16,6 +16,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebResourceRequest;
 import android.widget.Toast;
 
 import java.io.File;
@@ -42,7 +43,22 @@ public class MainActivity extends Activity {
         settings.setAllowContentAccess(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
         webView.addJavascriptInterface(new AndroidFileBridge(), "AndroidFile");
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                Uri uri = request.getUrl();
+                // Chỉ chạy giao diện cục bộ trong WebView (nơi có AndroidFile bridge).
+                // Link ngoài mở bằng trình duyệt, không được cấp quyền gọi bridge.
+                if ("file".equals(uri.getScheme()) &&
+                    "android_asset".equals(uri.getHost())) return false;
+                if ("https".equals(uri.getScheme()) || "http".equals(uri.getScheme())) {
+                    try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); }
+                    catch (Exception ignored) { }
+                    return true;
+                }
+                return true;
+            }
+        });
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback,
