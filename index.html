@@ -78,13 +78,17 @@ table.t tr.clickable:hover td{background:#eff6ff}
 .search-clear{width:38px;height:38px;border:0;background:transparent;color:#64748b;font-size:22px;cursor:pointer}
 .search-suggestions{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:40;background:#fff;border:1px solid #cbd5e1;border-radius:14px;box-shadow:0 12px 30px rgba(15,23,42,.16);max-height:60vh;overflow:auto}
 
-.nav-pills{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:12px}
+.nav-pills{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-top:12px}
+.nav-pill.scan{background:#13294B;border-color:#13294B;color:#fff}
+.nav-pill.scan:hover{background:#1c3a6b}
 .nav-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;color:#1e293b;font-size:12px;font-weight:700;cursor:pointer;transition:.15s;box-shadow:0 1px 2px rgba(15,23,42,.04)}
 .nav-pill:hover{background:#f1f5f9;border-color:#cbd5e1}
 .nav-pill.active{background:#1E62D0;border-color:#1E62D0;color:#fff;box-shadow:0 3px 10px rgba(30,98,208,.25)}
 .nav-pill .np-ico{font-size:18px;line-height:1}
+@media(max-width:760px){.report-chart-row{grid-template-columns:minmax(0,1fr)!important}.report-chart-card{min-height:420px!important}.report-chart-plot{min-height:320px!important;overflow-x:auto}.report-chart-plot>div{min-width:22px}}
 @media(max-width:640px){
   .nav-pills{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .nav-pill.scan{grid-column:1/-1;flex-direction:row;gap:8px;font-size:14px}
 }
 #modal{z-index:90}
 #modalBody{overscroll-behavior:contain}
@@ -107,28 +111,40 @@ button{-webkit-tap-highlight-color:transparent}
     </div>
   </header>
 
-  <section class="workspace-head">
-    <div class="global-search-wrap">
-      <span class="search-symbol">🔎</span>
-      <input id="globalSearch" type="text" inputmode="text" placeholder="Nhập biển số (VD: 50H12345 hoặc 12345) hay 6 số VIN…" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false">
-      <button type="button" class="search-clear" onclick="clearGlobalSearch()" aria-label="Xóa tìm kiếm">×</button>
-      <div id="globalSuggest" class="search-suggestions hidden"></div>
+  <section class="workspace-head" id="homeToolbar" style="position:sticky;top:0;z-index:35;box-shadow:0 2px 8px rgba(15,23,42,.06)">
+    <div class="flex items-center gap-2 mb-2">
+      <div class="global-search-wrap flex-1">
+        <span class="search-symbol">🔎</span>
+        <input id="globalSearch" type="text" inputmode="text" placeholder="Tìm biển số, VIN, dòng xe…" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false">
+        <button type="button" class="search-clear" onclick="clearGlobalSearch()" aria-label="Xóa tìm kiếm">×</button>
+        <div id="globalSuggest" class="search-suggestions hidden"></div>
+      </div>
+      <button type="button" class="nav-pill" onclick="openNewImportDialog()" aria-label="Nhập xe" title="Nhập xe" style="min-width:54px;padding:8px;border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8"><span class="np-ico">🚘</span><span>Nhập xe</span></button>
+      <button type="button" class="nav-pill scan" onclick="openScanPanel()" aria-label="Quét AI" title="Quét AI" style="min-width:54px;padding:8px"><span class="np-ico">📷</span><span>Quét AI</span></button>
+      <div class="relative">
+        <button type="button" class="btn" id="menuToggle" onclick="toggleMainMenu()" aria-label="Mở menu" style="font-size:22px;padding:7px 12px">☰</button>
+        <div id="mainMenu" class="hidden absolute right-0 top-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl p-2" style="min-width:210px;z-index:60">
+          <button class="w-full text-left p-2 rounded-lg hover:bg-slate-100 font-semibold" onclick="setTab('hist');toggleMainMenu(false)">🏠 Trang chủ</button>
+          <button class="w-full text-left p-2 rounded-lg hover:bg-slate-100" onclick="setTab('dash');toggleMainMenu(false)">🗺️ Sơ đồ bãi xe</button>
+          <button class="w-full text-left p-2 rounded-lg hover:bg-slate-100" onclick="setTab('report');toggleMainMenu(false)">📊 Báo cáo</button>
+          <button class="w-full text-left p-2 rounded-lg hover:bg-slate-100" onclick="setTab('settings');toggleMainMenu(false)">⚙️ Cài đặt / Excel / Sao lưu</button>
+          <button class="w-full text-left p-2 rounded-lg hover:bg-slate-100" onclick="openFirebasePanel();toggleMainMenu(false)">☁️ Firebase</button>
+        </div>
+      </div>
     </div>
-
-    <div class="nav-pills" role="navigation" aria-label="Chức năng chính">
-      <button type="button" class="nav-pill active" data-tab="dash" onclick="setTab('dash')"><span class="np-ico">🗺️</span><span>Sơ đồ</span></button>
-      <button type="button" class="nav-pill" data-tab="hist" onclick="setTab('hist')"><span class="np-ico">🕘</span><span>Lịch sử</span></button>
-      <button type="button" class="nav-pill" data-tab="report" onclick="setTab('report')"><span class="np-ico">📊</span><span>Báo cáo</span></button>
-      <button type="button" class="nav-pill" data-tab="settings" onclick="setTab('settings')"><span class="np-ico">⚙️</span><span>Cài đặt</span></button>
-      <button type="button" class="nav-pill" onclick="openNewImportDialog()" style="border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8"><span class="np-ico">➕</span><span>Nhập xe</span></button>
-      <button type="button" class="nav-pill" onclick="openExportDialog()" style="border-color:#fed7aa;background:#fff7ed;color:#c2410c"><span class="np-ico">📤</span><span>Xuất xe</span></button>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" style="max-width:760px">
+      <select id="filterDepot" class="inp"><option value="">Tất cả DEPOT</option></select>
+      <select id="filterCvdv" class="inp"><option value="">Tất cả CVDV PHỤ TRÁCH</option></select>
+      <select id="ht" class="inp"><option value="">Trạng thái: tất cả</option><option value="in">Trong bãi</option><option value="out">Đã xuất</option></select>
+      <input type="date" id="hf" class="inp" title="Từ ngày">
+      <input type="date" id="hto" class="inp" title="Đến ngày">
     </div>
   </section>
 
   <main class="flex-1 p-3 sm:p-5">
     <div id="actionPanel" class="hidden card p-3 sm:p-4 mb-4 border-2 border-blue-200 bg-blue-50/30"></div>
-    <section id="tab-dash"><div id="dashBox"></div></section>
-    <section id="tab-hist" class="hidden"><div id="histBox"></div></section>
+    <section id="tab-dash" class="hidden"><div id="dashBox"></div></section>
+    <section id="tab-hist"><div id="histBox"></div></section>
     <section id="tab-report" class="hidden"><div id="reportBox"></div></section>
     <section id="tab-settings" class="hidden"><div id="settingsBox"></div></section>
   </main>
@@ -163,19 +179,50 @@ button{-webkit-tap-highlight-color:transparent}
         <button type="button" class="btn" onclick="firebaseLogout()">Đăng xuất</button>
       </div>
       <div class="rounded-xl border border-blue-200 bg-blue-50 p-3 mt-3">
-        <div class="flex items-center justify-between gap-2"><b class="text-sm text-navy">📦 Theo dõi dung lượng Firebase</b><button type="button" class="btn btn-sm" onclick="renderFirebaseUsage()">Làm mới</button></div>
+        <div class="flex items-center justify-between gap-2"><b class="text-sm text-navy">📊 Theo dõi băng thông & dung lượng Firebase</b><button type="button" class="btn btn-sm" onclick="renderFirebaseUsage()">Làm mới</button></div>
         <div id="fbUsageSummary" class="text-xs text-slate-600 mt-2">Đang tính dung lượng…</div>
         <div id="fbUsageLog" class="text-[11px] text-slate-500 mt-2 max-h-28 overflow-auto"></div>
-        <p class="text-[10px] text-slate-500 mt-2">Số liệu trong ứng dụng là ước tính theo JSON và không bao gồm toàn bộ overhead mạng. Đối chiếu số chính thức trong Firebase Console → Realtime Database → Usage.</p>
+        <p class="text-[10px] text-slate-500 mt-2">Số liệu trong ứng dụng là ước tính theo kích thước JSON của các lần đọc/ghi mà ứng dụng ghi nhận; không phải bộ đếm lưu lượng mạng thực tế và có thể lệch do overhead, giao thức realtime hoặc thiết bị khác. Nhật ký lưu riêng trên trình duyệt/thiết bị này. Đối chiếu số chính thức tại Firebase Console → Realtime Database → Usage. Gói Spark hiện có 1 GB lưu trữ và 10 GB tải xuống/tháng.</p>
       </div>
     </div>
     <div id="fbError" class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-2 mt-3"></div>
     <div class="text-[11px] text-slate-400 mt-3">Không chia sẻ mật khẩu Firebase. Chỉ đăng nhập trên thiết bị tin cậy.</div>
   </div>
 </div>
+<div id="scanPanel" class="fixed inset-0 hidden items-center justify-center bg-black/60 p-2" style="z-index:95">
+  <div class="bg-white rounded-2xl w-full max-w-lg max-h-[96dvh] overflow-auto shadow-2xl p-3 sm:p-4">
+    <div class="flex items-center justify-between mb-2">
+      <b class="text-lg text-navy">📷 Quét xe bằng AI</b>
+      <button type="button" class="btn btn-sm" onclick="closeScanPanel()" aria-label="Đóng">✕</button>
+    </div>
+    <div id="scanKeyBox" class="hidden rounded-xl border border-amber-200 bg-amber-50 p-3 mb-2">
+      <label class="text-sm font-semibold block mb-1" for="scanKeyInp">Gemini API key (nhập 1 lần trên mỗi thiết bị)</label>
+      <div class="flex gap-2"><input id="scanKeyInp" type="password" class="inp" placeholder="Dán key vào đây" autocomplete="off"><button type="button" class="btn btn-primary" onclick="saveGeminiKey('scanKeyInp')">Lưu</button></div>
+    </div>
+    <div class="relative rounded-xl overflow-hidden bg-slate-900" style="aspect-ratio:4/3;max-height:48dvh;width:100%">
+      <video id="scanVideo" class="w-full h-full object-contain" autoplay playsinline muted></video>
+      <img id="scanPreview" class="hidden w-full h-full object-contain" alt="Ảnh xe vừa chụp">
+      <div id="scanCamHint" class="hidden absolute inset-0 flex items-center justify-center text-center text-sm text-slate-200 p-4"></div>
+      <div id="scanLoading" class="hidden absolute inset-0 flex items-center justify-center bg-black/60 text-white font-bold animate-pulse">🤖 AI đang nhận diện…</div>
+    </div>
+    <button type="button" id="scanShootBtn" class="btn btn-primary w-full mt-2" style="padding:12px" onclick="captureAndScan()" disabled>📸 Chụp &amp; nhận diện</button>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+      <button type="button" class="btn btn-sm" onclick="document.getElementById('scanFileCam').click()">📱 Chụp bằng máy ảnh</button>
+      <button type="button" class="btn btn-sm" onclick="document.getElementById('scanFilePick').click()">🖼️ Chọn ảnh</button>
+      <button type="button" class="btn btn-sm" onclick="switchCamera()">🔄 Đổi camera</button>
+      <button type="button" class="btn btn-sm" onclick="resetScan()">↩ Chụp lại</button>
+    </div>
+    <button type="button" class="btn btn-sm w-full mt-2" onclick="SCAN.image?analyzeScan():toast('Hãy chụp hoặc chọn ảnh trước')">🤖 Nhận diện lại</button>
+    <div id="scanMsg" class="hidden"></div>
+    <div id="scanResult" class="hidden space-y-2 mt-3 pt-3 border-t border-slate-200"></div>
+    <input type="file" id="scanFileCam" accept="image/*" capture="environment" class="hidden">
+    <input type="file" id="scanFilePick" accept="image/*" class="hidden">
+  </div>
+</div>
 <div id="toast"></div>
 <input type="file" id="fileJson" accept=".json,application/json" class="hidden">
 <input type="file" id="fileXlsx" accept=".xlsx" class="hidden">
+<input type="file" id="fileOpsXlsx" accept=".xlsx" class="hidden">
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -197,31 +244,60 @@ let firebaseApp=null, firebaseAuth=null, firebaseDb=null, firebaseUser=null;
 let cloudReady=false, cloudApplying=false, cloudTimer=null, cloudListener=null;
 const CLOUD_STATE_PATH = uid => `users/${uid}/erp_bai_xe_34/state`;
 const FB_USAGE_KEY='qlbx34_firebase_usage_v1';
+const FB_FREE_DOWNLOAD=10*1024**3; // Spark: 10 GB tải xuống/tháng
+const FB_FREE_STORAGE=1*1024**3;  // Spark: 1 GB dữ liệu lưu trữ
 function fbByteSize(value){
   try{return new TextEncoder().encode(typeof value==='string'?value:JSON.stringify(value)).length;}
   catch(e){return new Blob([typeof value==='string'?value:JSON.stringify(value)]).size;}
 }
 function fbUsageRead(){
-  try{return JSON.parse(localStorage.getItem(FB_USAGE_KEY)||'{"events":[]}');}
-  catch(e){return {events:[]};}
+  try{
+    const v=JSON.parse(localStorage.getItem(FB_USAGE_KEY)||'{"events":[]}');
+    return {events:Array.isArray(v.events)?v.events:[]};
+  }catch(e){return {events:[]};}
 }
 function fbUsageRecord(kind,label,bytes,detail=''){
-  const u=fbUsageRead();u.events=Array.isArray(u.events)?u.events:[];
-  u.events.push({at:Date.now(),kind,label,bytes:Number(bytes)||0,detail});
-  u.events=u.events.slice(-250);
-  try{localStorage.setItem(FB_USAGE_KEY,JSON.stringify(u));}catch(e){}
+  const u=fbUsageRead();
+  u.events.push({at:Date.now(),kind,label:String(label||''),bytes:Math.max(0,Number(bytes)||0),detail:String(detail||'')});
+  // Giữ tối đa 2.000 sự kiện gần nhất để lịch sử đo không phình lớn.
+  u.events=u.events.slice(-2000);
+  try{localStorage.setItem(FB_USAGE_KEY,JSON.stringify(u));}catch(e){console.warn('[Firebase usage] Không lưu được nhật ký đo trên thiết bị.',e);}
   renderFirebaseUsage();
 }
-function fbFmtBytes(n){n=Math.max(0,Number(n)||0);if(n<1024)return n.toFixed(0)+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';if(n<1073741824)return (n/1048576).toFixed(2)+' MB';return (n/1073741824).toFixed(3)+' GB';}
+function fbFmtBytes(n){
+  n=Math.max(0,Number(n)||0);
+  if(n<1024)return n.toFixed(0)+' B';
+  if(n<1048576)return (n/1024).toFixed(1)+' KB';
+  if(n<1073741824)return (n/1048576).toFixed(2)+' MB';
+  return (n/1073741824).toFixed(3)+' GB';
+}
+function fbLocalMonthKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
 function renderFirebaseUsage(){
   const box=document.getElementById('fbUsageSummary');if(!box)return;
-  const events=fbUsageRead().events||[],month=new Date().toISOString().slice(0,7);
-  const cur=events.filter(x=>new Date(x.at).toISOString().slice(0,7)===month);
-  const up=cur.filter(x=>x.kind==='up').reduce((a,x)=>a+x.bytes,0),down=cur.filter(x=>x.kind==='down').reduce((a,x)=>a+x.bytes,0);
-  const size=fbByteSize(S||{}),freeDown=10*1024**3,freeStore=1024**3;
-  const projected=(down/Math.max(1,new Date().getDate()))*new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate();
-  box.innerHTML=`<div class="grid grid-cols-2 gap-2"><div><span class="text-slate-500">Dung lượng dữ liệu hiện tại (ước tính)</span><div class="font-bold text-navy">${fbFmtBytes(size)}</div><div class="text-[10px]">Mức miễn phí lưu trữ: 1 GB</div></div><div><span class="text-slate-500">Tải lên đã ghi nhận tháng này</span><div class="font-bold">${fbFmtBytes(up)}</div><div class="text-[10px]">Tổng payload ghi từ ứng dụng</div></div><div><span class="text-slate-500">Tải xuống đã ghi nhận tháng này</span><div class="font-bold">${fbFmtBytes(down)}</div><div class="text-[10px]">Ước tính giới hạn miễn phí: 10 GB/tháng</div></div><div><span class="text-slate-500">Dự báo tải xuống cuối tháng</span><div class="font-bold">${fbFmtBytes(projected)}</div><div class="text-[10px]">Ước tính tuyến tính theo ngày hiện tại</div></div></div><div class="mt-2 h-2 rounded bg-white overflow-hidden"><div style="height:100%;width:${Math.min(100,projected/freeDown*100)}%;background:${projected>freeDown*.8?'#dc2626':'#16a34a'}"></div></div><div class="text-[10px] mt-1">${(projected/freeDown*100).toFixed(3)}% hạn mức tải xuống miễn phí (ước tính)</div>`;
-  const log=document.getElementById('fbUsageLog');if(log){log.innerHTML=events.slice(-8).reverse().map(x=>`<div class="flex justify-between gap-2 border-t border-blue-100 py-1"><span>${new Date(x.at).toLocaleTimeString('vi-VN')} · ${esc(x.label)}</span><b>${x.kind==='up'?'↑':'↓'} ${fbFmtBytes(x.bytes)}</b></div>`).join('')||'Chưa ghi nhận thao tác Firebase nào.';}
+  const events=fbUsageRead().events,now=new Date(),month=fbLocalMonthKey(now);
+  const cur=events.filter(x=>fbLocalMonthKey(new Date(x.at))===month);
+  const sum=(kind,list=cur)=>list.filter(x=>x.kind===kind).reduce((a,x)=>a+(Number(x.bytes)||0),0);
+  const up=sum('up'),down=sum('down'),daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const elapsedDays=Math.max(1,now.getDate());
+  const projectedUp=up/elapsedDays*daysInMonth,projectedDown=down/elapsedDays*daysInMonth;
+  const stored=fbByteSize(S||{}),downPct=Math.min(100,down/FB_FREE_DOWNLOAD*100),projectedPct=projectedDown/FB_FREE_DOWNLOAD*100,storedPct=Math.min(100,stored/FB_FREE_STORAGE*100);
+  const upCount=cur.filter(x=>x.kind==='up').length,downCount=cur.filter(x=>x.kind==='down').length;
+  const status=projectedPct>=95?'Gần chạm hạn mức tải xuống':projectedPct>=80?'Cần theo dõi tải xuống':'Trong ngưỡng theo dõi';
+  const statusColor=projectedPct>=95?'#b91c1c':projectedPct>=80?'#b45309':'#15803d';
+  box.innerHTML=`
+    <div class="text-[10px] text-slate-500 mb-2">Tháng ${month} · nhật ký ước tính trên thiết bị này</div>
+    <div class="grid grid-cols-2 gap-2">
+      <div class="rounded-lg bg-white p-2"><span class="text-slate-500">Tải lên đã ghi nhận</span><div class="font-bold text-navy">${fbFmtBytes(up)}</div><div class="text-[10px]">${upCount} lần ghi dữ liệu</div></div>
+      <div class="rounded-lg bg-white p-2"><span class="text-slate-500">Tải xuống đã ghi nhận</span><div class="font-bold text-navy">${fbFmtBytes(down)}</div><div class="text-[10px]">${downCount} lần nhận dữ liệu</div></div>
+      <div class="rounded-lg bg-white p-2"><span class="text-slate-500">Dự báo tải lên cuối tháng</span><div class="font-bold">${fbFmtBytes(projectedUp)}</div><div class="text-[10px]">Tham khảo, không phải hạn mức Spark</div></div>
+      <div class="rounded-lg bg-white p-2"><span class="text-slate-500">Dự báo tải xuống cuối tháng</span><div class="font-bold">${fbFmtBytes(projectedDown)}</div><div class="text-[10px]">Hạn mức Spark: 10 GB/tháng</div></div>
+    </div>
+    <div class="mt-3"><div class="flex justify-between gap-2 text-[10px]"><b>Tải xuống tháng này</b><b>${downPct.toFixed(2)}% / 10 GB</b></div><div class="mt-1 h-2 rounded bg-white overflow-hidden"><div style="height:100%;width:${downPct}%;background:${downPct>=95?'#dc2626':downPct>=80?'#d97706':'#16a34a'}"></div></div></div>
+    <div class="mt-2"><div class="flex justify-between gap-2 text-[10px]"><b>Dự báo cuối tháng</b><b>${projectedPct.toFixed(2)}% / 10 GB</b></div><div class="mt-1 h-2 rounded bg-white overflow-hidden"><div style="height:100%;width:${Math.min(100,projectedPct)}%;background:${projectedPct>=95?'#dc2626':projectedPct>=80?'#d97706':'#16a34a'}"></div></div><div class="text-[10px] mt-1" style="color:${statusColor}">${status}</div></div>
+    <div class="mt-3 rounded-lg bg-white p-2"><div class="flex justify-between text-[10px]"><b>Kích thước dữ liệu ERP hiện tại (ước tính)</b><b>${fbFmtBytes(stored)} / 1 GB</b></div><div class="mt-1 h-2 rounded bg-slate-100 overflow-hidden"><div style="height:100%;width:${storedPct}%;background:${storedPct>=90?'#dc2626':storedPct>=75?'#d97706':'#2563eb'}"></div></div><div class="text-[10px] text-slate-500 mt-1">${storedPct.toFixed(2)}% hạn mức lưu trữ Spark, chưa gồm overhead của Firebase</div></div>
+    <div class="text-[10px] text-slate-500 mt-2">Còn lại theo nhật ký tải xuống: ${fbFmtBytes(Math.max(0,FB_FREE_DOWNLOAD-down))}. Dự báo tính tuyến tính theo số ngày đã qua trong tháng.</div>`;
+  const log=document.getElementById('fbUsageLog');
+  if(log){log.innerHTML=events.slice(-10).reverse().map(x=>`<div class="flex justify-between gap-2 border-t border-blue-100 py-1"><span>${new Date(x.at).toLocaleString('vi-VN')} · ${esc(x.label)}</span><b>${x.kind==='up'?'↑':'↓'} ${fbFmtBytes(x.bytes)}</b></div>`).join('')||'Chưa ghi nhận thao tác Firebase nào trên thiết bị này.';}
 }
 
 function initFirebase(){
@@ -277,6 +353,7 @@ function openFirebasePanel(){
   try{initFirebase();}catch(e){showFirebaseError(firebaseErrorText(e));}
   const p=document.getElementById('firebasePanel');
   p.classList.remove('hidden');p.classList.add('flex');
+  renderFirebaseUsage();
   const er=document.getElementById('fbError');if(er)er.classList.add('hidden');
 }
 function closeFirebasePanel(){
@@ -490,7 +567,7 @@ async function unzipXlsx(buf){
       catch(e){throw new Error('Không giải nén được file Excel: '+(e.message||''));}};}
   return files;
 }
-async function readXlsxPure(file){
+async function readXlsxPure(file,headerHints={}){
   const files=await unzipXlsx(await file.arrayBuffer());const dec=new TextDecoder();
   const txt=async n=>files[n]?dec.decode(await files[n]()):null;const P=s=>new DOMParser().parseFromString(s,'application/xml');
   const wbx=await txt('xl/workbook.xml');if(!wbx)throw new Error('File không có workbook — không phải .xlsx hợp lệ.');
@@ -510,8 +587,16 @@ async function readXlsxPure(file){
         arr[colIdx(c.getAttribute('r'))]=v;}}
     const nonEmpty=rows.filter(r=>r&&r.some(c=>c!==undefined&&c!==''));
     if(!nonEmpty.length){out[sh.getAttribute('name')]=[];continue;}
-    const hdr=nonEmpty[0].map(h=>String(h??'').trim());
-    out[sh.getAttribute('name')]=nonEmpty.slice(1).map(r=>{const obj={};hdr.forEach((h,idx)=>{if(h)obj[h]=r[idx]??'';});return obj;});
+    const sheetName=sh.getAttribute('name');
+    const hint=headerHints[sheetName];
+    let headerAt=0;
+    if(hint){
+      const fold=x=>String(x??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,'d').toLowerCase().replace(/[^a-z0-9]/g,'');
+      headerAt=nonEmpty.findIndex(r=>r.some(c=>fold(c)===fold(hint)));
+      if(headerAt<0)throw new Error(`Sheet “${sheetName}” không tìm thấy dòng tiêu đề “${hint}”.`);
+    }
+    const hdr=nonEmpty[headerAt].map(h=>String(h??'').trim());
+    out[sheetName]=nonEmpty.slice(headerAt+1).map(r=>{const obj={};hdr.forEach((h,idx)=>{if(h)obj[h]=r[idx]??'';});return obj;});
   }
   return out;
 }
@@ -694,7 +779,9 @@ function sample(){
 }
 
 /* ================== ĐIỀU HƯỚNG 1 TRANG CHỦ DUY NHẤT ================== */
-let TAB='dash';
+let TAB='hist';
+function toggleMainMenu(force){const m=$('#mainMenu');if(!m)return;m.classList.toggle('hidden',force===undefined?!m.classList.contains('hidden'):!force);}
+document.addEventListener('click',e=>{if(!e.target.closest('#mainMenu')&&!e.target.closest('#menuToggle'))toggleMainMenu(false);});
 function setTab(t){
   if(!['dash','hist','report','settings'].includes(t)) t='dash';
   TAB=t;
@@ -786,7 +873,7 @@ function globalMatches(q){
 }
 function clearGlobalSearch(){
   const i=$('#globalSearch'),b=$('#globalSuggest');
-  i.value='';b.classList.add('hidden');b.innerHTML='';i.focus();
+  i.value='';HF.q='';b.classList.add('hidden');b.innerHTML='';if(TAB==='hist')updateHistTable();i.focus();
 }
 function chooseGlobalResult(key){
   const box=$('#globalSuggest');box.classList.add('hidden');
@@ -809,6 +896,7 @@ function bindGlobalSearch(){
   const input=$('#globalSearch'),box=$('#globalSuggest');
   if(!input||!box)return;
   input.addEventListener('input',()=>{
+    HF.q=input.value; if(TAB==='hist')updateHistTable();
     const q=input.value.trim();
     if(q.length<2){box.classList.add('hidden');box.innerHTML='';return;}
     const hits=globalMatches(q);
@@ -1292,6 +1380,10 @@ function openVehicleDetail(key, focusVisitId){
         <div><span class="text-slate-500">Tình trạng vào:</span> <b>${esc(x.statusIn||'—')}</b></div>
         <div><span class="text-slate-500">Người gửi:</span> <b>${esc(x.party||'—')}</b></div>
         ${x.noteIn?`<div class="sm:col-span-2"><span class="text-slate-500">Ghi chú nhập:</span> ${esc(x.noteIn)}</div>`:''}
+        <div><span class="text-slate-500">DEPOT:</span> <b>${esc(v.depot||'—')}</b></div>
+        <div><span class="text-slate-500">CVDV PHỤ TRÁCH:</span> <b>${esc(v.cvdv||'—')}</b></div>
+        <div class="sm:col-span-2"><span class="text-slate-500">Giải pháp:</span> <b>${esc(v.solution||'—')}</b></div>
+        <div><span class="text-slate-500">NGÀY DỰ KIẾN HOÀN THÀNH:</span> <b>${esc(v.expectedCompletion||'—')}</b></div>
         ${x.done?`
           <div><span class="text-slate-500">Ngày xuất:</span> <b>${fmt(x.outDate)}</b></div>
           <div><span class="text-slate-500">Tình trạng ra:</span> <b>${esc(x.statusOut||'—')}</b></div>
@@ -1328,6 +1420,19 @@ function openVehicleDetail(key, focusVisitId){
         <span>Người gửi: <b>${esc(act.party||'—')}</b></span>
       </div>`:''}
     </div>
+
+    <section class="mt-3 rounded-xl border border-indigo-100 bg-indigo-50/60 p-3 text-sm">
+      <div class="font-bold text-indigo-900 mb-2 flex items-center gap-2">
+        <span>📋</span> Thông tin Viewer (chỉ xem tại Admin)
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+        <div><div class="text-xs text-slate-500">Depot</div><div class="font-semibold break-words">${esc(v.depot||'—')}</div></div>
+        <div><div class="text-xs text-slate-500">CVDV PHỤ TRÁCH</div><div class="font-semibold break-words">${esc(v.cvdv||'—')}</div></div>
+        <div class="sm:col-span-2"><div class="text-xs text-slate-500">GIẢI PHÁP</div><div class="font-semibold whitespace-pre-wrap break-words">${esc(v.solution||'—')}</div></div>
+        <div><div class="text-xs text-slate-500">NGÀY DỰ KIẾN HOÀN THÀNH</div><div class="font-semibold">${esc(v.expectedCompletion||'—')}</div></div>
+        <div><div class="text-xs text-slate-500">Ghi chú Viewer</div><div class="font-semibold whitespace-pre-wrap break-words">${esc(v.viewer?.note||'—')}</div></div>
+      </div>
+    </section>
 
     <div class="flex flex-wrap gap-2 mt-3">
       ${act
@@ -1414,29 +1519,29 @@ function delVisit(id, reopenDetail){
 }
 
 /* ================== LỊCH SỬ (GIỮ INPUT CỐ ĐỊNH — KHÔNG MẤT BÀN PHÍM SỐ/CHỮ MOBILE) ================== */
-const HF={q:'',status:'',from:'',to:''};
+const HF={q:'',status:'',from:'',to:'',depot:'',cvdv:''};
+function updateHistoryStatusIn(id,value){
+  const visit=S.visits.find(x=>Number(x.id)===Number(id));
+  if(!visit){toast('Không tìm thấy lượt lưu bãi');return;}
+  const previous=visit.statusIn||'';
+  visit.statusIn=String(value||'').trim();
+  if(visit.statusIn&&!S.settings.statusIn.includes(visit.statusIn))S.settings.statusIn.push(visit.statusIn);
+  try{save();toast('Đã cập nhật tình trạng vào');}
+  catch(err){visit.statusIn=previous;toast('Không lưu được tình trạng: '+(err.message||err));}
+}
+
 function renderHist(){
   const box=$('#histBox');
   if(!box.dataset.ready){
     box.dataset.ready='1';
     box.innerHTML=`<div class="card p-3 sm:p-4">
-     <div class="grid grid-cols-2 lg:grid-cols-5 gap-2 mb-3">
-      <input id="hq" type="text" inputmode="text" class="inp col-span-2" placeholder="🔎 Tìm biển số (50H12345 / 12345), VIN, dòng xe, người giao/nhận…" value="${esc(HF.q)}" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false">
-      <select id="ht" class="inp">
-        <option value="">Trạng thái cuối: tất cả</option>
-        <option value="in">Trong bãi</option>
-        <option value="out">Đã xuất</option>
-      </select>
-      <input type="date" id="hf" class="inp" value="${HF.from}" title="Từ ngày">
-      <input type="date" id="hto" class="inp" value="${HF.to}" title="Đến ngày">
-     </div>
+
      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
        <div id="histSummary" class="text-sm text-slate-500"></div>
        <button type="button" class="btn btn-sm btn-primary" onclick="exportYardXlsx()">⬇️ Xuất Excel tồn bãi</button>
      </div>
-     <div id="histTableWrap" class="overflow-auto" style="max-height:calc(100dvh - 280px)"></div>
+     <div id="histTableWrap" class="overflow-x-auto overflow-y-auto" style="max-height:calc(100dvh - 280px);-webkit-overflow-scrolling:touch"></div>
     </div>`;
-    $('#hq').addEventListener('input',e=>{HF.q=e.target.value;updateHistTable();});
     $('#ht').addEventListener('change',e=>{HF.status=e.target.value;updateHistTable();});
     $('#hf').addEventListener('change',e=>{HF.from=e.target.value;updateHistTable();});
     $('#hto').addEventListener('change',e=>{HF.to=e.target.value;updateHistTable();});
@@ -1444,6 +1549,15 @@ function renderHist(){
   $('#ht').value=HF.status;
   $('#hf').value=HF.from;
   $('#hto').value=HF.to;
+  $('#ht').onchange=e=>{HF.status=e.target.value;updateHistTable();};
+  $('#hf').onchange=e=>{HF.from=e.target.value;updateHistTable();};
+  $('#hto').onchange=e=>{HF.to=e.target.value;updateHistTable();};
+  const depots=[...new Set(Object.values(S.vehicles||{}).map(v=>String(v.depot||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'vi'));
+  const cvdvs=[...new Set(Object.values(S.vehicles||{}).map(v=>String(v.cvdv||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'vi'));
+  const fillFilter=(id,all,label,value)=>{const el=$(id);if(!el)return;el.innerHTML=`<option value="">Tất cả ${label}</option>`+all.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');el.value=value||'';};
+  fillFilter('#filterDepot',depots,'DEPOT',HF.depot);fillFilter('#filterCvdv',cvdvs,'CVDV PHỤ TRÁCH',HF.cvdv);
+  $('#filterDepot').onchange=e=>{HF.depot=e.target.value;updateHistTable();};
+  $('#filterCvdv').onchange=e=>{HF.cvdv=e.target.value;updateHistTable();};
   updateHistTable();
 }
 
@@ -1464,6 +1578,8 @@ function updateHistTable(){
   records=records.filter(r=>{
     if(HF.status==='in' && !r.inYard) return false;
     if(HF.status==='out' && r.inYard) return false;
+    if(HF.depot && String(r.veh.depot||'').trim()!==HF.depot) return false;
+    if(HF.cvdv && String(r.veh.cvdv||'').trim()!==HF.cvdv) return false;
     if(HF.q){
       const q=cleanId(HF.q), t=norm(HF.q);
       const hay=norm((r.veh.model||'')+' '+(r.veh.color||'')+' '+(r.last.party||'')+' '+(r.last.receiver||'')+' '+(r.last.statusIn||'')+' '+(r.last.statusOut||''));
@@ -1480,7 +1596,7 @@ function updateHistTable(){
 
   const wrap=$('#histTableWrap');
   if(!wrap) return;
-  wrap.innerHTML=`<table class="t" style="min-width:940px"><thead><tr><th>#</th><th>Biển số / VIN</th><th>Dòng xe</th><th>Màu</th><th>Cập nhật cuối</th><th>Tuổi tồn</th><th>Vị trí / Tình trạng cuối</th><th>Người gửi / nhận</th><th>Lượt</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+  wrap.innerHTML=`<table class="t" style="min-width:1780px;white-space:normal"><thead><tr><th>#</th><th>Biển số / VIN</th><th>Dòng xe</th><th>Màu</th><th>Ngày nhập</th><th>Ngày xuất</th><th>Cập nhật cuối</th><th>Tuổi tồn</th><th>Vị trí</th><th>Tình trạng vào</th><th>Người gửi</th><th>Ghi chú nhập</th><th>Depot</th><th>CVDV PHỤ TRÁCH</th><th>Giải pháp</th><th>Ngày dự kiến hoàn thành</th><th>Tình trạng ra</th><th>Người nhận</th><th>Ghi chú xuất</th><th>Lượt</th><th>Trạng thái</th><th></th></tr></thead><tbody>
    ${shown.map((r,i)=>{
      const v=r.last, vv=r.veh;
      const statusBadge=r.inYard
@@ -1496,10 +1612,21 @@ function updateHistTable(){
        <td><b>${esc(r.key)}</b>${tag}</td>
        <td>${esc(vv.model||'—')}</td>
        <td>${esc(vv.color||'—')}</td>
+       <td>${fmt(v.inDate)}</td>
+       <td>${v.done?fmt(v.outDate):'—'}</td>
        <td>${fmt(r.lastDate)}</td>
        <td>${r.inYard?ageBadge(v):'—'}</td>
-       <td>${detailSummary}</td>
-       <td>${esc(person)}</td>
+       <td>${esc(posLabel(v.pos)||'—')}</td>
+       <td onclick="event.stopPropagation()"><select class="inp" style="min-width:155px;padding:6px" aria-label="Sửa tình trạng vào ${esc(r.key)}" onchange="updateHistoryStatusIn(${v.id},this.value)"><option value="">— Chưa chọn —</option>${(S.settings.statusIn||[]).map(st=>`<option value="${esc(st)}" ${st===(v.statusIn||'')?'selected':''}>${esc(st)}</option>`).join('')}</select></td>
+       <td>${esc(v.party||'—')}</td>
+       <td style="min-width:180px;max-width:260px">${esc(v.noteIn||'—')}</td>
+       <td>${esc(vv.depot||'—')}</td>
+       <td>${esc(vv.cvdv||'—')}</td>
+       <td style="min-width:220px;max-width:320px;white-space:pre-wrap">${esc(vv.solution||'—')}</td>
+       <td>${esc(vv.expectedCompletion||'—')}</td>
+       <td>${esc(v.statusOut||'—')}</td>
+       <td>${esc(v.receiver||'—')}</td>
+       <td style="min-width:180px;max-width:260px">${esc(v.noteOut||'—')}</td>
        <td><span class="badge bg-slate-100 text-slate-700">${r.visits.length}</span></td>
        <td>${statusBadge}</td>
        <td class="whitespace-nowrap" onclick="event.stopPropagation()">
@@ -1507,7 +1634,7 @@ function updateHistTable(){
          <button class="btn btn-sm" onclick="editVisit(${v.id})">Sửa</button>
        </td>
      </tr>`;
-   }).join('')||'<tr><td colspan="11" class="text-center text-slate-400 py-8">Chưa có hồ sơ xe phù hợp</td></tr>'}
+   }).join('')||'<tr><td colspan="22" class="text-center text-slate-400 py-8">Chưa có hồ sơ xe phù hợp</td></tr>'}
    </tbody></table>`;
 }
 
@@ -1562,10 +1689,10 @@ function renderReport(){
   const maxBar=Math.max(1,...R.chart.map(c=>(c.o||0)+(c.n||0)));
   const many=R.chart.length>14;
   const bars=R.chart.map(c=>{
-    if(c.o===null)return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0"><div style="height:180px"></div><div style="font-size:12px;color:#94a3b8;margin-top:6px">${shortD(c.d)}</div></div>`;
-    const ho=c.o/maxBar*170,hn=c.n/maxBar*170;
+    if(c.o===null)return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0"><div style="height:280px"></div><div style="font-size:12px;color:#94a3b8;margin-top:6px">${shortD(c.d)}</div></div>`;
+    const ho=c.o/maxBar*270,hn=c.n/maxBar*270;
     return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0">
-     <div style="height:180px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;width:100%">
+     <div style="height:280px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;width:100%">
       ${many?'':`<div style="font-size:11px;font-weight:700;color:#334155;margin-bottom:2px">${c.o+c.n}</div>`}
       <div style="width:${many?'70%':'46%'};max-width:44px;display:flex;flex-direction:column;justify-content:flex-end">
         <div style="height:${hn}px;background:#5b8e4d;border-radius:4px 4px 0 0;min-height:${c.n?2:0}px"></div>
@@ -1604,14 +1731,14 @@ function renderReport(){
       <div class="grid grid-cols-2 lg:grid-cols-4" style="gap:18px">
         ${kpi('TỔNG XE TỒN BÃI',R.total,'#13294B','#13294B')}${kpi('XE CŨ CÓ BIỂN',R.old,'#1E62D0','#2487a8')}${kpi('XE MỚI CHƯA BIỂN',R.nw,'#4f7d44','#5b8e4d')}${kpi('XE CŨ TỒN TỪ 11 NGÀY',R.old11,'#c62839','#c62839')}
       </div>
-      <div class="grid grid-cols-1 lg:grid-cols-5" style="gap:18px">
-        <div class="lg:col-span-3" style="background:#fff;border-radius:18px;padding:24px 26px">
+      <div class="report-chart-row" style="display:grid;grid-template-columns:minmax(0,3fr) minmax(280px,2fr);gap:18px;align-items:stretch">
+        <div class="report-chart-card" style="background:#fff;border-radius:18px;padding:24px 26px;min-width:0;display:flex;flex-direction:column;min-height:470px;height:100%;box-sizing:border-box">
           <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px"><div style="${sec()}">DIỄN BIẾN XE TỒN BÃI TRONG KỲ</div>
           <div style="font-size:12px;color:#64748b;display:flex;gap:12px"><span><i style="display:inline-block;width:10px;height:10px;background:#2487a8;border-radius:3px"></i> Xe cũ</span><span><i style="display:inline-block;width:10px;height:10px;background:#5b8e4d;border-radius:3px"></i> Xe mới</span></div></div>
           <div style="font-size:13px;color:#94a3b8;margin-bottom:14px">Số xe còn tại bãi cuối mỗi ngày · So sánh xe cũ và xe mới</div>
-          <div style="display:flex;gap:${many?2:8}px;align-items:flex-end;border-bottom:1px solid #dbe3ec;padding-bottom:0">${bars}</div>
+          <div class="report-chart-plot" style="display:flex;gap:${many?2:8}px;align-items:stretch;border-bottom:1px solid #dbe3ec;padding-bottom:0;width:100%;min-width:0;flex:1;height:100%;min-height:360px">${bars}</div>
         </div>
-        <div class="lg:col-span-2" style="background:#fff;border-radius:18px;padding:24px 26px">
+        <div class="report-chart-card" style="background:#fff;border-radius:18px;padding:24px 26px;min-width:0;min-height:470px;height:100%;box-sizing:border-box">
           <div style="${sec()}">CHỈ TIÊU XE TRONG KỲ</div>${mx}
         </div>
       </div>
@@ -1689,6 +1816,12 @@ function renderSettings(){
    <div class="space-y-2">${(S.settings.customerOutStatuses||[]).map((st,i)=>`<div class="flex gap-2"><input class="inp" value="${esc(st)}" data-act="customerRen" data-i="${i}"><button class="btn btn-red btn-sm" data-act="customerDel" data-i="${i}">Xóa</button></div>`).join('')||'<div class="text-sm text-slate-400">Chưa có trạng thái nào.</div>'}</div>
    <div class="flex gap-2 mt-3"><input id="add_customerOutStatus" class="inp" placeholder="VD: Giao khách / Chuyển kho…"><button class="btn btn-primary" data-act="customerAdd">Thêm trạng thái</button></div>
   </div>
+  <div class="card p-4 mt-4">
+   <div class="font-bold">📷 Gemini AI — nhận diện xe</div>
+   <div class="text-xs text-slate-500 mb-3">Key chỉ lưu trên thiết bị này, không đồng bộ Firebase và không nằm trong file sao lưu. <span id="setGeminiState" class="font-semibold">${getGeminiKey()?'✅ Đã có API key trên thiết bị này':'⚠️ Chưa nhập API key'}</span></div>
+   <div class="flex gap-2"><input id="setGeminiInp" type="password" class="inp" placeholder="Dán Gemini API key mới" autocomplete="off"><button type="button" class="btn btn-primary" onclick="saveGeminiKey('setGeminiInp')">Lưu</button></div>
+   <div class="flex gap-2 mt-2"><button type="button" class="btn btn-sm" onclick="testGeminiKey()">Kiểm tra kết nối</button><button type="button" class="btn btn-sm btn-red" onclick="removeGeminiKey()">Xóa key</button></div>
+  </div>
   <div class="grid gap-4 lg:grid-cols-2 mt-4">
    <div class="card p-4"><div class="font-bold">Vị trí bãi</div><div class="text-xs text-slate-500 mb-3">Sơ đồ: số dãy × tên cột × số hàng (hiện ${L.days*L.cols.length*L.rows} vị trí).</div>
     <div class="grid grid-cols-2 gap-3"><div>${lab('Số dãy')}<input id="ly_days" type="number" min="1" max="12" class="inp" value="${L.days}"></div><div>${lab('Số hàng mỗi cột')}<input id="ly_rows" type="number" min="1" max="60" class="inp" value="${L.rows}"></div>
@@ -1698,6 +1831,7 @@ function renderSettings(){
     <div class="grid sm:grid-cols-2 gap-2">
      <button class="btn" data-act="expJson">⬇️ Xuất JSON</button><button class="btn" data-act="impJson">⬆️ Nhập JSON</button>
      <button class="btn" data-act="expXlsx">⬇️ Xuất Excel (.xlsx)</button><button class="btn" data-act="impXlsx">⬆️ Nhập Excel (.xlsx)</button>
+     <button class="btn" data-act="impOpsXlsx">🧩 Cập nhật CVDV / Giải pháp từ Excel tồn bãi</button>
      <button class="btn" data-act="sample">🔄 Khôi phục dữ liệu mẫu</button><button class="btn btn-red" data-act="clear">🗑️ Xóa toàn bộ dữ liệu</button>
     </div>
     <div class="text-xs text-slate-500 mt-3">Tổng: ${Object.keys(S.vehicles).length} xe · ${S.visits.length} lượt lưu bãi · ${active().length} xe đang trong bãi.</div></div>
@@ -1755,9 +1889,72 @@ $('#settingsBox').addEventListener('click',e=>{
   else if(a==='impJson')$('#fileJson').click();
   else if(a==='expXlsx')exportXlsx();
   else if(a==='impXlsx')$('#fileXlsx').click();
+  else if(a==='impOpsXlsx')$('#fileOpsXlsx').click();
   else if(a==='sample'){if(confirm('Khôi phục dữ liệu mẫu? Dữ liệu hiện tại sẽ bị thay thế.')){S=sample();save();toast('Đã khôi phục dữ liệu mẫu');}}
   else if(a==='clear'){if(confirm('Xóa TOÀN BỘ xe và giao dịch? Danh mục cài đặt được giữ lại.')){S.vehicles={};S.visits=[];S.notes={};save();toast('Đã xóa dữ liệu');}}
 });
+// Nhập bổ sung theo TÊN TIÊU ĐỀ, không phụ thuộc vị trí cột trong Excel.
+// Tiêu đề phải tương ứng với tên trường của hệ thống; chỉ chuẩn hóa dấu/case/khoảng trắng.
+$('#fileOpsXlsx').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{
+    const sheets=await readXlsxPure(f,{'Xe trong bãi':'Biển số / VIN'});
+    const rows=sheets['Xe trong bãi'];
+    if(!Array.isArray(rows)||!rows.length)throw new Error('Không tìm thấy dữ liệu trong sheet “Xe trong bãi”.');
+    const norm=x=>String(x??'').trim().replace(/\s+/g,' ');
+    const headerNames=Object.keys(rows[0]||{});
+    const required=[
+      {key:'id',label:'Biển số / VIN',aliases:['Biển số / VIN','Biển số/VIN']},
+      {key:'depot',label:'DEPOT',aliases:['DEPOT']},
+      {key:'cvdv',label:'CVDV PHỤ TRÁCH',aliases:['CVDV PHỤ TRÁCH']},
+      {key:'solution',label:'GIẢI PHÁP',aliases:['GIẢI PHÁP']},
+      {key:'expected',label:'NGÀY DỰ KIẾN HOÀN THÀNH',aliases:['NGÀY DỰ KIẾN HOÀN THÀNH']}
+    ];
+    const headerMap={};
+    for(const field of required){
+      const accepted=new Set(field.aliases.map(norm));
+      const matches=headerNames.filter(h=>accepted.has(norm(h)));
+      if(matches.length===0)throw new Error(`Thiếu tiêu đề cột “${field.label}”. Hãy đặt đúng tên tiêu đề theo hệ thống; thứ tự cột tùy ý.`);
+      if(matches.length>1)throw new Error(`Có nhiều cột cùng khớp tiêu đề “${field.label}” (${matches.join(', ')}). Hãy chỉ giữ một cột.`);
+      headerMap[field.key]=matches[0];
+    }
+    const get=(row,key)=>row?.[headerMap[key]]??'';
+    const sourceSeen=new Set(),updates=[],notFound=[],duplicates=[];
+    const keys=Object.keys(S.vehicles||{}),keyMap=new Map();
+    keys.forEach(k=>{const id=cleanId(k);if(id){if(!keyMap.has(id))keyMap.set(id,[]);keyMap.get(id).push(k);}});
+    let sourceRows=0,withCvdv=0,withSolution=0,withDate=0;
+    for(const r of rows){
+      const rawId=get(r,'id');
+      const id=cleanId(rawId);if(!id)continue;sourceRows++;
+      if(sourceSeen.has(id)){duplicates.push(String(rawId));continue;}sourceSeen.add(id);
+      const found=keyMap.get(id)||[];
+      if(found.length!==1){notFound.push(String(rawId));continue;}
+      const depot=String(get(r,'depot')??'').trim();
+      const cvdv=String(get(r,'cvdv')??'').trim();
+      const solution=String(get(r,'solution')??'').trim();
+      const expected=String(get(r,'expected')??'').trim();
+      if(cvdv)withCvdv++;if(solution)withSolution++;if(expected)withDate++;
+      if(!depot&&!cvdv&&!solution&&!expected)continue;
+      updates.push({key:found[0],depot,cvdv,solution,expected});
+    }
+    if(!updates.length)throw new Error(`Không có dữ liệu phù hợp để cập nhật. Đã đọc ${sourceRows} mã xe; kiểm tra dữ liệu và các tiêu đề cột.`);
+    const preview=`Đã nhận diện cột theo tiêu đề (không theo vị trí):\n• Mã xe: ${headerMap.id}\n• DEPOT: ${headerMap.depot}\n• CVDV PHỤ TRÁCH: ${headerMap.cvdv}\n• GIẢI PHÁP: ${headerMap.solution}\n• NGÀY DỰ KIẾN HOÀN THÀNH: ${headerMap.expected}\n\nĐã đọc ${sourceRows} mã xe. Có ${updates.length} xe khớp và có ít nhất một trường cần cập nhật.\nCVDV PHỤ TRÁCH: ${withCvdv}\nGiải pháp: ${withSolution}\nNgày dự kiến hoàn thành: ${withDate}\nKhông tìm thấy/không duy nhất: ${notFound.length}\nMã trùng trong file nguồn: ${duplicates.length}\n\nChỉ cập nhật trường có dữ liệu; ô trống hoặc dấu “-” không xóa dữ liệu đích.\nKhông thay đổi lịch sử, tình trạng, ngày nhập hoặc vị trí.\n\nXác nhận cập nhật?`;
+    if(!confirm(preview))return;
+    let changed=0,fieldChanges={depot:0,cvdv:0,solution:0,expected:0};
+    updates.forEach(u=>{
+      const v=S.vehicles[u.key];let c=false;
+      if(u.depot&&v.depot!==u.depot){v.depot=u.depot;c=true;fieldChanges.depot++;}
+      if(u.cvdv&&v.cvdv!==u.cvdv){v.cvdv=u.cvdv;c=true;fieldChanges.cvdv++;}
+      if(u.solution&&v.solution!==u.solution){v.solution=u.solution;c=true;fieldChanges.solution++;}
+      if(u.expected&&v.expectedCompletion!==u.expected){v.expectedCompletion=u.expected;c=true;fieldChanges.expected++;}
+      if(c)changed++;
+    });
+    if(!changed){toast('Dữ liệu đã giống nhau, không có thay đổi cần lưu.');return;}
+    await save();
+    toast(`Đã cập nhật ${changed} xe: DEPOT ${fieldChanges.depot}, CVDV ${fieldChanges.cvdv}, Giải pháp ${fieldChanges.solution}, Ngày dự kiến ${fieldChanges.expected}.`);
+  }catch(err){console.error('Excel header-based import:',err);toast('Không thể cập nhật Excel: '+(err.message||err));}
+};
+
 $('#fileJson').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
   try{const d=JSON.parse(await f.text());if(!d||!Array.isArray(d.visits)||!d.vehicles||typeof d.vehicles!=='object'||!d.settings)throw new Error('File JSON không đúng cấu trúc sao lưu Bãi Xe 34.');
@@ -1771,7 +1968,7 @@ $('#fileJson').onchange=async e=>{
 /* ================== XUẤT / NHẬP EXCEL THUẦN JS (APK READY) ================== */
 async function exportYardXlsx(){
   const act=active().sort((a,b)=>(age(b)??9999)-(age(a)??9999));
-  const hdr=['STT','Biển số / VIN','Loại xe','Dòng xe','Màu sắc','Ngày bắt đầu chu kỳ','Ngày nhập gần nhất','Tuổi tồn (ngày)','Vị trí','Tình trạng','Người gửi','Ghi chú'];
+  const hdr=['STT','Biển số / VIN','Loại xe','Dòng xe','Màu sắc','Ngày bắt đầu chu kỳ','Ngày nhập gần nhất','Tuổi tồn (ngày)','Vị trí','Tình trạng','Người gửi','Ghi chú','DEPOT','CVDV PHỤ TRÁCH','GIẢI PHÁP','NGÀY DỰ KIẾN HOÀN THÀNH'];
   const rows=[
     [{v:'DANH SÁCH XE TỒN BÃI 34',s:2}],
     ['Ngày xuất',fmt(todayISO()),'Tổng số xe tồn',{v:act.length,s:2}],
@@ -1794,7 +1991,8 @@ async function exportYardXlsx(){
       posLabel(v.pos),
       statIn(v),
       v.party||'',
-      v.noteIn||''
+      v.noteIn||'',
+      x.depot||'',x.cvdv||'',x.solution||'',x.expectedCompletion||''
     ]);
   });
   const allRows=[['Biển số/VIN','Biển số','VIN','Dòng xe','Màu sắc','Ngày nhập','Vị trí','Mã vị trí','Người gửi','Tình trạng vào','Ghi chú nhập','Ngày xuất','Tình trạng ra','Người nhận','Ghi chú xuất']];
@@ -1816,15 +2014,15 @@ async function exportXlsx(){
     const x=veh(v.key);
     allRows.push([v.key,x.plate||'',x.vin||'',x.model||'',x.color||'',isValidInDate(v.inDate)?v.inDate:'0',v.pos?posLabel(v.pos):'',v.pos||'',v.party||'',v.statusIn||'',v.noteIn||'',v.outDate||'',v.statusOut||'',v.receiver||'',v.noteOut||'']);
   });
-  const yardRows=[['STT','Biển số/VIN','Loại xe','Dòng xe','Màu sắc','Ngày bắt đầu chu kỳ','Ngày nhập gần nhất','Tuổi tồn','Vị trí','Tình trạng','Người gửi','Ghi chú']];
+  const yardRows=[['STT','Biển số/VIN','Loại xe','Dòng xe','Màu sắc','Ngày bắt đầu chu kỳ','Ngày nhập gần nhất','Tuổi tồn','Vị trí','Tình trạng','Người gửi','Ghi chú','DEPOT','CVDV PHỤ TRÁCH','GIẢI PHÁP','NGÀY DỰ KIẾN HOÀN THÀNH']];
   active().forEach((v,i)=>{
     const x=veh(v.key);
     const firstIn=firstInDateOf(v.key);
     const a=age(v);
-    yardRows.push([i+1,v.key,idTypeLabel(v.key),x.model||'',x.color||'',isValidInDate(firstIn)?firstIn:'0',isValidInDate(v.inDate)?v.inDate:'0',a===null?'>31 ngày (0)':a,posLabel(v.pos),statIn(v),v.party||'',v.noteIn||'']);
+    yardRows.push([i+1,v.key,idTypeLabel(v.key),x.model||'',x.color||'',isValidInDate(firstIn)?firstIn:'0',isValidInDate(v.inDate)?v.inDate:'0',a===null?'>31 ngày (0)':a,posLabel(v.pos),statIn(v),v.party||'',v.noteIn||'',x.depot||'',x.cvdv||'',x.solution||'',x.expectedCompletion||'']);
   });
   const blob=buildXlsx([
-    {name:'Xe trong bãi',rows:yardRows,hdr:0,widths:[6,16,20,16,12,16,16,14,18,20,18,28]},
+    {name:'Xe trong bãi',rows:yardRows,hdr:0,widths:[6,16,20,16,12,16,16,14,18,20,18,28,18,22,32,20]},
     {name:'Lượt lưu bãi',rows:allRows,hdr:0,widths:[16,14,14,16,12,14,18,12,18,20,24,14,20,18,24]}
   ]);
   const ok=await saveOrShareBlob(blob,`DuLieu_BaiXe34_${todayISO()}.xlsx`);
@@ -1859,17 +2057,311 @@ $('#fileXlsx').onchange=async e=>{
     });
     if(!visits.length)throw new Error('Không tìm thấy dòng xe hợp lệ trong sheet “Lượt lưu bãi”.');
     S.vehicles=nv;S.visits=visits;S.seq=seq;
+    // Giữ các trường bổ sung M:P từ sheet Xe trong bãi của dulieutong_updated.xlsx.
+    const yard=sheets['Xe trong bãi']||[];
+    yard.forEach(r=>{
+      const key=cleanId(r['Biển số/VIN']??r['Biển số / VIN']??r['Biển số']);
+      const v=key?S.vehicles[key]:null;if(!v)return;
+      v.depot=String(r['DEPOT']??'').trim();
+      v.cvdv=String(r['CVDV PHỤ TRÁCH']??'').trim();
+      v.solution=String(r['Giải pháp']??r['Giải Pháp']??'').trim();
+      v.expectedCompletion=String(r['NGÀY DỰ KIẾN HOÀN THÀNH']??r['Ngày dự kiến hoàn thành']??'').trim();
+    });
     visits.forEach(v=>{if(v.statusIn&&!S.settings.statusIn.includes(v.statusIn))S.settings.statusIn.push(v.statusIn);if(v.statusOut&&!S.settings.statusOut.includes(v.statusOut))S.settings.statusOut.push(v.statusOut);});
     Object.values(nv).forEach(v=>{if(v.model&&!S.settings.models.includes(v.model))S.settings.models.push(v.model);});
     save();toast(`Đã nhập ${visits.length} lượt lưu bãi`);
   }catch(err){toast('Lỗi nhập Excel: '+err.message);}
 };
 
+/* ================== CHỤP & NHẬN DIỆN XE BẰNG GEMINI AI ================== */
+// API key chỉ lưu trên thiết bị này (localStorage): không nằm trong mã nguồn, không vào S nên không đồng bộ/xuất file.
+const GEMINI_KEY_LS='erp_bai_xe_34_gemini_key';
+const GEMINI_BASE='https://generativelanguage.googleapis.com/v1beta/models';
+const GEMINI_MODELS=['gemini-3.8-flash','gemini-3.5-flash-lite'];
+let geminiKeyMem='';
+const getGeminiKey=()=>{try{return localStorage.getItem(GEMINI_KEY_LS)||geminiKeyMem;}catch(e){return geminiKeyMem;}};
+function setGeminiKey(k){
+  geminiKeyMem=k;
+  try{if(k)localStorage.setItem(GEMINI_KEY_LS,k);else localStorage.removeItem(GEMINI_KEY_LS);return true;}catch(e){return false;}
+}
+function saveGeminiKey(inputId){
+  const i=document.getElementById(inputId),k=(i?i.value:'').trim();
+  if(!k){toast('Hãy dán Gemini API key vào ô');return;}
+  if(/\s/.test(k)||!/^[\x21-\x7e]+$/.test(k)){toast('Key không hợp lệ (có khoảng trắng hoặc ký tự lạ)');return;}
+  const ok=setGeminiKey(k);i.value='';
+  updateGeminiKeyUI();
+  toast(ok?'✅ Đã lưu API key trên thiết bị này':'Trình duyệt không cho lưu — key chỉ dùng đến khi đóng trang');
+}
+function removeGeminiKey(){
+  if(!confirm('Xóa Gemini API key khỏi thiết bị này?'))return;
+  setGeminiKey('');updateGeminiKeyUI();toast('Đã xóa API key');
+}
+function updateGeminiKeyUI(){
+  const has=!!getGeminiKey();
+  const box=document.getElementById('scanKeyBox');if(box)box.classList.toggle('hidden',has);
+  const st=document.getElementById('setGeminiState');
+  if(st)st.textContent=has?'✅ Đã có API key trên thiết bị này':'⚠️ Chưa nhập API key';
+}
+function geminiError(status,msg){
+  if(status===400&&/api.?key/i.test(msg))return 'API key không hợp lệ. Hãy nhập lại key.';
+  if(status===401||status===403)return 'Gemini từ chối API key (sai, bị khóa hoặc chưa được cấp quyền). '+msg;
+  if(status===429)return 'Đã hết hạn mức Gemini. Đợi một lúc rồi thử lại.';
+  if(status===404)return 'Mô hình Gemini không còn khả dụng. '+msg;
+  if(status>=500)return 'Máy chủ Gemini đang bận. Hãy thử lại.';
+  return `Lỗi Gemini (HTTP ${status}). ${msg}`;
+}
+async function testGeminiKey(){
+  const key=getGeminiKey();
+  if(!key){toast('Chưa nhập API key');return;}
+  toast('Đang kiểm tra kết nối Gemini…');
+  try{
+    const r=await fetch(`${GEMINI_BASE}/${GEMINI_MODELS[0]}`,{headers:{'x-goog-api-key':key}});
+    if(r.ok){toast('✅ Kết nối Gemini thành công');return;}
+    const j=await r.json().catch(()=>({}));
+    toast(geminiError(r.status,j?.error?.message||''));
+  }catch(e){toast('Không kết nối được Gemini. Kiểm tra mạng.');}
+}
+
+async function geminiReadVehicle(base64,signal){
+  const key=getGeminiKey();
+  const models=(S.settings.models||[]).filter(m=>norm(m)!==norm('Dòng khác'));
+  const prompt=`Bạn là hệ thống nhận diện ô tô/xe máy tại một bãi giữ xe ở Việt Nam. Phân tích phương tiện chính (gần và rõ nhất) trong ảnh.
+- found: true nếu trong ảnh có phương tiện hoặc biển số.
+- plate: biển số đọc được, viết hoa, chỉ gồm chữ và số (VD: 50H12345). Biển 2 dòng thì đọc dòng trên rồi dòng dưới. Nếu bị che, mờ hoặc không chắc chắn đủ mọi ký tự thì trả "". Tuyệt đối không đoán.
+- model: dòng xe. Nếu khớp một mục trong danh mục ${JSON.stringify(models)} thì trả đúng nguyên văn mục đó; nếu không thì trả "Hãng Dòng" (VD: "Toyota Vios"). Không xác định được thì trả "".
+- color: màu sơn chủ đạo của xe, tiếng Việt ngắn gọn (Trắng, Đen, Xanh, Đỏ, Xám, Bạc, Cam, Vàng...). Không xác định được thì trả "".
+- confidence: độ tin cậy chung từ 0 đến 100.`;
+  const body=JSON.stringify({
+    contents:[{role:'user',parts:[{inlineData:{mimeType:'image/jpeg',data:base64}},{text:prompt}]}],
+    generationConfig:{
+      responseMimeType:'application/json',
+      responseSchema:{type:'OBJECT',properties:{found:{type:'BOOLEAN'},plate:{type:'STRING'},model:{type:'STRING'},color:{type:'STRING'},confidence:{type:'NUMBER'}},required:['found','plate','model','color','confidence']},
+      thinkingConfig:{thinkingLevel:'low'}
+    }
+  });
+  let lastErr;
+  for(const m of GEMINI_MODELS){
+    const r=await fetch(`${GEMINI_BASE}/${m}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body,signal});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok){
+      lastErr=new Error(geminiError(r.status,j?.error?.message||''));
+      if(r.status===404||r.status===429||r.status>=500)continue; // thử mô hình dự phòng
+      throw lastErr;
+    }
+    const text=(j?.candidates?.[0]?.content?.parts||[]).filter(p=>!p.thought).map(p=>p.text||'').join('').trim();
+    if(!text)throw new Error('AI không trả về kết quả. Hãy chụp lại ảnh khác.');
+    try{
+      const d=JSON.parse(text.replace(/^```(?:json)?\s*|\s*```$/g,''));
+      if(!d||typeof d!=='object')throw new Error();
+      return d;
+    }catch(e){throw new Error('AI trả về dữ liệu không đọc được. Hãy thử lại.');}
+  }
+  throw lastErr;
+}
+
+/* ---- Camera & giao diện quét ---- */
+const SCAN={stream:null,facing:'environment',camSeq:0,reqSeq:0,abort:null,image:'',matchKey:null,ai:null};
+const sg=id=>document.getElementById(id);
+function openScanPanel(){
+  closeModal();
+  const p=sg('scanPanel');p.classList.remove('hidden');p.classList.add('flex');
+  updateGeminiKeyUI();
+  resetScan();
+}
+function closeScanPanel(){
+  cancelScanRequest();stopCamera();
+  const p=sg('scanPanel');p.classList.add('hidden');p.classList.remove('flex');
+}
+function cancelScanRequest(){
+  SCAN.reqSeq++;
+  if(SCAN.abort){SCAN.abort.abort();SCAN.abort=null;}
+  sg('scanLoading').classList.add('hidden');
+}
+function resetScan(){
+  cancelScanRequest();
+  SCAN.image='';SCAN.ai=null;SCAN.matchKey=null;
+  sg('scanResult').classList.add('hidden');sg('scanResult').innerHTML='';
+  sg('scanPreview').classList.add('hidden');sg('scanPreview').removeAttribute('src');
+  setScanMsg('');
+  startCamera();
+}
+function setScanMsg(t,isError){
+  const m=sg('scanMsg');m.textContent=t;m.classList.toggle('hidden',!t);
+  m.className=`text-sm rounded-lg border p-2 mt-2 ${t?'':'hidden '}${isError?'text-red-700 bg-red-50 border-red-200':'text-amber-800 bg-amber-50 border-amber-200'}`;
+}
+function stopCamera(){
+  SCAN.camSeq++;
+  if(SCAN.stream){SCAN.stream.getTracks().forEach(t=>t.stop());SCAN.stream=null;}
+  sg('scanVideo').srcObject=null;
+}
+async function startCamera(){
+  stopCamera();
+  const seq=SCAN.camSeq,video=sg('scanVideo'),hint=sg('scanCamHint');
+  video.classList.remove('hidden');
+  sg('scanShootBtn').disabled=true;
+  hint.textContent='Đang mở camera…';hint.classList.remove('hidden');
+  try{
+    if(!navigator.mediaDevices?.getUserMedia)throw new Error('unsupported');
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:SCAN.facing},width:{ideal:1920},height:{ideal:1080}},audio:false});
+    if(seq!==SCAN.camSeq){stream.getTracks().forEach(t=>t.stop());return;} // đã đóng hoặc đổi camera
+    SCAN.stream=stream;video.srcObject=stream;
+    await video.play().catch(()=>{});
+    if(seq!==SCAN.camSeq)return;
+    hint.classList.add('hidden');sg('scanShootBtn').disabled=false;
+  }catch(e){
+    if(seq!==SCAN.camSeq)return;
+    video.classList.add('hidden');
+    hint.textContent='Không mở được camera trực tiếp. Hãy bấm “Chụp bằng máy ảnh” hoặc “Chọn ảnh”.';
+  }
+}
+function switchCamera(){
+  SCAN.facing=SCAN.facing==='environment'?'user':'environment';
+  resetScan();
+}
+function toJpeg(source,w,h){
+  const k=Math.min(1,1600/Math.max(w,h)),c=document.createElement('canvas');
+  c.width=Math.round(w*k);c.height=Math.round(h*k);
+  c.getContext('2d').drawImage(source,0,0,c.width,c.height);
+  return c.toDataURL('image/jpeg',0.85);
+}
+function captureAndScan(){
+  const v=sg('scanVideo');
+  if(!SCAN.stream||!v.videoWidth){toast('Camera chưa sẵn sàng');return;}
+  useScanImage(toJpeg(v,v.videoWidth,v.videoHeight));
+}
+function onScanFile(e){
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  const url=URL.createObjectURL(f),img=new Image(),seq=++SCAN.reqSeq;
+  img.onload=()=>{URL.revokeObjectURL(url);if(seq===SCAN.reqSeq)useScanImage(toJpeg(img,img.naturalWidth,img.naturalHeight));};
+  img.onerror=()=>{URL.revokeObjectURL(url);setScanMsg('Không đọc được ảnh này. Hãy chọn ảnh JPG hoặc PNG.',true);};
+  img.src=url;
+}
+function useScanImage(dataUrl){
+  cancelScanRequest();stopCamera();
+  SCAN.image=dataUrl;
+  sg('scanVideo').classList.add('hidden');sg('scanCamHint').classList.add('hidden');
+  const pv=sg('scanPreview');pv.src=dataUrl;pv.classList.remove('hidden');
+  sg('scanShootBtn').disabled=true;
+  analyzeScan();
+}
+async function analyzeScan(){
+  if(!SCAN.image)return;
+  cancelScanRequest();
+  sg('scanResult').classList.add('hidden');setScanMsg('');
+  if(!getGeminiKey()){updateGeminiKeyUI();showScanResult(null);setScanMsg('Nhập và lưu Gemini API key ở trên, rồi bấm “Nhận diện lại”. Bạn cũng có thể nhập tay.');return;}
+  const seq=SCAN.reqSeq,ctl=new AbortController();SCAN.abort=ctl;
+  const timer=setTimeout(()=>ctl.abort(),45000);
+  sg('scanLoading').classList.remove('hidden');
+  try{
+    const d=await geminiReadVehicle(SCAN.image.split(',')[1],ctl.signal);
+    if(seq!==SCAN.reqSeq)return;
+    let plate=cleanId(d.plate);
+    if(plate.length<4||plate.length>10)plate='';
+    const raw=String(d.model||'').trim();
+    const known=(S.settings.models||[]).find(m=>norm(m).replace(/\s/g,'')===norm(raw).replace(/\s/g,''));
+    const ai={plate,model:known||raw,color:String(d.color||'').trim(),confidence:Math.max(0,Math.min(100,Math.round(Number(d.confidence)||0)))};
+    showScanResult(ai);
+    if(d.found===false)setScanMsg('AI không thấy phương tiện trong ảnh. Hãy chụp lại.');
+    else if(!plate)setScanMsg('AI chưa đọc rõ biển số. Chụp lại gần hơn hoặc nhập tay.');
+  }catch(e){
+    if(seq!==SCAN.reqSeq)return;
+    showScanResult(null);
+    setScanMsg(e.name==='AbortError'?'Quá thời gian chờ AI. Kiểm tra mạng rồi bấm “Nhận diện lại”.':(e instanceof TypeError?'Không kết nối được Gemini. Kiểm tra mạng rồi thử lại.':e.message),true);
+  }finally{
+    clearTimeout(timer);
+    if(seq===SCAN.reqSeq){sg('scanLoading').classList.add('hidden');SCAN.abort=null;}
+  }
+}
+function showScanResult(ai){
+  SCAN.ai=ai;SCAN.matchKey=null;
+  const box=sg('scanResult'),lp=lastPrefs();
+  box.innerHTML=`
+    <div class="flex items-center justify-between gap-2"><b class="text-navy">Kết quả nhận diện</b>${ai?`<span class="badge ${ai.confidence>=80?'bg-green-100 text-green-700':'bg-amber-100 text-amber-800'}">AI tin cậy ${ai.confidence}%</span>`:'<span class="badge bg-slate-100 text-slate-600">Nhập tay</span>'}</div>
+    <div>${lab('Biển số / 6 số VIN')}<input id="sc_plate" class="inp font-bold text-lg" value="${esc(ai?.plate||'')}" placeholder="VD: 50H12345" autocomplete="off" autocapitalize="characters" spellcheck="false" oninput="renderScanMatch()"></div>
+    <div class="grid grid-cols-2 gap-2">
+      <div>${lab('Dòng xe')}<input id="sc_model" class="inp" list="sc_models" value="${esc(ai?.model||'')}" oninput="this.dataset.edited='1'"></div>
+      <div>${lab('Màu xe')}<input id="sc_color" class="inp" list="colorList" value="${esc(ai?.color||'')}" oninput="this.dataset.edited='1'"></div>
+    </div>
+    <datalist id="sc_models">${(S.settings.models||[]).map(m=>`<option value="${esc(m)}">`).join('')}</datalist>
+    <div id="sc_match"></div>
+    <div id="sc_inFields" class="grid grid-cols-2 gap-2">
+      <div>${lab('Tình trạng vào')}<select id="sc_status" class="inp"><option value="">— Để trống —</option>${(S.settings.statusIn||[]).map(s=>`<option ${s===lp.statusIn?'selected':''}>${esc(s)}</option>`).join('')}</select></div>
+      <div>${lab('Vị trí bãi')}<select id="sc_pos" class="inp">${posOptions('')}</select></div>
+      <div class="col-span-2">${lab('Tên/Bộ phận người gửi')}<input id="sc_party" class="inp" value="${esc(lp.party||'')}" placeholder="Không bắt buộc"></div>
+    </div>
+    <div id="sc_actions"></div>`;
+  box.classList.remove('hidden');
+  renderScanMatch();
+}
+// Đối chiếu biển số với hồ sơ xe; không tự gộp hai biển chỉ trùng 5 số cuối.
+function renderScanMatch(){
+  const input=sg('sc_plate');if(!input)return;
+  const key=cleanId(input.value),v=key?findVeh(key):null,a=v?activeOf(v.key):null;
+  const ai=SCAN.ai||{},model=sg('sc_model'),color=sg('sc_color');
+  const newMatch=v?v.key:null;
+  if(newMatch!==SCAN.matchKey){
+    SCAN.matchKey=newMatch;
+    if(!model.dataset.edited)model.value=v?.model||ai.model||'';
+    if(!color.dataset.edited)color.value=v?.color||ai.color||'';
+  }
+  let near=[];
+  if(!v&&key){
+    if(isShortPlate(key))near=findPartialSuffixVehs(key);
+    else if(isFullPlate(key))near=Object.values(S.vehicles).filter(x=>isShortPlate(x.key)&&key.endsWith(x.key));
+  }
+  const diffs=v?[['Dòng xe',v.model,ai.model],['Màu',v.color,ai.color]].filter(([,old,now])=>old&&now&&norm(old)!==norm(now)):[];
+  const diffHtml=diffs.length?`<div class="text-xs mt-1">⚠️ Khác hồ sơ: ${diffs.map(([l,old,now])=>`${l} hồ sơ <b>${esc(old)}</b>, AI thấy <b>${esc(now)}</b>`).join(' · ')}. Kiểm tra lại biển số.</div>`:'';
+  let h='';
+  if(a)h=`<div class="rounded-xl border-2 border-amber-400 bg-amber-50 p-2.5 text-sm text-amber-900"><b>XE ĐANG TRONG BÃI</b> · nhập ${fmt(a.inDate)} · ${esc(posLabel(a.pos))} · ${esc(statIn(a))}${diffHtml}</div>`;
+  else if(v)h=`<div class="rounded-xl border-2 border-green-400 bg-green-50 p-2.5 text-sm text-green-900"><b>Xe cũ</b> · đã lưu bãi ${visitsOf(v.key).length} lần, hiện không ở trong bãi${diffHtml}</div>`;
+  else if(key)h=`<div class="rounded-xl border-2 border-blue-300 bg-blue-50 p-2.5 text-sm text-blue-900"><b>Xe mới</b> · chưa có hồ sơ</div>`;
+  if(near.length)h+=`<div class="rounded-xl border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-900 mt-2"><b>Có hồ sơ trùng 5 số cuối:</b><div class="flex flex-wrap gap-1.5 mt-1">${near.map(m=>`<button type="button" class="btn btn-sm" data-k="${esc(m.key)}" onclick="pickScanMatch(this.dataset.k)">${esc(m.key)} (${activeOf(m.key)?'Đang trong bãi':'Chọn xe này'})</button>`).join('')}</div></div>`;
+  sg('sc_match').innerHTML=h;
+  sg('sc_inFields').classList.toggle('hidden',!!a);
+  sg('sc_actions').innerHTML=a
+    ?`<button type="button" class="btn w-full" style="background:#c2410c;border-color:#c2410c;color:#fff" onclick="scanExport()">📤 Xuất xe ${esc(v.key)}</button>`
+    :`<button type="button" class="btn btn-primary w-full" onclick="scanConfirmIn()">✓ Xác nhận nhập xe${key?'':' (tạo mã tạm)'}</button>`;
+}
+function pickScanMatch(k){sg('sc_plate').value=k;renderScanMatch();}
+function scanExport(){
+  const v=findVeh(cleanId(sg('sc_plate').value));
+  if(!v||!activeOf(v.key)){toast('Xe không còn trong bãi');renderScanMatch();return;}
+  closeScanPanel();quickExport(v.key);
+}
+function scanConfirmIn(){
+  const entered=cleanId(sg('sc_plate').value),key=entered||nextTempKey();
+  const model=sg('sc_model').value.trim(),color=sg('sc_color').value.trim();
+  const st=sg('sc_status').value,pos=sg('sc_pos').value,party=sg('sc_party').value.trim();
+  let v=findVeh(key);
+  if(v&&activeOf(v.key)){toast(`Xe ${v.key} đang trong bãi!`);renderScanMatch();return;}
+  if(pos&&active().some(x=>x.pos===pos)){toast('Vị trí này đã có xe, vui lòng chọn vị trí khác');sg('sc_pos').innerHTML=posOptions('');return;}
+  if(!v){
+    const vin=/^\d{6}$/.test(entered);
+    v=S.vehicles[key]={key,plate:entered&&!vin?key:'',vin:vin?key:'',model:'',color:''};
+  }
+  if(model){v.model=model;S.settings.models=S.settings.models||[];if(!S.settings.models.includes(model))S.settings.models.push(model);}
+  if(color)v.color=color;
+  S.visits.push({id:nextId(),key:v.key,inDate:todayISO(),pos,party,statusIn:st,noteIn:'',done:false,outDate:null,statusOut:'',receiver:'',noteOut:'',created:Date.now()});
+  savePrefs({party,statusIn:st});
+  closeScanPanel();
+  save();
+  toast(`✅ Đã nhập ${v.key} — lần ${visitsOf(v.key).length}`);
+}
+sg('scanFileCam').addEventListener('change',onScanFile);
+sg('scanFilePick').addEventListener('change',onScanFile);
+sg('scanPanel').addEventListener('click',e=>{if(e.target.id==='scanPanel')closeScanPanel();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!sg('scanPanel').classList.contains('hidden'))closeScanPanel();});
+// Tắt camera khi chuyển ứng dụng để tiết kiệm pin
+document.addEventListener('visibilitychange',()=>{
+  if(sg('scanPanel').classList.contains('hidden')||SCAN.image)return;
+  if(document.hidden)stopCamera();else startCamera();
+});
+
 /* ================== KHỞI ĐỘNG ================== */
 document.body.appendChild(colorDL);
 load().then(()=>{
   bindGlobalSearch();
-  setTab('dash');
+  setTab('hist');
   try{initFirebase();}catch(e){console.warn('Firebase initialization skipped:',e);}
 }).catch(e=>{
   console.error(e);
