@@ -1,0 +1,2567 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>ERP Bãi Xe 34</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap&subset=vietnamese" rel="stylesheet">
+<script>
+if(window.tailwind)tailwind.config={theme:{extend:{colors:{navy:'#13294B',bgm:'#F4F7FA',vf:'#1E62D0'},fontFamily:{sans:['Inter','system-ui','sans-serif']}}}};
+</script>
+<style>
+html,body{height:100%;margin:0;font-family:Inter,system-ui,sans-serif;background:#F4F7FA;color:#1f2937}
+body{padding-top:env(safe-area-inset-top)}
+.card{background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(16,24,40,.08);border:1px solid #e8edf3}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;border-radius:10px;font-weight:600;font-size:14px;border:1px solid #cfd8e3;background:#fff;color:#1f2937;cursor:pointer;transition:.15s;touch-action:manipulation}
+.btn:hover{background:#f1f5f9}
+.btn-primary{background:#1E62D0;border-color:#1E62D0;color:#fff}
+.btn-primary:hover{background:#1851ad}
+.btn-red{background:#fff;border-color:#f3c0c0;color:#c62828}
+.btn-red:hover{background:#fdeeee}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:8px}
+.inp{width:100%;border:1px solid #cfd8e3;border-radius:10px;padding:8px 12px;font-size:15px;background:#fff;outline:none}
+.inp:focus{border-color:#1E62D0;box-shadow:0 0 0 3px rgba(30,98,208,.15)}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.cell{height:28px;border-radius:5px;font-size:10px;font-weight:700;line-height:28px;text-align:center;overflow:hidden;white-space:nowrap;cursor:pointer;border:1px solid transparent;padding:0 2px;letter-spacing:-0.2px}
+.cell.empty{background:#f1f5f9;border-color:#e2e8f0;color:#cbd5e1;font-weight:400}
+.cell.empty:hover{background:#dbeafe}
+.cell.empty.target{background:#dbeafe;border:1.5px dashed #1E62D0;color:#1E62D0}
+.cell.v-plate{background:#ea580c;color:#fff;border-color:#c2410c}
+.cell.v-vin{background:#2563eb;color:#fff;border-color:#1d4ed8}
+.wchip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid transparent;transition:.15s}
+.wchip.v-plate{background:#ffedd5;color:#9a3412;border-color:#fdba74}
+.wchip.v-vin{background:#dbeafe;color:#1e40af;border-color:#93c5fd}
+.wchip.selected{outline:2.5px solid #13294B;transform:scale(1.04)}
+.g0{background:#d7f2e0;color:#14653a;border-color:#a8dfbc}
+.g1{background:#fdf0bf;color:#7a5a00;border-color:#f1d97a}
+.g2{background:#fcd9b0;color:#8a4300;border-color:#f3b676}
+.g3{background:#f8c4c4;color:#9b1c1c;border-color:#ee9a9a}
+.gx{background:#e5e7eb;color:#374151;border-color:#cbd0d8}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th{background:#f1f5f9;text-align:left;padding:9px 10px;font-weight:700;color:#475569;white-space:nowrap;position:sticky;top:0;z-index:1}
+table.t td{padding:8px 10px;border-top:1px solid #eef2f6;vertical-align:middle}
+table.t tr:hover td{background:#fafcff}
+table.t tr.clickable{cursor:pointer}
+table.t tr.clickable:hover td{background:#eff6ff}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#13294B;color:#fff;padding:10px 18px;border-radius:12px;font-size:14px;z-index:120;display:none;max-width:90vw;box-shadow:0 8px 24px rgba(19,41,75,.28)}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none;margin-top:6px}
+[contenteditable]:focus{outline:2px solid #1E62D0;outline-offset:4px;border-radius:6px}
+.cell:not(.empty),.wchip{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.cell.hl{outline:3px solid #facc15;outline-offset:1px;background:#16a34a!important;color:#fff!important;animation:hlpulse 1s ease-in-out infinite;position:relative;z-index:2}
+@keyframes hlpulse{50%{box-shadow:0 0 0 6px rgba(250,204,21,.45)}}
+.cell.dragging,.wchip.dragging{opacity:.35}
+.drop-ok{outline:3px solid #16a34a!important;outline-offset:1px;background:#bbf7d0!important;color:#14532d!important}
+#dragGhost{position:fixed;z-index:110;pointer-events:none;padding:6px 12px;border-radius:10px;background:#13294B;color:#fff;font-weight:700;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,.3);transform:translate(-50%,-130%)}
+.qchip{padding:9px 14px;border-radius:999px;border:1.5px solid #cfd8e3;background:#fff;font-size:14px;font-weight:600;color:#1f2937;cursor:pointer}
+.qchip:hover{background:#eff6ff}
+.qchip.on{background:#13294B;border-color:#13294B;color:#fff}
+.qchip.go{background:#1E62D0;border-color:#1E62D0;color:#fff}
+
+/* Giao diện ERP 1 trang chủ duy nhất */
+#appShell{max-width:1200px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
+.app-topbar{position:sticky;top:0;z-index:30;height:60px;background:#fff;border-bottom:1px solid #e5ebf2;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+.brand-lockup{display:flex;align-items:center;gap:10px}
+.brand-mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#13294B,#1E62D0);color:#fff;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(30,98,208,.25)}
+.brand-title{font-size:17px;font-weight:900;letter-spacing:.04em;color:#13294B;line-height:1.1}
+.brand-sub{font-size:11px;color:#64748b;font-weight:600}
+.header-status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;padding:5px 10px;border-radius:999px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#16a34a}
+
+.workspace-head{padding:14px 16px;background:#fff;border-bottom:1px solid #e5ebf2;position:relative;z-index:25}
+.global-search-wrap{position:relative;display:flex;align-items:center;border:1.5px solid #cbd5e1;border-radius:14px;background:#f8fafc;min-height:48px;transition:.15s}
+.global-search-wrap:focus-within{border-color:#1E62D0;background:#fff;box-shadow:0 0 0 3px rgba(30,98,208,.14)}
+.search-symbol{font-size:20px;color:#64748b;padding:0 10px 0 14px}
+.global-search-wrap input{flex:1;min-width:0;border:0;background:transparent;font-size:16px;font-weight:600;color:#0f172a;outline:none;padding:10px 4px}
+.global-search-wrap input::placeholder{color:#94a3b8;font-weight:400;font-size:14px}
+.search-clear{width:38px;height:38px;border:0;background:transparent;color:#64748b;font-size:22px;cursor:pointer}
+.search-suggestions{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:40;background:#fff;border:1px solid #cbd5e1;border-radius:14px;box-shadow:0 12px 30px rgba(15,23,42,.16);max-height:60vh;overflow:auto}
+
+.nav-pills{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-top:12px}
+.nav-pill.scan{background:#13294B;border-color:#13294B;color:#fff}
+.nav-pill.scan:hover{background:#1c3a6b}
+.nav-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;color:#1e293b;font-size:12px;font-weight:700;cursor:pointer;transition:.15s;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.nav-pill:hover{background:#f1f5f9;border-color:#cbd5e1}
+.nav-pill.active{background:#1E62D0;border-color:#1E62D0;color:#fff;box-shadow:0 3px 10px rgba(30,98,208,.25)}
+.nav-pill .np-ico{font-size:18px;line-height:1}
+@media(max-width:760px){.report-chart-row{grid-template-columns:minmax(0,1fr)!important}.report-chart-card{min-height:420px!important}.report-chart-plot{min-height:320px!important;overflow-x:auto}.report-chart-plot>div{min-width:22px}}
+@media(max-width:640px){
+  html,body{min-height:100%;height:auto;overscroll-behavior-y:contain}
+  #appShell{min-height:100vh;min-height:100dvh;width:100%;overflow-x:hidden}
+  .app-topbar{height:52px;min-height:52px;padding:0 9px;gap:6px}
+  .brand-lockup{gap:7px;min-width:0}
+  .brand-mark{width:34px;height:34px;min-width:34px;border-radius:10px;font-size:14px}
+  .brand-title{font-size:14px;letter-spacing:.01em}
+  .brand-sub{font-size:9px;white-space:nowrap}
+  .header-status{font-size:10px;padding:4px 6px;gap:4px;white-space:nowrap}
+  #firebaseOpenBtn{font-size:11px;padding:5px 7px;white-space:nowrap}
+  #homeToolbar{position:sticky!important;top:52px!important;padding:8px 9px!important;z-index:35}
+  #homeToolbar>.flex.items-center{gap:5px!important;margin-bottom:7px!important}
+  .global-search-wrap{min-height:40px;border-radius:10px;min-width:0}
+  .search-symbol{font-size:16px;padding:0 6px 0 9px}
+  .global-search-wrap input{font-size:16px;padding:7px 2px}
+  .global-search-wrap input::placeholder{font-size:12px}
+  .search-clear{width:30px;height:32px;font-size:20px}
+  #homeToolbar .nav-pill{min-width:42px!important;padding:5px 6px!important;border-radius:9px;font-size:10px;gap:2px;white-space:nowrap}
+  #homeToolbar .nav-pill .np-ico{font-size:15px}
+  #menuToggle{font-size:19px!important;padding:5px 8px!important;min-width:34px}
+  #homeToolbar>div.grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important;max-width:none!important}
+  #homeToolbar .inp{min-width:0;width:100%;height:33px;min-height:33px;padding:5px 7px;font-size:11px;line-height:1.2;border-radius:8px;background-position:right 5px center}
+  #homeToolbar select.inp{padding-right:20px;text-overflow:ellipsis;white-space:nowrap}
+  #homeToolbar input[type=date].inp{font-size:11px;padding-left:6px;padding-right:3px}
+  main.flex-1{padding:8px!important;min-width:0}
+  #histTableWrap{max-height:calc(100dvh - 235px)!important;max-height:calc(100vh - 235px)!important;overflow:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .nav-pills{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .nav-pill.scan{grid-column:1/-1;flex-direction:row;gap:8px;font-size:14px}
+}
+@media(max-width:380px){
+  .brand-sub{display:none}
+  #firebaseOpenBtn{font-size:10px;padding:4px 5px}
+  #homeToolbar .nav-pill{min-width:37px!important;padding:5px 4px!important;font-size:9px}
+  #homeToolbar .inp{font-size:10px;padding-left:5px;padding-right:5px}
+}
+#modal{z-index:90}
+#modalBody{overscroll-behavior:contain}
+button{-webkit-tap-highlight-color:transparent}
+</style>
+</head>
+<body>
+<div id="appShell">
+  <header class="app-topbar">
+    <div class="brand-lockup">
+      <div class="brand-mark">34</div>
+      <div>
+        <div class="brand-title">BÃI XE 34</div>
+        <div class="brand-sub">HỆ THỐNG QUẢN LÝ BÃI XE ERP</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="header-status" id="syncStatus"><span class="status-dot"></span><span>Đang chạy Offline</span></div>
+      <button type="button" class="btn btn-sm" id="firebaseOpenBtn" onclick="openFirebasePanel()">☁️ Firebase</button>
+    </div>
+  </header>
+
+  <section class="workspace-head" id="homeToolbar" style="position:sticky;top:60px;z-index:35;box-shadow:0 2px 8px rgba(15,23,42,.06)">
+    <div class="flex items-center gap-2 mb-2">
+      <div class="global-search-wrap flex-1">
+        <span class="search-symbol">🔎</span>
+        <input id="globalSearch" type="text" inputmode="text" placeholder="Tìm biển số, VIN, dòng xe…" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false">
+        <button type="button" class="search-clear" onclick="clearGlobalSearch()" aria-label="Xóa tìm kiếm">×</button>
+        <div id="globalSuggest" class="search-suggestions hidden"></div>
+      </div>
+      <button type="button" class="nav-pill" onclick="openNewImportDialog()" aria-label="Nhập xe" title="Nhập xe" style="min-width:54px;padding:8px;border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8"><span class="np-ico">🚘</span><span>Nhập xe</span></button>
+      <button type="button" class="nav-pill scan" onclick="openScanPanel()" aria-label="Quét AI" title="Quét AI" style="min-width:54px;padding:8px"><span class="np-ico">📷</span><span>Quét AI</span></button>
+      <div class="relative">
+        <button type="button" class="btn" id="menuToggle" onclick="toggleMainMenu()" aria-label="Mở menu" style="font-size:22px;padding:7px 12px">☰</button>
+        <div id="mainMenu" class="hidden absolute right-0 top-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl p-2" style="min-width:210px;z-index:60">
+          <button class="w-full text-left p-2 rounded-lg hover:bg-slate-100 font-semibold" onclick="setTab('hist');toggleMainMenu(false)">🏠 Trang chủ</button>
+          <button class="w-full text-left p-2 rounded-lg hover:bg-slate-100" onclick="setTab('dash');toggleMainMenu(false)">🗺️ Sơ đồ bãi xe</button>
+          <button class="w-full text-left p-2 rounded-lg hover:bg-slate-100" onclick="setTab('report');toggleMainMenu(false)">📊 Báo cáo</button>
+          <button class="w-full text-left p-2 rounded-lg hover:bg-slate-100" onclick="setTab('settings');toggleMainMenu(false)">⚙️ Cài đặt / Excel / Sao lưu</button>
+          <button class="w-full text-left p-2 rounded-lg hover:bg-slate-100" onclick="openFirebasePanel();toggleMainMenu(false)">☁️ Firebase</button>
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" style="max-width:760px">
+      <select id="filterDepot" class="inp"><option value="">Tất cả DEPOT</option></select>
+      <select id="filterCvdv" class="inp"><option value="">Tất cả CVDV PHỤ TRÁCH</option></select>
+      <select id="ht" class="inp"><option value="">Trạng thái: tất cả</option><option value="in">Trong bãi</option><option value="out">Đã xuất</option></select>
+      <input type="date" id="hf" class="inp" title="Từ ngày">
+      <input type="date" id="hto" class="inp" title="Đến ngày">
+    </div>
+  </section>
+
+  <main class="flex-1 p-3 sm:p-5">
+    <div id="actionPanel" class="hidden card p-3 sm:p-4 mb-4 border-2 border-blue-200 bg-blue-50/30"></div>
+    <section id="tab-dash" class="hidden"><div id="dashBox"></div></section>
+    <section id="tab-hist"><div id="histBox"></div></section>
+    <section id="tab-report" class="hidden"><div id="reportBox"></div></section>
+    <section id="tab-settings" class="hidden"><div id="settingsBox"></div></section>
+  </main>
+</div>
+
+<div id="modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 p-3">
+  <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[92dvh] overflow-auto shadow-2xl" id="modalBody"></div>
+</div>
+<div id="firebasePanel" class="fixed inset-0 hidden items-center justify-center bg-black/50 p-3" style="z-index:100">
+  <div class="bg-white rounded-2xl w-full max-w-md p-4 shadow-2xl">
+    <div class="flex items-center justify-between mb-2">
+      <b class="text-lg text-navy">☁️ Kết nối Firebase</b>
+      <button type="button" class="btn btn-sm" onclick="closeFirebasePanel()">✕</button>
+    </div>
+    <p class="text-xs text-slate-500 mb-3">Dữ liệu vẫn lưu trên máy bằng IndexedDB. Khi đăng nhập, ứng dụng đồng bộ dữ liệu lên Firebase Realtime Database.</p>
+    <div id="firebaseSignedOut">
+      <label class="text-sm font-semibold block mb-1" for="fbEmail">Email quản trị</label>
+      <input id="fbEmail" class="inp mb-2" type="email" autocomplete="username" placeholder="Email đã tạo trong Firebase Authentication">
+      <label class="text-sm font-semibold block mb-1" for="fbPassword">Mật khẩu</label>
+      <input id="fbPassword" class="inp mb-3" type="password" autocomplete="current-password" placeholder="Mật khẩu Firebase">
+      <button type="button" class="btn btn-primary w-full" id="fbLoginBtn" onclick="firebaseLogin()">Đăng nhập và đồng bộ</button>
+      <p class="text-xs text-slate-500 mt-2">Tài khoản phải được tạo trước trong Firebase Console → Authentication → Users.</p>
+    </div>
+    <div id="firebaseSignedIn" class="hidden">
+      <div class="rounded-xl bg-green-50 border border-green-200 p-3 text-sm mb-3">
+        <div class="font-bold text-green-800">Đã đăng nhập Firebase</div>
+        <div id="fbUserEmail" class="text-green-700 break-all"></div>
+        <div id="fbSyncDetail" class="text-xs text-green-700 mt-1">Đang chuẩn bị đồng bộ…</div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" class="btn btn-primary" onclick="firebaseSyncNow()">↻ Đồng bộ ngay</button>
+        <button type="button" class="btn" onclick="firebaseLogout()">Đăng xuất</button>
+      </div>
+      <div class="rounded-xl border border-blue-200 bg-blue-50 p-3 mt-3">
+        <div class="flex items-center justify-between gap-2"><b class="text-sm text-navy">📊 Theo dõi băng thông & dung lượng Firebase</b><button type="button" class="btn btn-sm" onclick="renderFirebaseUsage()">Làm mới</button></div>
+        <div id="fbUsageSummary" class="text-xs text-slate-600 mt-2">Đang tính dung lượng…</div>
+        <div id="fbUsageLog" class="text-[11px] text-slate-500 mt-2 max-h-28 overflow-auto"></div>
+        <p class="text-[10px] text-slate-500 mt-2">Số liệu trong ứng dụng là ước tính theo kích thước JSON của các lần đọc/ghi mà ứng dụng ghi nhận; không phải bộ đếm lưu lượng mạng thực tế và có thể lệch do overhead, giao thức realtime hoặc thiết bị khác. Nhật ký lưu riêng trên trình duyệt/thiết bị này. Đối chiếu số chính thức tại Firebase Console → Realtime Database → Usage. Gói Spark hiện có 1 GB lưu trữ và 10 GB tải xuống/tháng.</p>
+      </div>
+    </div>
+    <div id="fbError" class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-2 mt-3"></div>
+    <div class="text-[11px] text-slate-400 mt-3">Không chia sẻ mật khẩu Firebase. Chỉ đăng nhập trên thiết bị tin cậy.</div>
+  </div>
+</div>
+<div id="scanPanel" class="fixed inset-0 hidden items-center justify-center bg-black/60 p-2" style="z-index:95">
+  <div class="bg-white rounded-2xl w-full max-w-lg max-h-[96dvh] overflow-auto shadow-2xl p-3 sm:p-4">
+    <div class="flex items-center justify-between mb-2">
+      <b class="text-lg text-navy">📷 Quét xe bằng AI</b>
+      <button type="button" class="btn btn-sm" onclick="closeScanPanel()" aria-label="Đóng">✕</button>
+    </div>
+    <div id="scanKeyBox" class="hidden rounded-xl border border-amber-200 bg-amber-50 p-3 mb-2">
+      <label class="text-sm font-semibold block mb-1" for="scanKeyInp">Gemini API key (nhập 1 lần trên mỗi thiết bị)</label>
+      <div class="flex gap-2"><input id="scanKeyInp" type="password" class="inp" placeholder="Dán key vào đây" autocomplete="off"><button type="button" class="btn btn-primary" onclick="saveGeminiKey('scanKeyInp')">Lưu</button></div>
+    </div>
+    <div class="relative rounded-xl overflow-hidden bg-slate-900" style="aspect-ratio:4/3;max-height:48dvh;width:100%">
+      <video id="scanVideo" class="w-full h-full object-contain" autoplay playsinline muted></video>
+      <img id="scanPreview" class="hidden w-full h-full object-contain" alt="Ảnh xe vừa chụp">
+      <div id="scanCamHint" class="hidden absolute inset-0 flex items-center justify-center text-center text-sm text-slate-200 p-4"></div>
+      <div id="scanLoading" class="hidden absolute inset-0 flex items-center justify-center bg-black/60 text-white font-bold animate-pulse">🤖 AI đang nhận diện…</div>
+    </div>
+    <button type="button" id="scanShootBtn" class="btn btn-primary w-full mt-2" style="padding:12px" onclick="captureAndScan()" disabled>📸 Chụp &amp; nhận diện</button>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+      <button type="button" class="btn btn-sm" onclick="document.getElementById('scanFileCam').click()">📱 Chụp bằng máy ảnh</button>
+      <button type="button" class="btn btn-sm" onclick="document.getElementById('scanFilePick').click()">🖼️ Chọn ảnh</button>
+      <button type="button" class="btn btn-sm" onclick="switchCamera()">🔄 Đổi camera</button>
+      <button type="button" class="btn btn-sm" onclick="resetScan()">↩ Chụp lại</button>
+    </div>
+    <button type="button" class="btn btn-sm w-full mt-2" onclick="SCAN.image?analyzeScan():toast('Hãy chụp hoặc chọn ảnh trước')">🤖 Nhận diện lại</button>
+    <div id="scanMsg" class="hidden"></div>
+    <div id="scanResult" class="hidden space-y-2 mt-3 pt-3 border-t border-slate-200"></div>
+    <input type="file" id="scanFileCam" accept="image/*" capture="environment" class="hidden">
+    <input type="file" id="scanFilePick" accept="image/*" class="hidden">
+  </div>
+</div>
+<div id="toast"></div>
+<input type="file" id="fileJson" accept=".json,application/json" class="hidden">
+<input type="file" id="fileXlsx" accept=".xlsx" class="hidden">
+<input type="file" id="fileOpsXlsx" accept=".xlsx" class="hidden">
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script>
+/* ================== TIỆN ÍCH ================== */
+// Firebase Web SDK (Realtime Database + Email/Password Authentication)
+const firebaseConfig = {
+  apiKey: "AIzaSyDrMV8t3UTbanAsX5kvbvd6ft6kMxcTS6s",
+  authDomain: "new-erp-608f6.firebaseapp.com",
+  databaseURL: "https://new-erp-608f6-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "new-erp-608f6",
+  storageBucket: "new-erp-608f6.firebasestorage.app",
+  messagingSenderId: "810747632401",
+  appId: "1:810747632401:web:53951e1b5579189f2b4ab0",
+  measurementId: "G-YE2DVXP896"
+};
+let firebaseApp=null, firebaseAuth=null, firebaseDb=null, firebaseUser=null;
+let cloudReady=false, cloudApplying=false, cloudTimer=null, cloudListener=null;
+const CLOUD_STATE_PATH = uid => `users/${uid}/erp_bai_xe_34/state`;
+const FB_USAGE_KEY='qlbx34_firebase_usage_v1';
+const FB_FREE_DOWNLOAD=10*1024**3; // Spark: 10 GB tải xuống/tháng
+const FB_FREE_STORAGE=1*1024**3;  // Spark: 1 GB dữ liệu lưu trữ
+function fbByteSize(value){
+  try{return new TextEncoder().encode(typeof value==='string'?value:JSON.stringify(value)).length;}
+  catch(e){return new Blob([typeof value==='string'?value:JSON.stringify(value)]).size;}
+}
+function fbUsageRead(){
+  try{
+    const v=JSON.parse(localStorage.getItem(FB_USAGE_KEY)||'{"events":[]}');
+    return {events:Array.isArray(v.events)?v.events:[]};
+  }catch(e){return {events:[]};}
+}
+function fbUsageRecord(kind,label,bytes,detail=''){
+  const u=fbUsageRead();
+  u.events.push({at:Date.now(),kind,label:String(label||''),bytes:Math.max(0,Number(bytes)||0),detail:String(detail||'')});
+  // Giữ tối đa 2.000 sự kiện gần nhất để lịch sử đo không phình lớn.
+  u.events=u.events.slice(-2000);
+  try{localStorage.setItem(FB_USAGE_KEY,JSON.stringify(u));}catch(e){console.warn('[Firebase usage] Không lưu được nhật ký đo trên thiết bị.',e);}
+  renderFirebaseUsage();
+}
+function fbFmtBytes(n){
+  n=Math.max(0,Number(n)||0);
+  if(n<1024)return n.toFixed(0)+' B';
+  if(n<1048576)return (n/1024).toFixed(1)+' KB';
+  if(n<1073741824)return (n/1048576).toFixed(2)+' MB';
+  return (n/1073741824).toFixed(3)+' GB';
+}
+function fbLocalMonthKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
+function renderFirebaseUsage(){
+  const box=document.getElementById('fbUsageSummary');if(!box)return;
+  const events=fbUsageRead().events,now=new Date(),month=fbLocalMonthKey(now);
+  const cur=events.filter(x=>fbLocalMonthKey(new Date(x.at))===month);
+  const sum=(kind,list=cur)=>list.filter(x=>x.kind===kind).reduce((a,x)=>a+(Number(x.bytes)||0),0);
+  const up=sum('up'),down=sum('down'),daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const elapsedDays=Math.max(1,now.getDate());
+  const projectedUp=up/elapsedDays*daysInMonth,projectedDown=down/elapsedDays*daysInMonth;
+  const stored=fbByteSize(S||{}),downPct=Math.min(100,down/FB_FREE_DOWNLOAD*100),projectedPct=projectedDown/FB_FREE_DOWNLOAD*100,storedPct=Math.min(100,stored/FB_FREE_STORAGE*100);
+  const upCount=cur.filter(x=>x.kind==='up').length,downCount=cur.filter(x=>x.kind==='down').length;
+  const status=projectedPct>=95?'Gần chạm hạn mức tải xuống':projectedPct>=80?'Cần theo dõi tải xuống':'Trong ngưỡng theo dõi';
+  const statusColor=projectedPct>=95?'#b91c1c':projectedPct>=80?'#b45309':'#15803d';
+  box.innerHTML=`
+    <div class="text-[10px] text-slate-500 mb-2">Tháng ${month} · nhật ký ước tính trên thiết bị này</div>
+    <div class="grid grid-cols-2 gap-2">
+      <div class="rounded-lg bg-white p-2"><span class="text-slate-500">Tải lên đã ghi nhận</span><div class="font-bold text-navy">${fbFmtBytes(up)}</div><div class="text-[10px]">${upCount} lần ghi dữ liệu</div></div>
+      <div class="rounded-lg bg-white p-2"><span class="text-slate-500">Tải xuống đã ghi nhận</span><div class="font-bold text-navy">${fbFmtBytes(down)}</div><div class="text-[10px]">${downCount} lần nhận dữ liệu</div></div>
+      <div class="rounded-lg bg-white p-2"><span class="text-slate-500">Dự báo tải lên cuối tháng</span><div class="font-bold">${fbFmtBytes(projectedUp)}</div><div class="text-[10px]">Tham khảo, không phải hạn mức Spark</div></div>
+      <div class="rounded-lg bg-white p-2"><span class="text-slate-500">Dự báo tải xuống cuối tháng</span><div class="font-bold">${fbFmtBytes(projectedDown)}</div><div class="text-[10px]">Hạn mức Spark: 10 GB/tháng</div></div>
+    </div>
+    <div class="mt-3"><div class="flex justify-between gap-2 text-[10px]"><b>Tải xuống tháng này</b><b>${downPct.toFixed(2)}% / 10 GB</b></div><div class="mt-1 h-2 rounded bg-white overflow-hidden"><div style="height:100%;width:${downPct}%;background:${downPct>=95?'#dc2626':downPct>=80?'#d97706':'#16a34a'}"></div></div></div>
+    <div class="mt-2"><div class="flex justify-between gap-2 text-[10px]"><b>Dự báo cuối tháng</b><b>${projectedPct.toFixed(2)}% / 10 GB</b></div><div class="mt-1 h-2 rounded bg-white overflow-hidden"><div style="height:100%;width:${Math.min(100,projectedPct)}%;background:${projectedPct>=95?'#dc2626':projectedPct>=80?'#d97706':'#16a34a'}"></div></div><div class="text-[10px] mt-1" style="color:${statusColor}">${status}</div></div>
+    <div class="mt-3 rounded-lg bg-white p-2"><div class="flex justify-between text-[10px]"><b>Kích thước dữ liệu ERP hiện tại (ước tính)</b><b>${fbFmtBytes(stored)} / 1 GB</b></div><div class="mt-1 h-2 rounded bg-slate-100 overflow-hidden"><div style="height:100%;width:${storedPct}%;background:${storedPct>=90?'#dc2626':storedPct>=75?'#d97706':'#2563eb'}"></div></div><div class="text-[10px] text-slate-500 mt-1">${storedPct.toFixed(2)}% hạn mức lưu trữ Spark, chưa gồm overhead của Firebase</div></div>
+    <div class="text-[10px] text-slate-500 mt-2">Còn lại theo nhật ký tải xuống: ${fbFmtBytes(Math.max(0,FB_FREE_DOWNLOAD-down))}. Dự báo tính tuyến tính theo số ngày đã qua trong tháng.</div>`;
+  const log=document.getElementById('fbUsageLog');
+  if(log){log.innerHTML=events.slice(-10).reverse().map(x=>`<div class="flex justify-between gap-2 border-t border-blue-100 py-1"><span>${new Date(x.at).toLocaleString('vi-VN')} · ${esc(x.label)}</span><b>${x.kind==='up'?'↑':'↓'} ${fbFmtBytes(x.bytes)}</b></div>`).join('')||'Chưa ghi nhận thao tác Firebase nào trên thiết bị này.';}
+}
+
+function initFirebase(){
+  if(firebaseApp) return;
+  if(!window.firebase || !firebase.app) throw new Error('Không tải được Firebase SDK. Kiểm tra kết nối Internet.');
+  firebaseApp=firebase.initializeApp(firebaseConfig);
+  firebaseAuth=firebase.auth();
+  firebaseDb=firebase.database();
+  firebaseAuth.onAuthStateChanged(async user=>{
+    firebaseUser=user||null;
+    cloudReady=false;
+    if(user){
+      updateFirebaseUI('Đã đăng nhập · đang đồng bộ');
+      try{await connectCloudState();}
+      catch(e){showFirebaseError(firebaseErrorText(e));updateFirebaseUI('Lỗi đồng bộ');}
+    }else{
+      if(cloudListener && firebaseDb){cloudListener.off();cloudListener=null;}
+      updateFirebaseUI('Đang chạy Offline');
+    }
+  });
+}
+function firebaseErrorText(e){
+  const c=e&&e.code||'';
+  const m=e&&e.message||String(e);
+  if(c.includes('permission-denied')) return 'Firebase từ chối quyền. Kiểm tra Realtime Database Rules và trạng thái đăng nhập.';
+  if(c.includes('network')) return 'Không có kết nối mạng. Ứng dụng vẫn lưu dữ liệu Offline.';
+  if(c.includes('invalid-credential')||c.includes('wrong-password')||c.includes('user-not-found')) return 'Email hoặc mật khẩu không đúng, hoặc tài khoản chưa được tạo trong Firebase Authentication.';
+  return m;
+}
+function showFirebaseError(msg){
+  const el=document.getElementById('fbError');
+  if(el){el.textContent=msg;el.classList.remove('hidden');}
+  console.error('[Firebase]',msg);
+}
+function updateFirebaseUI(msg){
+  const status=document.getElementById('syncStatus');
+  if(status){
+    status.innerHTML=`<span class="status-dot"></span><span>${esc(msg)}</span>`;
+    status.style.color=firebaseUser?'#15803d':'#64748b';
+    status.style.background=firebaseUser?'#f0fdf4':'#f1f5f9';
+  }
+  const signedIn=document.getElementById('firebaseSignedIn');
+  const signedOut=document.getElementById('firebaseSignedOut');
+  if(signedIn&&signedOut){
+    signedIn.classList.toggle('hidden',!firebaseUser);
+    signedOut.classList.toggle('hidden',!!firebaseUser);
+    const em=document.getElementById('fbUserEmail');
+    if(em)em.textContent=firebaseUser?.email||'Tài khoản đã xác thực';
+    if(firebaseUser)renderFirebaseUsage();
+  }
+}
+function openFirebasePanel(){
+  try{initFirebase();}catch(e){showFirebaseError(firebaseErrorText(e));}
+  const p=document.getElementById('firebasePanel');
+  p.classList.remove('hidden');p.classList.add('flex');
+  renderFirebaseUsage();
+  const er=document.getElementById('fbError');if(er)er.classList.add('hidden');
+}
+function closeFirebasePanel(){
+  const p=document.getElementById('firebasePanel');
+  p.classList.add('hidden');p.classList.remove('flex');
+}
+async function firebaseLogin(){
+  try{
+    initFirebase();
+    const email=document.getElementById('fbEmail').value.trim();
+    const password=document.getElementById('fbPassword').value;
+    if(!email||!password) throw new Error('Vui lòng nhập email và mật khẩu.');
+    const b=document.getElementById('fbLoginBtn');b.disabled=true;b.textContent='Đang đăng nhập…';
+    await firebaseAuth.signInWithEmailAndPassword(email,password);
+    document.getElementById('fbPassword').value='';
+  }catch(e){showFirebaseError(firebaseErrorText(e));}
+  finally{const b=document.getElementById('fbLoginBtn');if(b){b.disabled=false;b.textContent='Đăng nhập và đồng bộ';}}
+}
+async function firebaseLogout(){
+  if(!firebaseAuth)return;
+  try{await firebaseAuth.signOut();updateFirebaseUI('Đang chạy Offline');}
+  catch(e){showFirebaseError(firebaseErrorText(e));}
+}
+async function connectCloudState(){
+  if(!firebaseUser||!firebaseDb||!S)return;
+  const ref=firebaseDb.ref(CLOUD_STATE_PATH(firebaseUser.uid));
+  if(cloudListener){cloudListener.off();cloudListener=null;}
+  const snap=await ref.once('value');
+  if(snap.exists()) fbUsageRecord('down','Đọc dữ liệu khi đăng nhập',fbByteSize(snap.val()));
+  if(snap.exists()){
+    const remote=snap.val();
+    if(remote&&remote.vehicles&&remote.visits&&remote.settings){
+      cloudApplying=true;
+      S=remote;
+      await idbPutState();
+      cloudApplying=false;
+      refresh();
+      updateFirebaseUI('Đã tải dữ liệu từ Cloud');
+    }else{
+      throw new Error('Dữ liệu trên Firebase không đúng cấu trúc ERP; chưa ghi đè dữ liệu hiện tại.');
+    }
+  }else{
+    if(S.isDemoSeed){
+      cloudReady=false;
+      updateFirebaseUI('Cloud trống · chưa tải dữ liệu mẫu');
+      showFirebaseError('Firebase đang trống và ứng dụng đang dùng dữ liệu mẫu. Hãy nhập dữ liệu thực tế từ Excel/JSON trước, sau đó bấm “Đồng bộ ngay” để đưa dữ liệu lên Cloud. Không tự động tải dữ liệu mẫu lên Firebase.');
+      return;
+    }
+    await ref.set(S);
+    fbUsageRecord('up','Tải dữ liệu ban đầu lên Cloud',fbByteSize(S));
+    updateFirebaseUI('Đã tải dữ liệu hiện tại lên Cloud');
+  }
+  cloudReady=true;
+  cloudListener=ref;
+  cloudListener.on('value',async snapshot=>{
+    if(!cloudReady||cloudApplying||!snapshot.exists())return;
+    const remote=snapshot.val();
+    if(!remote||!remote.vehicles||!remote.visits||!remote.settings)return;
+    if(Number(remote.updatedAt||0)>Number(S.updatedAt||0)){
+      fbUsageRecord('down','Nhận dữ liệu qua đồng bộ thời gian thực',fbByteSize(remote));
+      cloudApplying=true;
+      S=remote;
+      await idbPutState();
+      refresh();
+      cloudApplying=false;
+      updateFirebaseUI('Đã nhận cập nhật từ thiết bị khác');
+    }
+  },err=>{showFirebaseError(firebaseErrorText(err));updateFirebaseUI('Lỗi quyền Cloud');});
+}
+function queueFirebaseSync(){
+  if(!firebaseUser||!cloudReady||cloudApplying)return;
+  clearTimeout(cloudTimer);
+  cloudTimer=setTimeout(async()=>{
+    try{
+      const payload=JSON.parse(JSON.stringify(S));
+      await firebaseDb.ref(CLOUD_STATE_PATH(firebaseUser.uid)).set(payload);
+      fbUsageRecord('up','Ghi đồng bộ tự động',fbByteSize(payload));
+      updateFirebaseUI('Đã đồng bộ Cloud');
+    }catch(e){
+      showFirebaseError(firebaseErrorText(e));
+      updateFirebaseUI('Lưu máy · Cloud lỗi');
+    }
+  },700);
+}
+async function firebaseSyncNow(){
+  if(!firebaseUser){showFirebaseError('Hãy đăng nhập Firebase trước.');return;}
+  try{
+    await firebaseDb.ref(CLOUD_STATE_PATH(firebaseUser.uid)).set(S);
+    fbUsageRecord('up','Ghi đồng bộ thủ công',fbByteSize(S));
+    await connectCloudState();
+    updateFirebaseUI('Đã đồng bộ Cloud');
+    const d=document.getElementById('fbSyncDetail');if(d)d.textContent='Đồng bộ thành công lúc '+new Date().toLocaleString('vi-VN');
+  }catch(e){showFirebaseError(firebaseErrorText(e));}
+}
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const p2=n=>String(n).padStart(2,'0');
+const isoOf=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+const todayISO=()=>isoOf(new Date());
+const toD=iso=>{const [y,m,d]=iso.split('-').map(Number);return new Date(Date.UTC(y,m-1,d));};
+const addDays=(iso,n)=>{const d=toD(iso);d.setUTCDate(d.getUTCDate()+n);return `${d.getFullYear()}-${p2(d.getUTCMonth()+1)}-${p2(d.getUTCDate())}`;};
+const diff=(a,b)=>Math.round((toD(b)-toD(a))/864e5);
+const fmt=iso=>iso?iso.split('-').reverse().join('/'):'0 (Thiếu ngày)';
+const shortD=iso=>iso?iso.slice(8)+'/'+iso.slice(5,7):'';
+const mondayOf=iso=>addDays(iso,-((toD(iso).getUTCDay()+6)%7));
+const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'d').toLowerCase().trim();
+const cleanId=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const isFullPlate=s=>/^\d{2}[A-Z]{1,2}\d{4,6}$/.test(s);
+const isShortPlate=s=>/^\d{4,5}$/.test(s);
+const isPlate=s=>isFullPlate(s)||isShortPlate(s);
+function idTypeLabel(id){
+  if(!id) return 'Chưa rõ mã';
+  if(isFullPlate(id)) return 'Xe có biển số';
+  if(isShortPlate(id)) return 'Biển thiếu đầu (5 số)';
+  if(/^\d{6}$/.test(id)) return 'Xe mới 6 số VIN';
+  return 'Mã nhận dạng';
+}
+function nextTempKey(){
+  let n=1;
+  while(S.vehicles['CHUA-RO-'+p2(n)]) n++;
+  return 'CHUA-RO-'+p2(n);
+}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2600);}
+function countBy(arr,fn){const m={};arr.forEach(x=>{const k=fn(x);m[k]=(m[k]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));}
+
+/* ================== TẢI FILE / CHIA SẺ CHUẨN APK ================== */
+async function saveOrShareBlob(blob, filename){
+  // APK QLBX34: Android native bridge lưu trực tiếp vào thư mục Downloads/QLBX34.
+  // Web Page vẫn dùng luồng tải file trình duyệt như trước.
+  const androidFile=window.AndroidFile;
+  if(androidFile && typeof androidFile.saveFile==='function'){
+    try{
+      const base64=await new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');
+        reader.onerror=()=>reject(reader.error||new Error('Không đọc được dữ liệu file'));
+        reader.readAsDataURL(blob);
+      });
+      if(!base64)throw new Error('File xuất ra đang rỗng.');
+      const uri=androidFile.saveFile(filename,blob.type||'application/octet-stream',base64);
+      if(!uri)throw new Error('Android chưa xác nhận lưu file.');
+      return true;
+    }catch(e){
+      console.error('Android file save failed:',e);
+      toast('Không thể lưu file vào điện thoại: '+(e.message||e));
+      return false;
+    }
+  }
+  const cap=window.Capacitor;
+  if(cap && typeof cap.isNativePlatform==='function' && cap.isNativePlatform()){
+    try{
+      const FileExport=cap.Plugins && cap.Plugins.FileExport;
+      if(FileExport && typeof FileExport.saveFile==='function'){
+      const base64=await new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');
+        reader.onerror=()=>reject(reader.error||new Error('Không đọc được dữ liệu file'));
+        reader.readAsDataURL(blob);
+      });
+      if(!base64)throw new Error('File xuất ra đang rỗng.');
+      const saved=await FileExport.saveFile({
+        filename,
+        mimeType:blob.type||'application/octet-stream',
+        data:base64
+      });
+      if(!saved||!saved.uri)throw new Error('Android chưa xác nhận lưu file.');
+      return true;
+      }
+      // APK không có plugin lưu tệp: thử bảng chia sẻ Android trước khi tải bằng trình duyệt.
+      if(navigator.canShare && navigator.share){
+        const file=new File([blob],filename,{type:blob.type||'application/octet-stream'});
+        if(navigator.canShare({files:[file]})){await navigator.share({files:[file],title:filename});return true;}
+      }
+    }catch(e){
+      if(e && (e.name==='AbortError'||String(e.message||'').toLowerCase().includes('cancel')||String(e.message||'').toLowerCase().includes('hủy')))return false;
+      console.error('Native file export failed:',e);
+      toast('Không thể lưu file vào điện thoại: '+(e.message||e));
+      return false;
+    }
+  }
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},10000);
+  return true;
+}
+
+/* ================== EXCEL (.XLSX) THUẦN JS — CHẠY OFFLINE TRÊN APK ================== */
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(u){let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRC[(c^u[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0;}
+function zipStore(files){
+  const enc=new TextEncoder(),chunks=[],cd=[];let off=0;const n=new Date();
+  const dt=(((n.getFullYear()-1980)<<9)|((n.getMonth()+1)<<5)|n.getDate())&0xffff,tm=((n.getHours()<<11)|(n.getMinutes()<<5)|(n.getSeconds()>>1))&0xffff;
+  for(const f of files){const nm=enc.encode(f.name),d=typeof f.data==='string'?enc.encode(f.data):f.data,crc=crc32(d);
+    const lh=new DataView(new ArrayBuffer(30));lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(10,tm,true);lh.setUint16(12,dt,true);lh.setUint32(14,crc,true);lh.setUint32(18,d.length,true);lh.setUint32(22,d.length,true);lh.setUint16(26,nm.length,true);
+    chunks.push(new Uint8Array(lh.buffer),nm,d);
+    const ch=new DataView(new ArrayBuffer(46));ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(12,tm,true);ch.setUint16(14,dt,true);ch.setUint32(16,crc,true);ch.setUint32(20,d.length,true);ch.setUint32(24,d.length,true);ch.setUint16(28,nm.length,true);ch.setUint32(42,off,true);
+    cd.push(new Uint8Array(ch.buffer),nm);off+=30+nm.length+d.length;}
+  let cds=0;cd.forEach(c=>cds+=c.length);
+  const e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cds,true);e.setUint32(16,off,true);
+  return new Blob([...chunks,...cd,new Uint8Array(e.buffer)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+const xesc=s=>String(s).replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'');
+function colL(i){let s='';i++;while(i>0){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26);}return s;}
+function colIdx(ref){const m=/^([A-Z]+)/.exec(ref||'A');let n=0;for(const ch of m[1])n=n*26+ch.charCodeAt(0)-64;return n-1;}
+function buildXlsx(sheets){
+  const H='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main',RN='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+  const files=[{name:'[Content_Types].xml',data:`${H}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`},
+   {name:'_rels/.rels',data:`${H}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${RN}/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
+   {name:'xl/workbook.xml',data:`${H}<workbook xmlns="${NS}" xmlns:r="${RN}"><sheets>${sheets.map((s,i)=>`<sheet name="${xesc(s.name.replace(/[\[\]:*?\/\\]/g,'-').slice(0,31))}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`},
+   {name:'xl/_rels/workbook.xml.rels',data:`${H}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="${RN}/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length+1}" Type="${RN}/styles" Target="styles.xml"/></Relationships>`},
+   {name:'xl/styles.xml',data:`${H}<styleSheet xmlns="${NS}"><fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="13"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1E62D0"/></fill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs></styleSheet>`}];
+  sheets.forEach((s,i)=>{const hdr=s.hdr??0;
+    const rows=s.rows.map((r,ri)=>{const cells=r.map((c,ci)=>{let v=c,sty=ri===hdr?1:0;if(c&&typeof c==='object'){v=c.v;sty=c.s??sty;}if(v===null||v===undefined||v==='')return ri===hdr?`<c r="${colL(ci)}${ri+1}" s="1"/>`:'';
+      const ref=`${colL(ci)}${ri+1}`;return typeof v==='number'?`<c r="${ref}"${sty?` s="${sty}"`:''}><v>${v}</v></c>`:`<c r="${ref}"${sty?` s="${sty}"`:''} t="inlineStr"><is><t xml:space="preserve">${xesc(v)}</t></is></c>`;}).join('');
+      return `<row r="${ri+1}">${cells}</row>`;}).join('');
+    const cols=s.widths?`<cols>${s.widths.map((w,k)=>`<col min="${k+1}" max="${k+1}" width="${w}" customWidth="1"/>`).join('')}</cols>`:'';
+    files.push({name:`xl/worksheets/sheet${i+1}.xml`,data:`${H}<worksheet xmlns="${NS}">${cols}<sheetData>${rows}</sheetData></worksheet>`});});
+  return zipStore(files);
+}
+async function unzipXlsx(buf){
+  const u=new Uint8Array(buf),dv=new DataView(buf);let e=u.length-22;while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;
+  if(e<0)throw new Error('Không phải file .xlsx hợp lệ.');
+  const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const files={};
+  for(let i=0;i<n;i++){if(dv.getUint32(p,true)!==0x02014b50)break;
+    const method=dv.getUint16(p+10,true),cs=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
+    const name=new TextDecoder().decode(u.subarray(p+46,p+46+nl));p+=46+nl+el+cl;
+    const st0=lo+30+dv.getUint16(lo+26,true)+dv.getUint16(lo+28,true),data=u.subarray(st0,st0+cs);
+    files[name]=async()=>{if(method===0)return data;if(method!==8)throw new Error('File Excel dùng kiểu nén không được hỗ trợ.');if(typeof DecompressionStream==='undefined')throw new Error('WebView quá cũ để đọc file Excel nén.');
+      try{return new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());}
+      catch(e){throw new Error('Không giải nén được file Excel: '+(e.message||''));}};}
+  return files;
+}
+async function readXlsxPure(file,headerHints={}){
+  const files=await unzipXlsx(await file.arrayBuffer());const dec=new TextDecoder();
+  const txt=async n=>files[n]?dec.decode(await files[n]()):null;const P=s=>new DOMParser().parseFromString(s,'application/xml');
+  const wbx=await txt('xl/workbook.xml');if(!wbx)throw new Error('File không có workbook — không phải .xlsx hợp lệ.');
+  const wb=P(wbx),rels=P(await txt('xl/_rels/workbook.xml.rels')),rm={};
+  [...rels.getElementsByTagName('Relationship')].forEach(r=>rm[r.getAttribute('Id')]=r.getAttribute('Target'));
+  let ss=[];const sst=await txt('xl/sharedStrings.xml');
+  if(sst)ss=[...P(sst).getElementsByTagName('si')].map(si=>[...si.getElementsByTagName('t')].map(t=>t.textContent).join(''));
+  const out={};
+  for(const sh of wb.getElementsByTagName('sheet')){
+    const rid=sh.getAttribute('r:id')||sh.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id');let tg=rm[rid];if(!tg)continue;
+    tg=tg.replace(/^\//,'');const path=tg.startsWith('xl/')?tg:'xl/'+tg;const x=await txt(path);if(!x)continue;
+    const rows=[];
+    for(const r of P(x).getElementsByTagName('row')){const rn=(+r.getAttribute('r')||rows.length+1)-1;const arr=rows[rn]=[];
+      for(const c of r.getElementsByTagName('c')){const t=c.getAttribute('t');let v;
+        if(t==='inlineStr')v=[...c.getElementsByTagName('t')].map(z=>z.textContent).join('');
+        else{const ve=c.getElementsByTagName('v')[0];v=ve?ve.textContent:'';if(t==='s')v=ss[+v]??'';}
+        arr[colIdx(c.getAttribute('r'))]=v;}}
+    const nonEmpty=rows.filter(r=>r&&r.some(c=>c!==undefined&&c!==''));
+    if(!nonEmpty.length){out[sh.getAttribute('name')]=[];continue;}
+    const sheetName=sh.getAttribute('name');
+    const hint=headerHints[sheetName];
+    let headerAt=0;
+    if(hint){
+      const fold=x=>String(x??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,'d').toLowerCase().replace(/[^a-z0-9]/g,'');
+      headerAt=nonEmpty.findIndex(r=>r.some(c=>fold(c)===fold(hint)));
+      if(headerAt<0)throw new Error(`Sheet “${sheetName}” không tìm thấy dòng tiêu đề “${hint}”.`);
+    }
+    const hdr=nonEmpty[headerAt].map(h=>String(h??'').trim());
+    out[sheetName]=nonEmpty.slice(headerAt+1).map(r=>{const obj={};hdr.forEach((h,idx)=>{if(h)obj[h]=r[idx]??'';});return obj;});
+  }
+  return out;
+}
+
+/* ================== INDEXEDDB LƯU TRỮ OFFLINE 100% ================== */
+const LS='erp_bai_xe_34_v1';
+const DB_NAME='Baixe34ERP',DB_VERSION=1,DB_STORE='app';
+let dbPromise=null;
+let S;
+
+const DEF_SETTINGS=()=>({
+  statusIn:['Chờ sửa chữa','Chờ giao GSM','Lưu kho','CSM gửi','Xe mới lưu kho'],
+  statusOut:['Xe mới xuất bãi','Giao GSM','Giao khách','Đã sửa xong','CSM nhận lại'],
+  customerOutStatuses:['Giao GSM','Chuyển kho Tây Ninh'],
+  models:['VFe34','VF 5','Limo Green','VF 8','VF 7','Minio Green','Herio Green','EC Van','Dòng khác'],
+  layout:{days:5,rows:20,cols:['T','TLD','PLD','P']}
+});
+
+function openERPDB(){
+  if(dbPromise)return dbPromise;
+  dbPromise=new Promise((resolve,reject)=>{
+    const req=indexedDB.open(DB_NAME,DB_VERSION);
+    req.onupgradeneeded=e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains(DB_STORE))db.createObjectStore(DB_STORE);
+    };
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+  return dbPromise;
+}
+async function idbGetState(){
+  const db=await openERPDB();
+  return new Promise((resolve,reject)=>{
+    const r=db.transaction(DB_STORE,'readonly').objectStore(DB_STORE).get('state');
+    r.onsuccess=()=>resolve(r.result||null);
+    r.onerror=()=>reject(r.error);
+  });
+}
+async function idbPutState(){
+  try{
+    const db=await openERPDB();
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(DB_STORE,'readwrite');
+      tx.objectStore(DB_STORE).put(S,'state');
+      tx.oncomplete=resolve;
+      tx.onerror=()=>reject(tx.error);
+    });
+  }catch(e){console.error('IndexedDB save error:',e);}
+}
+
+async function load(){
+  try{S=await idbGetState();}catch(e){S=null;}
+  if(!S){
+    try{const legacy=JSON.parse(localStorage.getItem(LS)||'null');if(legacy&&legacy.visits&&legacy.vehicles)S=legacy;}catch(e){}
+  }
+  if(!S||!S.visits||!S.vehicles||!S.settings) S=sample();
+  if(S.settings&&S.settings.cloud) delete S.settings.cloud;
+  S.settings=S.settings||DEF_SETTINGS();
+  if(!Array.isArray(S.settings.customerOutStatuses)) S.settings.customerOutStatuses=['Giao GSM','Chuyển kho Tây Ninh'];
+  await idbPutState();
+}
+function save(){
+  S.updatedAt=Date.now();
+  idbPutState();
+  queueFirebaseSync();
+  refresh();
+}
+
+const veh=k=>S.vehicles[k]||{key:k,plate:k,vin:'',model:'',color:''};
+const isNewV=v=>!v.plate && /^\d{6}$/.test(v.vin||v.key||'');
+const active=()=>S.visits.filter(v=>!v.done);
+const activeOf=k=>S.visits.find(v=>v.key===k&&!v.done);
+const visitsOf=k=>S.visits.filter(v=>v.key===k).sort((a,b)=>(a.inDate||'').localeCompare(b.inDate||'')||a.id-b.id);
+
+const isValidInDate=d=>Boolean(d && String(d).trim() && String(d).trim()!=='0' && /^\d{4}-\d{2}-\d{2}$/.test(String(d).trim()));
+function firstInDateOf(k, upToDate){
+  const vs=visitsOf(k).filter(x=>!upToDate || !isValidInDate(x.inDate) || x.inDate<=upToDate);
+  if(!vs.length) return null;
+  if(vs.some(x=>!isValidInDate(x.inDate))) return null;
+  return vs[0].inDate;
+}
+function isCustomerDeliveryStatus(status){
+  const configured=S.settings.customerOutStatuses||['Giao GSM','Chuyển kho Tây Ninh'];
+  return configured.some(x=>norm(x)===norm(status));
+}
+// Ngày bắt đầu chu kỳ hiện tại: chỉ reset sau lần xuất có trạng thái giao khách.
+// Các lần xuất/nhập thông thường trong cùng chu kỳ không làm thay đổi ngày này.
+function cycleStartDateOf(key,targetVisit){
+  const vehicle=veh(key);
+  // Bản backup có trường Ngày bắt đầu chu kỳ tổng hợp. Với lượt đang tồn tại tại thời điểm nhập,
+  // ưu tiên giá trị đã được kiểm chứng từ sheet Xe trong bãi; lượt mới phát sinh sau đó vẫn tính theo lịch sử.
+  if(targetVisit && vehicle.cycleStartOverrideSet && Number(targetVisit.id)===Number(vehicle.cycleStartOverrideVisitId)){
+    return isValidInDate(vehicle.cycleStartOverride)?vehicle.cycleStartOverride:null;
+  }
+  const vs=visitsOf(key).slice().sort((a,b)=>(a.id||0)-(b.id||0));
+  let start=null,cycleStarted=false;
+  for(const x of vs){
+    if(!cycleStarted){start=isValidInDate(x.inDate)?x.inDate:null;cycleStarted=true;}
+    if(targetVisit && x.id===targetVisit.id) return start;
+    if(x.done && isCustomerDeliveryStatus(x.statusOut)){start=null;cycleStarted=false;}
+  }
+  return start;
+}
+function age(v, refDate){
+  const ref=refDate||todayISO();
+  const baseDate=cycleStartDateOf(v.key,v);
+  if(!isValidInDate(baseDate)) return null;
+  return Math.max(0, diff(baseDate, ref));
+}
+const ageGroup=a=>a===null?3:a<=10?0:a<=20?1:a<=30?2:3;
+const posLabel=p=>{if(!p)return 'Chưa có vị trí';const [d,c,r]=p.split('|');return `Dãy ${d} · ${c} · ${p2(r)}`;};
+const posDay=p=>p?p.split('|')[0]:'';
+const statIn=v=>v.statusIn||'Chưa ghi tình trạng';
+const nextId=()=>{S.seq=(S.seq||0)+1;return S.seq;};
+
+function allPositions(){const L=S.settings.layout,a=[];for(let d=1;d<=L.days;d++)L.cols.forEach(c=>{for(let r=1;r<=L.rows;r++)a.push(`${d}|${c}|${r}`);});return a;}
+function posOptions(selected,except){
+  const used=new Set(active().map(v=>v.pos).filter(Boolean));
+  const L=S.settings.layout;let h=`<option value="">— Chưa xếp vị trí —</option>`;
+  for(let d=1;d<=L.days;d++){
+    let g='';
+    L.cols.forEach(c=>{for(let r=1;r<=L.rows;r++){const p=`${d}|${c}|${r}`;if(!used.has(p)||p===except)g+=`<option value="${p}" ${p===selected?'selected':''}>Dãy ${d} · ${c} · ${p2(r)}</option>`;}});
+    h+=`<optgroup label="Dãy ${d}">${g}</optgroup>`;
+  }
+  return h;
+}
+function ageBadge(v){
+  const a=age(v);
+  if(a===null)return '<span class="badge g3" title="Ngày nhập = 0 (thiếu ngày) → tính nhóm >31 ngày">&gt;31 ngày (0)</span>';
+  return `<span class="badge g${ageGroup(a)}">${a} ngày</span>`;
+}
+
+/* ---- Dữ liệu mẫu khởi tạo lần đầu ---- */
+function sample(){
+  let seed=34;const rnd=()=>(seed=(seed*1664525+1013904223)%4294967296)/4294967296;
+  const pick=a=>a[Math.floor(rnd()*a.length)];
+  const ri=(a,b)=>a+Math.floor(rnd()*(b-a+1));
+  const T=todayISO();
+  const st={vehicles:{},visits:[],settings:DEF_SETTINGS(),notes:{},seq:0};
+  const colors=['Trắng','Đen','Xanh','Đỏ','Xám','Bạc','Cam'];
+  const mw=[['VFe34',40],['VF 5',16],['Limo Green',16],['VF 8',6],['VF 7',5],['Minio Green',5],['Herio Green',4],['EC Van',3],['Dòng khác',2]];
+  const pickModel=()=>{let r=rnd()*100;for(const [m,w] of mw){if((r-=w)<0)return m;}return 'VFe34';};
+  const prefixes=['50H','50E','51K','51H','50A','30G','51L'];
+  const parties=['Xưởng Dịch vụ','Thông/Kho','Hùng/Kho','CSM','Lan/Kinh doanh','Bảo hành','Tuấn/GSM'];
+  const notes=['','','','Kiểm tra pin','Chờ phụ tùng','Trầy cản trước','Chờ khách xác nhận'];
+  const pickIn=()=>{const r=rnd();return r<.55?'Chờ sửa chữa':r<.75?'Chờ giao GSM':r<.87?'Lưu kho':r<.95?'CSM gửi':'';};
+  const used=new Set();
+  const newPlate=()=>{let p;do{p=pick(prefixes)+String(ri(10000,99999));}while(used.has(p));used.add(p);return p;};
+  const newVin6=()=>{let p;do{p=String(ri(100000,999999));}while(used.has(p));used.add(p);return p;};
+  const mkV=(plate,vin,model,color)=>{const k=plate||vin;st.vehicles[k]={key:k,plate,vin,model,color};return k;};
+  const L=st.settings.layout;
+  let pool=[];for(let d=1;d<=L.days;d++)L.cols.forEach(c=>{for(let r=1;r<=L.rows;r++)pool.push(`${d}|${c}|${r}`);});
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  const nextIdS=()=>++st.seq;
+  const addVisit=o=>{st.visits.push(Object.assign({id:nextIdS(),done:false,outDate:null,statusOut:'',receiver:'',noteOut:'',noteIn:'',pos:'',party:'',statusIn:'',inDate:null,created:Date.now()},o));};
+  const ageList=[];
+  [0,0,0,1,1,1].forEach(a=>ageList.push(a));
+  for(let i=0;i<20;i++)ageList.push(ri(2,10));
+  for(let i=0;i<14;i++)ageList.push(ri(11,20));
+  for(let i=0;i<5;i++)ageList.push(ri(21,24));
+  for(let i=0;i<5;i++)ageList.push(ri(25,30));
+  for(let i=0;i<14;i++)ageList.push(ri(31,70));
+  for(let i=0;i<5;i++)ageList.push(null);
+  ageList.forEach((a,i)=>{
+    const isNew=(i%8===3&&a!==null&&a<=10);
+    const model=pickModel(),color=pick(colors);
+    const k=isNew?mkV('',newVin6(),model,color):mkV(newPlate(),'',model,color);
+    const pos=rnd()<.10?'':pool.pop();
+    addVisit({key:k,inDate:a===null?null:addDays(T,-a),pos,party:pick(parties),statusIn:isNew?'Xe mới lưu kho':pickIn(),noteIn:pick(notes)});
+    if(!isNew&&a!==null&&rnd()<.35){
+      const n=ri(1,2);let end=a+ri(4,15);
+      for(let j=0;j<n;j++){const o=addDays(T,-end),i2=addDays(o,-ri(3,25));addVisit({key:k,inDate:i2,outDate:o,done:true,pos:pick(pool),party:pick(parties),statusIn:pick(['Chờ sửa chữa','Lưu kho']),statusOut:pick(st.settings.statusOut),receiver:pick(parties)});end+=ri(30,60);}
+    }
+  });
+  const demo=mkV('50H12345','','VF 8','Trắng');
+  [[-55,-45],[-38,-30],[-20,-12]].forEach(([a,b])=>addVisit({key:demo,inDate:addDays(T,a),outDate:addDays(T,b),done:true,pos:pick(pool),party:'Xưởng Dịch vụ',statusIn:'Chờ sửa chữa',statusOut:'Giao khách',receiver:'Khách hàng'}));
+  for(let i=0;i<26;i++){
+    const k=mkV(newPlate(),'',pickModel(),pick(colors));
+    const out=i<7?addDays(T,-(i%6)):addDays(T,-ri(7,80));
+    const nIn=addDays(out,-ri(2,40));
+    addVisit({key:k,inDate:nIn,outDate:out,done:true,pos:pick(pool),party:pick(parties),statusIn:pick(['Chờ sửa chữa','Chờ giao GSM','Lưu kho']),noteIn:pick(notes),statusOut:pick(st.settings.statusOut),receiver:pick(parties)});
+  }
+  st.isDemoSeed=true;
+  return st;
+}
+
+/* ================== ĐIỀU HƯỚNG 1 TRANG CHỦ DUY NHẤT ================== */
+let TAB='hist';
+function toggleMainMenu(force){const m=$('#mainMenu');if(!m)return;m.classList.toggle('hidden',force===undefined?!m.classList.contains('hidden'):!force);}
+document.addEventListener('click',e=>{if(!e.target.closest('#mainMenu')&&!e.target.closest('#menuToggle'))toggleMainMenu(false);});
+function setTab(t){
+  if(!['dash','hist','report','settings'].includes(t)) t='dash';
+  TAB=t;
+  ['dash','hist','report','settings'].forEach(x=>$('#tab-'+x).classList.toggle('hidden',x!==t));
+  document.querySelectorAll('.nav-pill[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  refresh();
+}
+function refresh(){
+  if(TAB==='dash')renderDash();
+  else if(TAB==='hist')renderHist();
+  else if(TAB==='report')renderReport();
+  else if(TAB==='settings')renderSettings();
+}
+
+/* ================== MODAL & PANEL THAO TÁC ERP ================== */
+function showModal(h){$('#modalBody').innerHTML=h;$('#modal').classList.remove('hidden');$('#modal').classList.add('flex');}
+function closeModal(){$('#modal').classList.add('hidden');$('#modal').classList.remove('flex');}
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+const FORMS={};let uidc=0,pendingPos='';
+const carSvg=`<div class="w-16 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-3xl flex-none">🚙</div>`;
+function showActionPanel(html){
+  const panel=$('#actionPanel');
+  panel.classList.remove('hidden');
+  panel.innerHTML=`<div class="flex justify-between items-center mb-2 pb-1.5 border-b border-blue-200"><b class="text-sm text-navy">📋 THAO TÁC NGHIỆP VỤ BÃI XE</b><button type="button" class="btn btn-sm" onclick="closeActionPanel()">✕ Đóng</button></div><div>${html}</div>`;
+  panel.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+function closeActionPanel(){
+  const panel=$('#actionPanel');
+  panel.classList.add('hidden');
+  panel.innerHTML='';
+}
+
+function vehCard(v){
+  const vs=visitsOf(v.key),last=vs[vs.length-1],a=activeOf(v.key);
+  const firstIn=cycleStartDateOf(v.key,v);
+  const cycleIn=cycleStartDateOf(v.key,a);
+  const lastStr=last?`${fmt(last.inDate)} – ${last.done?fmt(last.outDate):'nay'}`:'—';
+  const row=(l,x)=>`<div><span class="text-slate-500">${l}:</span> <b>${x}</b></div>`;
+  return `<div class="bg-white rounded-xl border border-slate-200 p-3 flex gap-3 mt-2">${carSvg}
+   <div class="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-sm flex-1 min-w-0">
+    ${row(v.plate?'Biển số':'Số khung (VIN)',esc(v.key))}${row('Lần lưu bãi gần nhất',lastStr)}
+    ${row('Mẫu xe',esc(v.model||'—'))}${row('Tổng số lần',vs.length+' lần')}
+    ${row('Màu sắc',esc(v.color||'—'))}${row('Trạng thái hiện tại',a?`<span class="text-orange-600">Đang trong bãi</span>`:'Đã xuất')}
+    ${a?row('Vị trí / Tình trạng',esc(posLabel(a.pos))+' · '+esc(statIn(a))):''}
+    ${a?row('Ngày bắt đầu chu kỳ / Tuổi tồn',fmt(firstIn)+' ('+(age(a)===null?'>31 ngày - thiếu ngày':age(a)+' ngày')+')'):''}
+   </div></div>`;
+}
+function findVeh(id){
+  const k=cleanId(id);
+  if(!k)return null;
+  if(S.vehicles[k])return S.vehicles[k];
+  return Object.values(S.vehicles).find(v=>cleanId(v.plate)===k||cleanId(v.vin)===k)||null;
+}
+function findPartialSuffixVehs(shortId){
+  const k=cleanId(shortId);
+  if(!isShortPlate(k))return [];
+  return Object.values(S.vehicles).filter(v=>v.key!==k && cleanId(v.key).endsWith(k));
+}
+function statusSelect(uid,kind,sel){
+  const opts=`<option value="">— Không chọn / Để trống —</option>`+S.settings[kind].map(s=>`<option ${s===sel?'selected':''}>${esc(s)}</option>`).join('');
+  return `<select id="${uid}_status" class="inp">${opts}</select>
+   <div class="flex gap-1 mt-1"><input id="${uid}_newst" class="inp" style="padding:5px 10px;font-size:13px" placeholder="Tình trạng mới…"><button type="button" class="btn btn-sm" onclick="addSt('${uid}','${kind}')">+ Thêm</button></div>`;
+}
+function addSt(uid,kind){
+  const i=document.getElementById(uid+'_newst'),v=i.value.trim();if(!v)return;
+  if(!S.settings[kind].includes(v))S.settings[kind].push(v);
+  idbPutState();
+  const s=document.getElementById(uid+'_status');
+  s.innerHTML=`<option value="">— Không chọn / Để trống —</option>`+S.settings[kind].map(x=>`<option ${x===v?'selected':''}>${esc(x)}</option>`).join('');
+  i.value='';toast('Đã thêm tình trạng "'+v+'"');
+}
+const lab=(t)=>`<label class="text-sm font-medium block mb-1">${t}</label>`;
+
+/* ================== TÌM KIẾM TỔNG HỢP TRANG CHỦ ================== */
+function globalMatches(q){
+  const k=cleanId(q);if(k.length<2)return [];
+  const t=norm(q);
+  return Object.values(S.vehicles).map(v=>{
+    const vs=visitsOf(v.key);
+    const idMatch=[v.key,v.plate,v.vin].some(x=>cleanId(x||'').includes(k));
+    const metaFields=[v.model,v.color,...vs.flatMap(x=>[x.party,x.receiver,x.statusIn,x.statusOut,x.noteIn,x.noteOut,x.pos?posLabel(x.pos):''])];
+    const metaMatch=t.length>=2 && metaFields.some(x=>norm(x||'').includes(t));
+    return {v,score:(idMatch?2:0)+(metaMatch?1:0)};
+  }).filter(x=>x.score>0)
+    .sort((a,b)=>b.score-a.score || (activeOf(a.v.key)?0:1)-(activeOf(b.v.key)?0:1))
+    .slice(0,15).map(x=>x.v);
+}
+function clearGlobalSearch(){
+  const i=$('#globalSearch'),b=$('#globalSuggest');
+  i.value='';HF.q='';b.classList.add('hidden');b.innerHTML='';if(TAB==='hist')updateHistTable();i.focus();
+}
+function chooseGlobalResult(key){
+  const box=$('#globalSuggest');box.classList.add('hidden');
+  const v=findVeh(key);if(!v)return;
+  const a=activeOf(v.key);
+  showModal(`<div class="p-4 sm:p-5">
+    <div class="flex justify-between items-center mb-2">
+      <div class="flex items-center gap-2"><b class="text-xl text-navy">${esc(v.key)}</b>${a?'<span class="badge bg-orange-100 text-orange-700">Đang trong bãi</span>':'<span class="badge bg-green-100 text-green-700">Đã xuất</span>'}</div>
+      <button class="btn btn-sm" onclick="closeModal()">✕</button>
+    </div>
+    ${vehCard(v)}
+    <div class="grid grid-cols-3 gap-2 mt-4">
+      <button class="btn btn-primary" onclick="closeModal();quickImport('${esc(v.key)}')" ${a?'disabled style="opacity:.45"':''}>➕ Nhập xe</button>
+      <button class="btn" style="border-color:#fdba74;background:#fff7ed;color:#c2410c" onclick="closeModal();quickExport('${esc(v.key)}')" ${!a?'disabled style="opacity:.45"':''}>📤 Xuất xe</button>
+      <button class="btn" onclick="closeModal();openVehicleDetail('${esc(v.key)}')">📋 Chi tiết</button>
+    </div>
+  </div>`);
+}
+function bindGlobalSearch(){
+  const input=$('#globalSearch'),box=$('#globalSuggest');
+  if(!input||!box)return;
+  input.addEventListener('input',()=>{
+    HF.q=input.value; if(TAB==='hist')updateHistTable();
+    const q=input.value.trim();
+    if(q.length<2){box.classList.add('hidden');box.innerHTML='';return;}
+    const hits=globalMatches(q);
+    const cleanQ=cleanId(q);
+    let html=hits.map(v=>{
+      const a=activeOf(v.key);
+      const z=a||visitsOf(v.key).slice(-1)[0]||{};
+      return `<button type="button" class="w-full text-left px-3.5 py-2.5 border-b border-slate-100 hover:bg-blue-50 flex items-center justify-between gap-2" onclick="chooseGlobalResult('${esc(v.key)}')">
+        <div class="min-w-0">
+          <div class="font-bold text-slate-900">${esc(v.key)} <span class="font-normal text-xs text-slate-500">· ${esc(v.model||'Chưa rõ dòng xe')} ${v.color?'('+esc(v.color)+')':''}</span></div>
+          <div class="text-xs text-slate-500 truncate">${a?esc(posLabel(a.pos))+' · '+esc(statIn(a)):esc(z.statusOut||'Đã xuất')} · ${esc(a?(z.party||'—'):(z.receiver||z.party||'—'))}</div>
+        </div>
+        <span class="badge ${a?'bg-orange-100 text-orange-700':'bg-green-100 text-green-700'}">${a?'Trong bãi':'Đã xuất'}</span>
+      </button>`;
+    }).join('');
+    if(cleanQ.length>=3 && !hits.some(v=>v.key===cleanQ)){
+      html+=`<button type="button" class="w-full text-left px-3.5 py-3 bg-blue-50/70 hover:bg-blue-100 text-vf font-bold text-sm flex items-center justify-between" onclick="$('#globalSuggest').classList.add('hidden');quickImport('${esc(cleanQ)}')">
+        <span>➕ Nhập xe "${esc(cleanQ)}" (${esc(idTypeLabel(cleanQ))}) vào bãi</span><span>→</span>
+      </button>`;
+    }
+    if(!html) html=`<div class="px-3.5 py-3 text-sm text-slate-500">Không tìm thấy kết quả phù hợp "${esc(q)}"</div>`;
+    box.innerHTML=html;
+    box.classList.remove('hidden');
+  });
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){
+      const h=globalMatches(input.value);
+      if(h[0]) chooseGlobalResult(h[0].key);
+      else if(cleanId(input.value).length>=3){box.classList.add('hidden');quickImport(cleanId(input.value));}
+    }
+    if(e.key==='Escape') box.classList.add('hidden');
+  });
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('#globalSearch')&&!e.target.closest('#globalSuggest')) box.classList.add('hidden');
+  });
+}
+
+/* ================== NHẬP / XUẤT XE ERP (TẤT CẢ KHÔNG BẮT BUỘC) ================== */
+const LAST_LS='erp_bai_xe_34_last_v1';
+const lastPrefs=()=>{try{return JSON.parse(localStorage.getItem(LAST_LS))||{};}catch(e){return {};}};
+const savePrefs=o=>{try{localStorage.setItem(LAST_LS,JSON.stringify(Object.assign(lastPrefs(),o)));}catch(e){}};
+function recentParties(){
+  const m=[];
+  S.visits.slice().sort((a,b)=>b.id-a.id).forEach(v=>{if(v.party&&!m.includes(v.party))m.push(v.party);});
+  const lp=lastPrefs().party;
+  if(lp){const i=m.indexOf(lp);if(i>=0)m.splice(i,1);m.unshift(lp);}
+  return m.slice(0,6);
+}
+function qchips(uid,field,opts,sel){
+  return `<div class="flex flex-wrap gap-2" id="${uid}_c_${field}">${opts.map(o=>`<button type="button" class="qchip ${o===sel?'on':''}" data-v="${esc(o)}" onclick="pickQ('${uid}','${field}',this)">${esc(o)}</button>`).join('')}</div>`;
+}
+function pickQ(uid,field,btn){
+  const isAlreadyOn=btn.classList.contains('on');
+  FORMS[uid][field]=isAlreadyOn?'':btn.dataset.v;
+  btn.parentElement.querySelectorAll('.qchip').forEach(b=>b.classList.toggle('on',!isAlreadyOn && b===btn));
+  if(field==='party'){const i=document.getElementById(uid+'_party');if(i)i.value=FORMS[uid][field];}
+}
+function openNewImportDialog(){
+  const q=cleanId($('#globalSearch').value);
+  if(q.length>=3){
+    const v=findVeh(q);
+    if(v&&activeOf(v.key)){toast(`Xe ${v.key} đang trong bãi!`);chooseGlobalResult(v.key);return;}
+    quickImport(q);return;
+  }
+  quickImport('');
+}
+function openExportDialog(){
+  const q=cleanId($('#globalSearch').value);
+  if(q.length>=3){
+    const v=findVeh(q);
+    if(v&&activeOf(v.key)){quickExport(v.key);return;}
+  }
+  const act=active();
+  showModal(`<div class="p-4 sm:p-5">
+    <div class="flex justify-between items-center mb-3"><b class="text-lg text-navy">📤 Chọn xe xuất bãi</b><button class="btn btn-sm" onclick="closeModal()">✕</button></div>
+    <input id="expFilterInp" class="inp mb-3" placeholder="Gõ biển số (VD: 50H12345 hoặc 12345) hay 6 số VIN..." autocomplete="off" autocapitalize="characters">
+    <div id="expActList" class="max-h-72 overflow-auto divide-y border border-slate-200 rounded-xl">
+      ${act.slice(0,50).map(v=>{const vv=veh(v.key);return `<button type="button" class="w-full text-left px-3 py-2.5 hover:bg-blue-50 flex justify-between items-center" onclick="closeModal();quickExport('${esc(v.key)}')">
+        <div><b>${esc(v.key)}</b> <span class="text-xs text-slate-500">· ${esc(vv.model||'—')} · ${esc(posLabel(v.pos))}</span></div>
+        ${ageBadge(v)}
+      </button>`;}).join('')||'<div class="p-4 text-sm text-slate-400 text-center">Hiện không có xe nào trong bãi</div>'}
+    </div>
+  </div>`);
+  const inp=$('#expFilterInp');
+  if(inp){
+    inp.focus();
+    inp.oninput=()=>{
+      const k=cleanId(inp.value);
+      const filtered=act.filter(v=>!k||v.key.includes(k)).slice(0,50);
+      $('#expActList').innerHTML=filtered.map(v=>{const vv=veh(v.key);return `<button type="button" class="w-full text-left px-3 py-2.5 hover:bg-blue-50 flex justify-between items-center" onclick="closeModal();quickExport('${esc(v.key)}')">
+        <div><b>${esc(v.key)}</b> <span class="text-xs text-slate-500">· ${esc(vv.model||'—')} · ${esc(posLabel(v.pos))}</span></div>
+        ${ageBadge(v)}
+      </button>`;}).join('')||'<div class="p-4 text-sm text-slate-400 text-center">Không tìm thấy xe phù hợp</div>';
+    };
+  }
+}
+
+function quickImport(id){
+  const clean=cleanId(id);
+  const v=clean?findVeh(clean):null;
+  if(v&&activeOf(v.key)){startImport(v.key);return;}
+  const uid='f'+(++uidc),isNew=!v,lp=lastPrefs();
+  const stIn=S.settings.statusIn,mods=S.settings.models;
+  const selSt=stIn.includes(lp.statusIn)?lp.statusIn:'';
+  const selMd=mods.includes(lp.model)?lp.model:'';
+  const parties=recentParties(),selParty=lp.party||'';
+  FORMS[uid]={kind:'qin',key:v?v.key:clean,isNew,statusIn:selSt,model:selMd,party:selParty};
+  const vs=v?visitsOf(v.key).length:0;
+  const suffixMatches=(!v && isShortPlate(clean))?findPartialSuffixVehs(clean):[];
+  const suffixAlert=suffixMatches.length?`<div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
+    <div class="font-bold mb-1">💡 Tìm thấy xe có sẵn trùng 5 số cuối "${esc(clean)}":</div>
+    <div class="flex flex-wrap gap-1.5">${suffixMatches.map(m=>{const inB=activeOf(m.key);return `<button type="button" class="btn btn-sm" onclick="${inB?`chooseGlobalResult('${esc(m.key)}')`:`quickImport('${esc(m.key)}')`}">${esc(m.key)} (${inB?'Đang trong bãi':'Chọn xe này'})</button>`;}).join('')}</div>
+  </div>`:'';
+
+  showActionPanel(`<div id="${uid}_wrap" class="space-y-3">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="text-lg font-extrabold text-navy">${v?esc(v.key):(clean?esc(clean):'Nhập nhanh xe mới')}</span>
+        <span class="badge ${isNew?'bg-amber-100 text-amber-800':'bg-green-100 text-green-700'}">${isNew?(clean?idTypeLabel(clean):'Không bắt buộc'):'Xe cũ · lần '+(vs+1)}</span>
+      </div>
+      <div class="text-xs text-slate-500">Ngày nhập: ${fmt(todayISO())} · Tất cả đều không bắt buộc</div>
+    </div>
+    ${suffixAlert}
+    ${!v?`<div><div class="text-xs font-semibold text-slate-500 mb-1">Biển số (VD: 50H12345 hoặc nhập trước 12345) / 6 số VIN — có thể để trống</div><input id="${uid}_key" class="inp font-bold" value="${esc(clean)}" placeholder="VD: 12345 hoặc 50H12345 hoặc 716717" autocapitalize="characters"></div>`:''}
+    ${isNew?`<div><div class="text-xs font-semibold text-slate-500 mb-1">Dòng xe (không bắt buộc)</div>${qchips(uid,'model',mods,selMd)}</div>`:''}
+    <div><div class="text-xs font-semibold text-slate-500 mb-1">Tình trạng vào (không bắt buộc)</div>${qchips(uid,'statusIn',stIn,selSt)}</div>
+    <div><div class="text-xs font-semibold text-slate-500 mb-1">Tên/Bộ phận người gửi (không bắt buộc)</div>${parties.length?qchips(uid,'party',parties,selParty)+'<div class="h-2"></div>':''}<input id="${uid}_party" class="inp" placeholder="VD: Thông/Kho (có thể bỏ trống)" value="${esc(selParty)}"></div>
+    <div id="${uid}_act" class="flex flex-wrap gap-2"><button class="qchip go" onclick="confirmQuickIn('${uid}')">✓ Xác nhận nhập xe</button><button class="qchip" onclick="startImport(cleanId((document.getElementById('${uid}_key')||{value:'${esc(v?v.key:clean)}'}).value))">Nhập chi tiết (chọn ngày/vị trí)…</button><button class="qchip" onclick="closeActionPanel()">✕ Hủy</button></div>
+  </div>`);
+}
+function confirmQuickIn(uid){
+  const f=FORMS[uid];
+  const keyInput=document.getElementById(uid+'_key');
+  const rawKey=keyInput?cleanId(keyInput.value):f.key;
+  const finalKey=rawKey||nextTempKey();
+  const party=(document.getElementById(uid+'_party')||{value:''}).value.trim();
+  const st=f.statusIn||'';
+  let v=findVeh(finalKey);
+  if(v&&activeOf(v.key)){toast(`Xe ${v.key} đang trong bãi!`);return;}
+  if(!v){
+    S.vehicles[finalKey]={key:finalKey,plate:isPlate(finalKey)?finalKey:'',vin:isPlate(finalKey)?'':(rawKey?finalKey:''),model:f.model||'',color:''};
+    v=S.vehicles[finalKey];
+  }
+  const date=todayISO();
+  S.visits.push({id:nextId(),key:v.key,inDate:date,pos:'',party,statusIn:st,noteIn:'',done:false,outDate:null,statusOut:'',receiver:'',noteOut:'',created:Date.now()});
+  savePrefs({party,statusIn:st,model:f.model||lastPrefs().model});
+  save();
+  closeActionPanel();
+  toast(`✅ Đã nhập ${v.key}${st?' ('+st+')':''} — lần ${visitsOf(v.key).length}`);
+}
+
+function startImport(id){
+  const clean=cleanId(id);
+  const v=clean?findVeh(clean):null,a=v&&activeOf(v.key);
+  if(a){showActionPanel(`⚠️ Xe <b>${esc(v.key)}</b> hiện <b>đang trong bãi</b> (nhập ${fmt(a.inDate)}, ${esc(posLabel(a.pos))}).${vehCard(v)}<div class="mt-2"><button class="btn btn-sm btn-primary" onclick="quickExport('${esc(v.key)}')">Xuất xe này</button></div>`);return;}
+  const uid='f'+(++uidc),isNew=!v;
+  FORMS[uid]={kind:'in',id:clean,key:v?v.key:clean,isNew};
+  const pp=pendingPos;pendingPos='';
+  const head=clean
+    ?(isNew
+      ?`<div class="font-semibold">🔎 Hồ sơ mới: <b>${esc(clean)}</b> <span class="badge bg-amber-100 text-amber-800">${esc(idTypeLabel(clean))}</span> <span class="text-xs font-normal text-slate-500">· Tất cả đều không bắt buộc</span></div>`
+      :`<div class="font-semibold">🔎 Đã tìm thấy xe <b>${esc(v.key)}</b> trong hệ thống.</div>${vehCard(v)}`)
+    :`<div class="font-semibold text-navy">➕ Nhập xe vào bãi <span class="text-xs font-normal text-slate-500">· Tất cả nội dung đều không bắt buộc</span></div>`;
+  const newFields=isNew?`<div>${lab('Dòng xe')}<select id="${uid}_model" class="inp"><option value="">— Không chọn / Để trống —</option>${S.settings.models.map(m=>`<option>${esc(m)}</option>`).join('')}</select></div>
+    <div>${lab('Màu sắc')}<input id="${uid}_color" class="inp" list="colorList" placeholder="VD: Trắng (không bắt buộc)"></div>`:'';
+  showActionPanel(`${head}
+  <div class="mt-3 rounded-xl overflow-hidden border border-blue-100" id="${uid}_wrap">
+   <div class="bg-white p-3 grid sm:grid-cols-2 gap-3">
+    <div class="sm:col-span-2">${lab('Biển số (VD: 50H12345 hoặc nhập trước 12345) / 6 số VIN — để trống sẽ tạo mã tạm')}<input id="${uid}_key" class="inp" value="${esc(clean||'')}" placeholder="VD: 12345 hoặc 50H12345 hoặc 716717" autocapitalize="characters"></div>
+    ${newFields}
+    <div>${lab('Ngày nhập (để trống = 0 / thiếu ngày)')}<input type="date" id="${uid}_date" class="inp" value="${todayISO()}"></div>
+    <div>${lab('Vị trí bãi')}<select id="${uid}_pos" class="inp">${posOptions(pp)}</select></div>
+    <div>${lab('Tên/Bộ phận người gửi')}<input id="${uid}_party" class="inp" placeholder="VD: Thông/Kho"></div>
+    <div>${lab('Tình trạng vào')}${statusSelect(uid,'statusIn')}</div>
+    <div class="sm:col-span-2">${lab('Ghi chú')}<textarea id="${uid}_note" rows="2" class="inp" placeholder="VD: Chờ sửa chữa, kiểm tra..."></textarea></div>
+    <div class="sm:col-span-2 flex gap-2 justify-center" id="${uid}_act">
+      <button class="btn btn-primary" onclick="confirmIn('${uid}')">✓ Xác nhận nhập xe</button>
+      <button class="btn" onclick="closeActionPanel()">✕ Hủy</button>
+    </div>
+   </div></div>`);
+}
+function confirmIn(uid){
+  const f=FORMS[uid],g=n=>document.getElementById(uid+'_'+n);
+  const entered=cleanId(g('key')?.value||f.key||'');
+  const finalKey=entered||nextTempKey();
+  f.key=finalKey;
+  const date=g('date').value||null,pos=g('pos').value,party=g('party').value.trim(),st=g('status').value,note=g('note').value.trim();
+  if(activeOf(f.key)){toast('Xe này đang trong bãi!');return;}
+  if(pos&&active().some(v=>v.pos===pos)){toast('Vị trí này đã có xe, vui lòng chọn vị trí khác');return;}
+  let v=findVeh(f.key);
+  if(!v){
+    const id=f.key;
+    S.vehicles[id]={key:id,plate:isPlate(id)?id:'',vin:isPlate(id)?'':(entered?id:''),model:g('model')?g('model').value:'',color:g('color')?g('color').value.trim():''};
+    v=S.vehicles[id];
+  }
+  S.visits.push({id:nextId(),key:v.key,inDate:date,pos,party,statusIn:st,noteIn:note,done:false,outDate:null,statusOut:'',receiver:'',noteOut:'',created:Date.now()});
+  save();
+  closeActionPanel();
+  toast(`✅ Nhập xe ${v.key} thành công (lần ${visitsOf(v.key).length})`);
+}
+
+function quickExport(id){
+  const v=findVeh(id),a=v&&activeOf(v.key);
+  if(!a){startExport(id);return;}
+  const uid='f'+(++uidc);FORMS[uid]={kind:'qout',key:v.key};
+  showActionPanel(`<div id="${uid}_wrap" class="space-y-3">
+    <div class="flex items-center justify-between gap-2"><div><span class="text-xl font-extrabold text-navy">${esc(v.key)}</span> <span class="badge bg-orange-100 text-orange-700">Đang trong bãi</span> ${ageBadge(a)}</div><div class="text-xs text-slate-500">Xuất hôm nay ${fmt(todayISO())}</div></div>
+    <div class="text-xs text-slate-600">${esc(v.model||'—')} · ${esc(posLabel(a.pos))} · ${esc(statIn(a))}</div>
+    <div><div class="text-xs font-semibold text-slate-500 mb-1">Chạm tình trạng ra để xuất ngay (hoặc bấm Xuất nhanh không cần chọn):</div><div class="flex flex-wrap gap-2">${S.settings.statusOut.map(s=>`<button type="button" class="qchip go" data-v="${esc(s)}" onclick="confirmQuickOut('${uid}',this.dataset.v)">${esc(s)}</button>`).join('')}</div></div>
+    <input id="${uid}_recv" class="inp" placeholder="Tên/Bộ phận người nhận (không bắt buộc)">
+    <div id="${uid}_act" class="flex flex-wrap gap-2"><button class="qchip go" onclick="confirmQuickOut('${uid}','')">✓ Xuất nhanh (không cần tình trạng)</button><button class="qchip" onclick="startExport('${esc(v.key)}')">Xuất chi tiết (chọn ngày)…</button><button class="qchip" onclick="closeActionPanel()">✕ Hủy</button></div>
+  </div>`);
+}
+function confirmQuickOut(uid,st){
+  const f=FORMS[uid],a=activeOf(f.key);
+  if(!a){toast('Xe không còn trong bãi');return;}
+  const date=todayISO();
+  if(isValidInDate(a.inDate)&&date<a.inDate){toast('Ngày xuất không được trước ngày nhập');return;}
+  const recv=(document.getElementById(uid+'_recv')||{value:''}).value.trim();
+  Object.assign(a,{done:true,outDate:date,statusOut:st||'',receiver:recv,noteOut:''});
+  save();
+  closeActionPanel();
+  toast(`✅ Đã xuất xe ${f.key}${st?' ('+st+')':''}`);
+}
+function startExport(id){
+  const v=findVeh(id);
+  if(!v){toast(`Không tìm thấy xe ${id}`);return;}
+  const a=activeOf(v.key);
+  if(!a){toast(`Xe ${v.key} hiện không ở trong bãi`);return;}
+  const uid='f'+(++uidc);FORMS[uid]={kind:'out',key:v.key};
+  showActionPanel(`<div class="font-semibold">📤 Xuất xe <b>${esc(v.key)}</b> <span class="text-xs font-normal text-slate-500">· Tất cả đều không bắt buộc</span></div>${vehCard(v)}
+  <div class="mt-3 rounded-xl overflow-hidden border border-blue-100" id="${uid}_wrap">
+   <div class="bg-white p-3 grid sm:grid-cols-2 gap-3">
+    <div>${lab('Ngày xuất')}<input type="date" id="${uid}_date" class="inp" value="${todayISO()}"></div>
+    <div>${lab('Tình trạng ra')}${statusSelect(uid,'statusOut')}</div>
+    <div class="sm:col-span-2">${lab('Tên/Bộ phận người nhận')}<input id="${uid}_party" class="inp" placeholder="VD: Khách hàng / GSM"></div>
+    <div class="sm:col-span-2">${lab('Ghi chú')}<textarea id="${uid}_note" rows="2" class="inp"></textarea></div>
+    <div class="sm:col-span-2 flex gap-2 justify-center" id="${uid}_act">
+      <button class="btn btn-primary" onclick="confirmOut('${uid}')">✓ Xác nhận xuất xe</button>
+      <button class="btn" onclick="closeActionPanel()">✕ Hủy</button>
+    </div></div></div>`);
+}
+function confirmOut(uid){
+  const f=FORMS[uid],g=n=>document.getElementById(uid+'_'+n);
+  const date=g('date').value||todayISO(),st=g('status').value||'';
+  const a=activeOf(f.key);if(!a){toast('Xe không còn trong bãi');return;}
+  if(isValidInDate(a.inDate)&&date<a.inDate){toast('Ngày xuất không được trước ngày nhập');return;}
+  Object.assign(a,{done:true,outDate:date,statusOut:st,receiver:g('party').value.trim(),noteOut:g('note').value.trim()});
+  save();
+  closeActionPanel();
+  toast(`✅ Đã xuất xe ${f.key} thành công`);
+}
+
+/* ================== DASHBOARD & SƠ ĐỒ BÃI ================== */
+let selectedWaitId=null;
+function assignPos(visitId, pos){
+  const v=S.visits.find(x=>x.id===visitId && !x.done);
+  if(!v)return;
+  if(pos && active().some(x=>x.pos===pos && x.id!==visitId)){
+    toast('Vị trí này đã có xe!');return;
+  }
+  v.pos=pos||'';
+  selectedWaitId=null;
+  save();
+  toast(pos ? `Đã xếp xe ${v.key} vào ${posLabel(pos)}` : `Đã đưa xe ${v.key} về danh sách chưa có vị trí`);
+}
+
+function renderDash(){
+  const L=S.settings.layout,act=active(),byPos={};act.forEach(v=>{if(v.pos)byPos[v.pos]=v;});
+  const total=L.days*L.cols.length*L.rows,used=Object.keys(byPos).filter(p=>allPositions().includes(p)).length;
+  const waitList=act.filter(v=>!v.pos);
+  const kpi=calcKPI();
+  if(selectedWaitId && !waitList.some(v=>v.id===selectedWaitId)) selectedWaitId=null;
+  const selObj=selectedWaitId ? waitList.find(v=>v.id===selectedWaitId) : null;
+
+  let h=`<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+   ${[
+     ['Tổng xe tồn bãi',kpi.total,'text-navy',`Biển: ${kpi.old} · VIN: ${kpi.nw}`],
+     ['Vị trí đang có xe',used,'text-vf',`Còn trống ${total-used} / ${total} ô`],
+     ['Xe chưa có vị trí',waitList.length,'text-orange-600','Chờ xếp vào sơ đồ'],
+     ['Xe cũ tồn ≥ 11 ngày',kpi.old11,'text-red-600','Tính từ chu kỳ hiện tại']
+   ].map(x=>`<div class="card p-3.5 sm:p-4"><div class="text-xs text-slate-500 uppercase font-bold">${x[0]}</div><div class="text-3xl font-extrabold ${x[2]} my-0.5">${x[1]}</div><div class="text-[11px] text-slate-400 font-medium">${x[3]}</div></div>`).join('')}
+  </div>
+
+   <div class="card p-3 sm:p-4 mb-4" data-drop="wait" style="background:#fffbeb;border:1.5px dashed #f59e0b">
+     <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+       <div class="font-bold text-amber-900 text-sm">📍 Danh sách xe chưa có vị trí (${waitList.length} xe)</div>
+       <div class="text-xs text-amber-800">${selObj ? `Đang chọn <b>${esc(selObj.key)}</b> — chạm vào ô trống bất kỳ bên dưới để xếp vị trí` : 'Chạm xe rồi chạm ô trống (hoặc giữ 0,3s để kéo thả)'}</div>
+     </div>
+     <div class="flex flex-wrap gap-2">
+       ${waitList.length ? waitList.map(v=>{
+         const vv=veh(v.key);
+         const cls=isNewV(vv)?'v-vin':'v-plate';
+         const isSel=selectedWaitId===v.id?'selected':'';
+         return `<button type="button" class="wchip ${cls} ${isSel}" data-wait-id="${v.id}" title="${esc(vv.model||'')} · ${esc(statIn(v))}">${esc(v.key)}</button>`;
+       }).join('') : '<span class="text-xs text-slate-500">Không có xe nào đang chờ vị trí.</span>'}
+     </div>
+   </div>
+
+   <div class="flex flex-wrap gap-3 text-xs mb-3 items-center">
+     <span class="font-semibold">Phân loại màu trên sơ đồ:</span>
+     <span class="inline-flex items-center gap-1.5 font-semibold"><span class="w-3.5 h-3.5 rounded inline-block" style="background:#ea580c"></span>Xe có biển số (VD: 50H12345 hoặc 12345)</span>
+     <span class="inline-flex items-center gap-1.5 font-semibold"><span class="w-3.5 h-3.5 rounded inline-block" style="background:#2563eb"></span>Xe mới 6 số VIN (VD: 123456)</span>
+     <span class="inline-flex items-center gap-1.5 text-slate-500"><span class="w-3.5 h-3.5 rounded inline-block border border-slate-300 bg-slate-100"></span>Ô trống</span>
+   </div>
+
+   <div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">`;
+  for(let d=1;d<=L.days;d++){
+    let n=0;L.cols.forEach(c=>{for(let r=1;r<=L.rows;r++)if(byPos[`${d}|${c}|${r}`])n++;});
+    h+=`<div class="card p-3"><div class="flex justify-between items-center mb-2"><b>Dãy ${d}</b><span class="text-xs text-slate-500">${n}/${L.cols.length*L.rows} xe</span></div>
+    <div class="overflow-x-auto"><div style="display:grid;grid-template-columns:22px repeat(${L.cols.length},minmax(66px,1fr));gap:3px;min-width:${22+L.cols.length*68}px">
+    <div></div>${L.cols.map(c=>`<div class="text-center text-[11px] font-bold text-slate-500">${esc(c)}</div>`).join('')}`;
+    for(let r=1;r<=L.rows;r++){
+      h+=`<div class="text-[10px] text-slate-400 leading-7 text-right pr-1">${r}</div>`;
+      L.cols.forEach(c=>{const p=`${d}|${c}|${r}`,v=byPos[p];
+        if(v){
+          const vv=veh(v.key);
+          const colorCls=isNewV(vv)?'v-vin':'v-plate';
+          const a=age(v);
+          h+=`<div class="cell ${colorCls}" data-pos="${p}" title="${esc(v.key)} · ${esc(vv.model||'')} (${a===null?'>31 ngày - ngày nhập = 0':a+' ngày'})">${esc(v.key)}</div>`;
+        }
+        else h+=`<div class="cell empty ${selectedWaitId?'target':''}" data-pos="${p}" title="Trống (${posLabel(p)})">·</div>`;});
+    }
+    h+=`</div></div></div>`;
+  }
+  $('#dashBox').innerHTML=h+'</div>';
+}
+
+/* ---- Kéo thả xe trên sơ đồ ---- */
+function moveVisit(id,pos){
+  const v=S.visits.find(x=>x.id===id&&!x.done);if(!v)return;
+  if(!pos){assignPos(id,'');return;}
+  if(v.pos===pos)return;
+  const other=active().find(x=>x.pos===pos&&x.id!==id);
+  if(other){
+    other.pos=v.pos||'';v.pos=pos;selectedWaitId=null;save();
+    toast(other.pos?`Đã hoán đổi vị trí ${v.key} ⇄ ${other.key}`:`Đã xếp ${v.key} vào ${posLabel(pos)}; ${other.key} về danh sách chưa có vị trí`);
+    return;
+  }
+  assignPos(id,pos);
+}
+let DRAG=null,dragSuppress=false,dragGhost=null,dragOver=null;
+function dropTargetAt(x,y){const el=document.elementFromPoint(x,y);return el?el.closest('#dashBox [data-pos], #dashBox [data-drop]'):null;}
+function startDrag(st,x,y){
+  st.started=true;st.src.classList.add('dragging');
+  dragGhost=document.createElement('div');dragGhost.id='dragGhost';dragGhost.textContent=st.label;
+  document.body.appendChild(dragGhost);moveGhost(x,y);
+  if(navigator.vibrate)try{navigator.vibrate(15);}catch(e){}
+}
+function moveGhost(x,y){
+  if(!dragGhost)return;
+  dragGhost.style.left=x+'px';dragGhost.style.top=y+'px';
+  const t=dropTargetAt(x,y);
+  if(t!==dragOver){if(dragOver)dragOver.classList.remove('drop-ok');dragOver=t;if(t)t.classList.add('drop-ok');}
+}
+function endDragUI(st){
+  if(dragGhost){dragGhost.remove();dragGhost=null;}
+  if(dragOver){dragOver.classList.remove('drop-ok');dragOver=null;}
+  if(st&&st.src)st.src.classList.remove('dragging');
+}
+$('#dashBox').addEventListener('pointerdown',e=>{
+  if(e.button>0)return;
+  const src=e.target.closest('.cell:not(.empty), [data-wait-id]');if(!src)return;
+  let id,label;
+  if(src.dataset.waitId){id=+src.dataset.waitId;label=src.textContent.trim();}
+  else{const v=active().find(x=>x.pos===src.dataset.pos);if(!v)return;id=v.id;label=v.key;}
+  const st={id,label,src,x:e.clientX,y:e.clientY,pid:e.pointerId,touch:e.pointerType==='touch',started:false,timer:null};
+  DRAG=st;
+  if(st.touch)st.timer=setTimeout(()=>{if(DRAG===st)startDrag(st,st.x,st.y);},320);
+});
+document.addEventListener('pointermove',e=>{
+  const st=DRAG;if(!st||e.pointerId!==st.pid)return;
+  if(!st.started){
+    const moved=Math.hypot(e.clientX-st.x,e.clientY-st.y);
+    if(st.touch){if(moved>10){clearTimeout(st.timer);DRAG=null;}return;}
+    if(moved<=6)return;
+    startDrag(st,e.clientX,e.clientY);
+  }
+  moveGhost(e.clientX,e.clientY);
+});
+document.addEventListener('pointerup',e=>{
+  const st=DRAG;if(!st||e.pointerId!==st.pid)return;
+  clearTimeout(st.timer);DRAG=null;
+  if(!st.started)return;
+  const t=dropTargetAt(e.clientX,e.clientY);
+  endDragUI(st);
+  dragSuppress=true;setTimeout(()=>{dragSuppress=false;},120);
+  if(!t)return;
+  if(t.dataset.drop==='wait')moveVisit(st.id,'');
+  else if(t.dataset.pos)moveVisit(st.id,t.dataset.pos);
+});
+document.addEventListener('pointercancel',e=>{
+  const st=DRAG;if(!st||e.pointerId!==st.pid)return;
+  clearTimeout(st.timer);DRAG=null;endDragUI(st);
+});
+document.addEventListener('touchmove',e=>{if(DRAG&&DRAG.started&&e.cancelable)e.preventDefault();},{passive:false});
+$('#dashBox').addEventListener('contextmenu',e=>{if(DRAG&&DRAG.touch)e.preventDefault();});
+$('#dashBox').addEventListener('click',e=>{if(dragSuppress){e.stopImmediatePropagation();e.preventDefault();}},true);
+
+$('#dashBox').addEventListener('click',e=>{
+  const wBtn=e.target.closest('[data-wait-id]');
+  if(wBtn){
+    const id=+wBtn.dataset.waitId;
+    selectedWaitId=(selectedWaitId===id)?null:id;
+    renderDash();
+    if(selectedWaitId){
+      const v=active().find(x=>x.id===selectedWaitId);
+      if(v) toast(`Đã chọn ${v.key} — hãy chạm vào ô trống trên sơ đồ`);
+    }
+    return;
+  }
+  const c=e.target.closest('[data-pos]');if(!c)return;
+  const p=c.dataset.pos,v=active().find(x=>x.pos===p);
+  if(v){
+    const vv=veh(v.key);
+    const firstIn=cycleStartDateOf(v.key,v);
+    showModal(`<div class="p-5"><div class="flex justify-between items-center"><h3 class="text-lg font-bold">${esc(v.key)} <span class="badge ml-1 ${isNewV(vv)?'bg-blue-100 text-blue-800':'bg-orange-100 text-orange-800'}">${esc(idTypeLabel(v.key))}</span></h3><button onclick="closeModal()" class="text-xl">✕</button></div>
+    <div class="mt-3 text-sm space-y-1.5">
+      <div>Vị trí: <b>${esc(posLabel(p))}</b></div>
+      <div>Dòng xe: <b>${esc(vv.model||'—')}</b> · Màu: <b>${esc(vv.color||'—')}</b></div>
+      <div>Ngày bắt đầu chu kỳ: <b>${fmt(cycleStartDateOf(v.key,v))}</b> ${ageBadge(v)}</div>
+      <div>Ngày nhập lượt gần nhất: <b>${fmt(v.inDate)}</b> (Tổng ${visitsOf(v.key).length} lượt)</div>
+      <div>Tình trạng: <b>${esc(statIn(v))}</b></div>
+      <div>Người gửi: <b>${esc(v.party||'—')}</b></div>
+      <div>Ghi chú: ${esc(v.noteIn||'—')}</div>
+    </div>
+    <div class="flex flex-wrap gap-2 mt-4">
+      <button class="btn btn-primary" onclick="closeModal();quickExport('${esc(v.key)}')">📤 Xuất xe</button>
+      <button class="btn" style="border-color:#f59e0b;color:#b45309;background:#fffbeb" onclick="closeModal();assignPos(${v.id},'')">↩ Bỏ vị trí</button>
+      <button class="btn" onclick="editVisit(${v.id})">✏️ Sửa</button>
+    </div></div>`);
+  }else{
+    if(selectedWaitId){
+      assignPos(selectedWaitId, p);
+      return;
+    }
+    const waitList=active().filter(x=>!x.pos);
+    const waitHtml=waitList.length
+      ? `<div class="mt-3"><div class="text-xs font-bold text-slate-600 uppercase mb-1.5">Xếp nhanh xe từ danh sách chưa có vị trí (${waitList.length}):</div>
+         <div class="max-h-48 overflow-auto border border-slate-200 rounded-xl divide-y">
+         ${waitList.map(w=>{const wv=veh(w.key);return `<div class="flex items-center justify-between px-3 py-2 text-sm">
+           <div><b>${esc(w.key)}</b> <span class="text-xs text-slate-500">· ${esc(wv.model||'—')} · ${esc(statIn(w))}</span></div>
+           <button class="btn btn-sm btn-primary" onclick="closeModal();assignPos(${w.id},'${p}')">Xếp vào ô</button>
+         </div>`;}).join('')}
+         </div></div>`
+      : `<div class="text-xs text-slate-500 mt-3">Hiện không có xe nào trong danh sách chưa có vị trí.</div>`;
+
+    showModal(`<div class="p-5"><div class="flex justify-between"><h3 class="text-lg font-bold">Vị trí trống · ${esc(posLabel(p))}</h3><button onclick="closeModal()" class="text-xl">✕</button></div>
+    ${waitHtml}
+    <div class="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between gap-2">
+      <span class="text-xs text-slate-500">Hoặc nhập xe mới trực tiếp vào ô này:</span>
+      <button class="btn btn-sm btn-primary" onclick="pendingPos='${p}';closeModal();quickImport('')">+ Nhập xe vào ô này</button>
+    </div></div>`);
+  }
+});
+
+/* ================== CHI TIẾT HỒ SƠ XE & SỬA LƯỢT ================== */
+function openVehicleDetail(key, focusVisitId){
+  const v=findVeh(key);
+  if(!v){toast('Không tìm thấy hồ sơ xe');return;}
+  const vs=visitsOf(v.key);
+  const act=activeOf(v.key);
+  const last=vs[vs.length-1]||null;
+  const targetVisit=focusVisitId ? (vs.find(x=>x.id===focusVisitId)||act||last) : (act||last);
+  const firstIn=cycleStartDateOf(v.key,act||targetVisit||last);
+
+  const historyRows=vs.slice().reverse().map((x,idx)=>{
+    const nth=vs.length-idx;
+    const isCur=!x.done;
+    return `<div class="rounded-xl border ${isCur?'border-orange-200 bg-orange-50/40':'border-slate-200 bg-slate-50/60'} p-3 text-xs space-y-1.5">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="font-bold text-slate-800">Lần ${nth} · ${isCur?'<span class="badge bg-orange-100 text-orange-700">Đang trong bãi</span>':'<span class="badge bg-green-100 text-green-700">Đã xuất</span>'}</div>
+        <div class="flex gap-1.5">
+          <button class="btn btn-sm" onclick="editVisit(${x.id})">✏️ Sửa lượt này</button>
+          <button class="btn btn-sm btn-red" onclick="delVisit(${x.id}, true)">🗑️ Xóa</button>
+        </div>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-x-4 gap-y-1 text-slate-700">
+        <div><span class="text-slate-500">Ngày nhập:</span> <b>${fmt(x.inDate)}</b></div>
+        <div><span class="text-slate-500">Vị trí:</span> <b>${esc(posLabel(x.pos))}</b></div>
+        <div><span class="text-slate-500">Tình trạng vào:</span> <b>${esc(x.statusIn||'—')}</b></div>
+        <div><span class="text-slate-500">Người gửi:</span> <b>${esc(x.party||'—')}</b></div>
+        ${x.noteIn?`<div class="sm:col-span-2"><span class="text-slate-500">Ghi chú nhập:</span> ${esc(x.noteIn)}</div>`:''}
+        <div><span class="text-slate-500">DEPOT:</span> <b>${esc(v.depot||'—')}</b></div>
+        <div><span class="text-slate-500">CVDV PHỤ TRÁCH:</span> <b>${esc(v.cvdv||'—')}</b></div>
+        <div class="sm:col-span-2"><span class="text-slate-500">Giải pháp:</span> <b>${esc(v.solution||'—')}</b></div>
+        <div><span class="text-slate-500">NGÀY DỰ KIẾN HOÀN THÀNH:</span> <b>${esc(v.expectedCompletion||'—')}</b></div>
+        ${x.done?`
+          <div><span class="text-slate-500">Ngày xuất:</span> <b>${fmt(x.outDate)}</b></div>
+          <div><span class="text-slate-500">Tình trạng ra:</span> <b>${esc(x.statusOut||'—')}</b></div>
+          <div><span class="text-slate-500">Người nhận:</span> <b>${esc(x.receiver||'—')}</b></div>
+          ${x.noteOut?`<div><span class="text-slate-500">Ghi chú xuất:</span> ${esc(x.noteOut)}</div>`:''}
+        `:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  showModal(`<div class="p-5">
+    <div class="flex justify-between items-start gap-3 pb-3 border-b border-slate-200">
+      <div>
+        <div class="flex flex-wrap items-center gap-2">
+          <h3 class="text-xl font-extrabold text-navy">${esc(v.key)}</h3>
+          <span class="badge ${isNewV(v)?'bg-blue-100 text-blue-800':'bg-slate-100 text-slate-700'}">${esc(idTypeLabel(v.key))}</span>
+          ${act?'<span class="badge bg-orange-100 text-orange-700">● Đang trong bãi</span>':'<span class="badge bg-green-100 text-green-700">✔ Đã xuất</span>'}
+        </div>
+        <div class="text-xs text-slate-500 mt-1">Hồ sơ chi tiết phương tiện & lịch sử vào/ra bãi (${vs.length} lượt)</div>
+      </div>
+      <button onclick="closeModal()" class="text-xl text-slate-400 hover:text-slate-700">✕</button>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mt-3 bg-slate-50 rounded-xl p-3 border border-slate-200 text-sm">
+      <div><div class="text-xs text-slate-500">Dòng xe</div><div class="font-bold">${esc(v.model||'—')}</div></div>
+      <div><div class="text-xs text-slate-500">Màu sắc</div><div class="font-bold">${esc(v.color||'—')}</div></div>
+      <div><div class="text-xs text-slate-500">Tổng lượt lưu bãi</div><div class="font-bold">${vs.length} lượt</div></div>
+      <div><div class="text-xs text-slate-500">Ngày bắt đầu chu kỳ gần nhất</div><div class="font-bold">${fmt(firstIn)}</div></div>
+      <div><div class="text-xs text-slate-500">Cập nhật gần nhất</div><div class="font-bold">${last?fmt(last.done?last.outDate:last.inDate):'—'}</div></div>
+      <div><div class="text-xs text-slate-500">${act?'Tuổi tồn hiện tại':'Trạng thái cuối'}</div><div class="font-bold">${act?ageBadge(act):'<span class="text-green-700">Đã xuất bãi</span>'}</div></div>
+      ${act?`<div class="col-span-2 sm:col-span-3 pt-1 border-t border-slate-200 flex flex-wrap gap-x-6 gap-y-1 text-xs">
+        <span>Vị trí hiện tại: <b class="text-vf">${esc(posLabel(act.pos))}</b></span>
+        <span>Tình trạng: <b>${esc(statIn(act))}</b></span>
+        <span>Người gửi: <b>${esc(act.party||'—')}</b></span>
+      </div>`:''}
+    </div>
+
+    <section class="mt-3 rounded-xl border border-indigo-100 bg-indigo-50/60 p-3 text-sm">
+      <div class="font-bold text-indigo-900 mb-2 flex items-center gap-2">
+        <span>📋</span> Thông tin Viewer (chỉ xem tại Admin)
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+        <div><div class="text-xs text-slate-500">Depot</div><div class="font-semibold break-words">${esc(v.depot||'—')}</div></div>
+        <div><div class="text-xs text-slate-500">CVDV PHỤ TRÁCH</div><div class="font-semibold break-words">${esc(v.cvdv||'—')}</div></div>
+        <div class="sm:col-span-2"><div class="text-xs text-slate-500">GIẢI PHÁP</div><div class="font-semibold whitespace-pre-wrap break-words">${esc(v.solution||'—')}</div></div>
+        <div><div class="text-xs text-slate-500">NGÀY DỰ KIẾN HOÀN THÀNH</div><div class="font-semibold">${esc(v.expectedCompletion||'—')}</div></div>
+        <div><div class="text-xs text-slate-500">Ghi chú Viewer</div><div class="font-semibold whitespace-pre-wrap break-words">${esc(v.viewer?.note||'—')}</div></div>
+      </div>
+    </section>
+
+    <div class="flex flex-wrap gap-2 mt-3">
+      ${act
+        ? `<button class="btn btn-primary btn-sm" onclick="closeModal();quickExport('${esc(v.key)}')">📤 Xuất xe</button>
+           <button class="btn btn-sm" onclick="editVisit(${act.id})">✏️ Sửa / Bổ sung biển số</button>
+           ${act.pos?`<button class="btn btn-sm" style="border-color:#f59e0b;color:#b45309;background:#fffbeb" onclick="closeModal();assignPos(${act.id},'')">↩ Bỏ vị trí</button>`:''}`
+        : `<button class="btn btn-primary btn-sm" onclick="closeModal();quickImport('${esc(v.key)}')">📥 Nhập lại vào bãi</button>
+           ${targetVisit?`<button class="btn btn-sm" onclick="editVisit(${targetVisit.id})">✏️ Sửa / Bổ sung biển số</button>`:''}`
+      }
+      ${targetVisit?`<button class="btn btn-sm btn-red ml-auto" onclick="delVisit(${targetVisit.id}, true)">🗑️ Xóa lượt gần nhất</button>`:''}
+    </div>
+
+    <div class="mt-4">
+      <div class="text-xs font-bold uppercase text-slate-500 mb-2">Lịch sử chi tiết các lần vào / ra (${vs.length} lượt)</div>
+      <div class="space-y-2 max-h-64 overflow-auto pr-1">
+        ${historyRows || '<div class="text-sm text-slate-400">Chưa có lịch sử lượt lưu bãi.</div>'}
+      </div>
+    </div>
+  </div>`);
+}
+
+function editVisit(id){
+  const v=S.visits.find(x=>x.id===id);if(!v)return;const vv=veh(v.key);
+  const dl=(n,arr)=>`<datalist id="${n}">${arr.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>`;
+  showModal(`<div class="p-5"><div class="flex justify-between"><h3 class="text-lg font-bold">Sửa hồ sơ & lượt lưu bãi · ${esc(v.key)}</h3><button onclick="closeModal()" class="text-xl">✕</button></div>
+  <div class="grid sm:grid-cols-2 gap-3 mt-3">
+   <div class="sm:col-span-2">${lab('Biển số (VD: 50H12345 hoặc 12345) / 6 số VIN')}<input id="e_key" class="inp font-bold" value="${esc(v.key)}" autocapitalize="characters"></div>
+   <div>${lab('Dòng xe')}<input id="e_model" class="inp" list="dl_models" value="${esc(vv.model)}"></div>
+   <div>${lab('Màu sắc')}<input id="e_color" class="inp" list="colorList" value="${esc(vv.color)}"></div>
+   <div>${lab('Ngày nhập (trống = 0 / thiếu ngày)')}<input type="date" id="e_in" class="inp" value="${isValidInDate(v.inDate)?v.inDate:''}"></div>
+   <div>${lab('Vị trí')}<select id="e_pos" class="inp" ${v.done?'disabled':''}>${posOptions(v.pos,v.pos)}</select></div>
+   <div>${lab('Người gửi')}<input id="e_party" class="inp" value="${esc(v.party)}"></div>
+   <div>${lab('Tình trạng vào')}<input id="e_stin" class="inp" list="dl_in" value="${esc(v.statusIn)}"></div>
+   <div class="sm:col-span-2">${lab('Ghi chú nhập')}<textarea id="e_nin" rows="2" class="inp">${esc(v.noteIn)}</textarea></div>
+   ${v.done?`<div>${lab('Ngày xuất')}<input type="date" id="e_out" class="inp" value="${v.outDate||''}"></div>
+   <div>${lab('Tình trạng ra')}<input id="e_stout" class="inp" list="dl_out" value="${esc(v.statusOut)}"></div>
+   <div>${lab('Người nhận')}<input id="e_recv" class="inp" value="${esc(v.receiver)}"></div>
+   <div>${lab('Ghi chú xuất')}<input id="e_nout" class="inp" value="${esc(v.noteOut)}"></div>`:''}
+  </div>${dl('dl_models',S.settings.models)}${dl('dl_in',S.settings.statusIn)}${dl('dl_out',S.settings.statusOut)}
+  <div class="flex gap-2 mt-4"><button class="btn btn-primary" onclick="saveEdit(${id})">Lưu thay đổi</button><button class="btn" onclick="closeModal()">Hủy</button></div></div>`);
+}
+function saveEdit(id){
+  const v=S.visits.find(x=>x.id===id),g=n=>$('#'+n);
+  const oldKey=v.key;
+  const newKey=cleanId(g('e_key').value)||oldKey;
+  if(newKey!==oldKey){
+    const existingTarget=S.vehicles[newKey];
+    if(existingTarget && !v.done && activeOf(newKey) && activeOf(newKey).id!==v.id){
+      toast(`Biển số ${newKey} hiện đã có xe khác đang trong bãi!`);return;
+    }
+    const oldVeh=S.vehicles[oldKey]||{key:oldKey,plate:'',vin:'',model:'',color:''};
+    if(!existingTarget){
+      S.vehicles[newKey]={
+        key:newKey,
+        plate:isPlate(newKey)?newKey:'',
+        vin:isPlate(newKey)?'':newKey,
+        model:oldVeh.model||'',
+        color:oldVeh.color||''
+      };
+    }
+    S.visits.forEach(x=>{if(x.key===oldKey)x.key=newKey;});
+    delete S.vehicles[oldKey];
+    v.key=newKey;
+  }
+  const vv=S.vehicles[v.key];
+  if(vv){vv.model=g('e_model').value.trim();vv.color=g('e_color').value.trim();
+    if(vv.model&&!S.settings.models.includes(vv.model))S.settings.models.push(vv.model);}
+  v.inDate=g('e_in').value||null;v.party=g('e_party').value.trim();v.statusIn=g('e_stin').value.trim();v.noteIn=g('e_nin').value.trim();
+  if(!v.done){const p=g('e_pos').value;if(p&&active().some(x=>x.pos===p&&x.id!==v.id)){toast('Vị trí đã có xe');return;}v.pos=p;}
+  if(v.statusIn&&!S.settings.statusIn.includes(v.statusIn))S.settings.statusIn.push(v.statusIn);
+  if(v.done){v.outDate=g('e_out').value||null;v.statusOut=g('e_stout').value.trim();v.receiver=g('e_recv').value.trim();v.noteOut=g('e_nout').value.trim();
+    if(v.statusOut&&!S.settings.statusOut.includes(v.statusOut))S.settings.statusOut.push(v.statusOut);}
+  closeModal();save();toast('Đã lưu thay đổi');
+}
+function delVisit(id, reopenDetail){
+  const target=S.visits.find(v=>v.id===id);
+  const key=target?target.key:null;
+  if(!confirm('Xóa toàn bộ lượt lưu bãi này (cả nhập và xuất)?'))return;
+  S.visits=S.visits.filter(v=>v.id!==id);
+  save();
+  toast('Đã xóa lượt lưu bãi');
+  if(reopenDetail && key && visitsOf(key).length) openVehicleDetail(key);
+  else if(reopenDetail) closeModal();
+}
+
+/* ================== LỊCH SỬ (GIỮ INPUT CỐ ĐỊNH — KHÔNG MẤT BÀN PHÍM SỐ/CHỮ MOBILE) ================== */
+const HF={q:'',status:'',from:'',to:'',depot:'',cvdv:''};
+function updateHistoryStatusIn(id,value){
+  const visit=S.visits.find(x=>Number(x.id)===Number(id));
+  if(!visit){toast('Không tìm thấy lượt lưu bãi');return;}
+  const previous=visit.statusIn||'';
+  visit.statusIn=String(value||'').trim();
+  if(visit.statusIn&&!S.settings.statusIn.includes(visit.statusIn))S.settings.statusIn.push(visit.statusIn);
+  try{save();toast('Đã cập nhật tình trạng vào');}
+  catch(err){visit.statusIn=previous;toast('Không lưu được tình trạng: '+(err.message||err));}
+}
+
+function renderHist(){
+  const box=$('#histBox');
+  if(!box.dataset.ready){
+    box.dataset.ready='1';
+    box.innerHTML=`<div class="card p-3 sm:p-4">
+
+     <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+       <div id="histSummary" class="text-sm text-slate-500"></div>
+       <button type="button" class="btn btn-sm btn-primary" onclick="exportYardXlsx()">⬇️ Xuất Excel tồn bãi</button>
+     </div>
+     <div id="histTableWrap" class="overflow-x-auto overflow-y-auto" style="max-height:calc(100dvh - 280px);-webkit-overflow-scrolling:touch"></div>
+    </div>`;
+    $('#ht').addEventListener('change',e=>{HF.status=e.target.value;updateHistTable();});
+    $('#hf').addEventListener('change',e=>{HF.from=e.target.value;updateHistTable();});
+    $('#hto').addEventListener('change',e=>{HF.to=e.target.value;updateHistTable();});
+  }
+  $('#ht').value=HF.status;
+  $('#hf').value=HF.from;
+  $('#hto').value=HF.to;
+  $('#ht').onchange=e=>{HF.status=e.target.value;updateHistTable();};
+  $('#hf').onchange=e=>{HF.from=e.target.value;updateHistTable();};
+  $('#hto').onchange=e=>{HF.to=e.target.value;updateHistTable();};
+  const depots=[...new Set(Object.values(S.vehicles||{}).map(v=>String(v.depot||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'vi'));
+  const cvdvs=[...new Set(Object.values(S.vehicles||{}).map(v=>String(v.cvdv||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'vi'));
+  const fillFilter=(id,all,label,value)=>{const el=$(id);if(!el)return;el.innerHTML=`<option value="">Tất cả ${label}</option>`+all.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');el.value=value||'';};
+  fillFilter('#filterDepot',depots,'DEPOT',HF.depot);fillFilter('#filterCvdv',cvdvs,'CVDV PHỤ TRÁCH',HF.cvdv);
+  $('#filterDepot').onchange=e=>{HF.depot=e.target.value;updateHistTable();};
+  $('#filterCvdv').onchange=e=>{HF.cvdv=e.target.value;updateHistTable();};
+  updateHistTable();
+}
+
+function updateHistTable(){
+  const keys=new Set([...Object.keys(S.vehicles), ...S.visits.map(v=>v.key)]);
+  let records=[];
+  keys.forEach(k=>{
+    const vs=visitsOf(k);
+    if(!vs.length) return;
+    const vv=veh(k);
+    const act=vs.find(x=>!x.done)||null;
+    const last=act||vs[vs.length-1];
+    const inYard=!!act;
+    const lastDate=inYard ? last.inDate : (last.outDate || last.inDate);
+    records.push({key:k,veh:vv,visits:vs,last,inYard,lastDate,firstIn:firstInDateOf(k)});
+  });
+
+  records=records.filter(r=>{
+    if(HF.status==='in' && !r.inYard) return false;
+    if(HF.status==='out' && r.inYard) return false;
+    if(HF.depot && String(r.veh.depot||'').trim()!==HF.depot) return false;
+    if(HF.cvdv && String(r.veh.cvdv||'').trim()!==HF.cvdv) return false;
+    if(HF.q){
+      const q=cleanId(HF.q), t=norm(HF.q);
+      const hay=norm((r.veh.model||'')+' '+(r.veh.color||'')+' '+(r.last.party||'')+' '+(r.last.receiver||'')+' '+(r.last.statusIn||'')+' '+(r.last.statusOut||''));
+      if(!(r.key.includes(q)&&q) && !hay.includes(t)) return false;
+    }
+    if(HF.from && (!isValidInDate(r.lastDate) || r.lastDate<HF.from)) return false;
+    if(HF.to && (!isValidInDate(r.lastDate) || r.lastDate>HF.to)) return false;
+    return true;
+  }).sort((a,b)=>(b.lastDate||'').localeCompare(a.lastDate||'') || b.last.id-a.last.id);
+
+  const shown=records.slice(0,400);
+  const sumEl=$('#histSummary');
+  if(sumEl) sumEl.innerHTML=`Tổng <b>${records.length}</b> hồ sơ xe${records.length>400?' (hiển thị 400 mới nhất)':''} · <span class="text-xs text-vf font-medium">Chạm vào hàng bất kỳ để xem chi tiết</span>`;
+
+  const wrap=$('#histTableWrap');
+  if(!wrap) return;
+  wrap.innerHTML=`<table class="t" style="min-width:1780px;white-space:normal"><thead><tr><th>#</th><th>Biển số / VIN</th><th>Dòng xe</th><th>Màu</th><th>Ngày nhập</th><th>Ngày xuất</th><th>Cập nhật cuối</th><th>Tuổi tồn</th><th>Vị trí</th><th>Tình trạng vào</th><th>Người gửi</th><th>Ghi chú nhập</th><th>Depot</th><th>CVDV PHỤ TRÁCH</th><th>Giải pháp</th><th>Ngày dự kiến hoàn thành</th><th>Tình trạng ra</th><th>Người nhận</th><th>Ghi chú xuất</th><th>Lượt</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+   ${shown.map((r,i)=>{
+     const v=r.last, vv=r.veh;
+     const statusBadge=r.inYard
+       ? '<span class="badge bg-orange-100 text-orange-700">Trong bãi</span>'
+       : '<span class="badge bg-green-100 text-green-700">Đã xuất</span>';
+     const detailSummary=r.inYard
+       ? `${esc(posLabel(v.pos))} · ${esc(v.statusIn||'—')}`
+       : `${esc(v.statusOut||'Đã xuất')}`;
+     const person=r.inYard ? (v.party||'—') : (v.receiver||v.party||'—');
+     const tag=isNewV(vv)?' <span class="badge bg-blue-100 text-blue-800">Mới</span>':(isShortPlate(r.key)?' <span class="badge bg-amber-100 text-amber-800">5 số</span>':'');
+     return `<tr class="clickable" onclick="openVehicleDetail('${esc(r.key)}', ${v.id})">
+       <td>${i+1}</td>
+       <td><b>${esc(r.key)}</b>${tag}</td>
+       <td>${esc(vv.model||'—')}</td>
+       <td>${esc(vv.color||'—')}</td>
+       <td>${fmt(v.inDate)}</td>
+       <td>${v.done?fmt(v.outDate):'—'}</td>
+       <td>${fmt(r.lastDate)}</td>
+       <td>${r.inYard?ageBadge(v):'—'}</td>
+       <td>${esc(posLabel(v.pos)||'—')}</td>
+       <td onclick="event.stopPropagation()"><select class="inp" style="min-width:155px;padding:6px" aria-label="Sửa tình trạng vào ${esc(r.key)}" onchange="updateHistoryStatusIn(${v.id},this.value)"><option value="">— Chưa chọn —</option>${(S.settings.statusIn||[]).map(st=>`<option value="${esc(st)}" ${st===(v.statusIn||'')?'selected':''}>${esc(st)}</option>`).join('')}</select></td>
+       <td>${esc(v.party||'—')}</td>
+       <td style="min-width:180px;max-width:260px">${esc(v.noteIn||'—')}</td>
+       <td>${esc(vv.depot||'—')}</td>
+       <td>${esc(vv.cvdv||'—')}</td>
+       <td style="min-width:220px;max-width:320px;white-space:pre-wrap">${esc(vv.solution||'—')}</td>
+       <td>${esc(vv.expectedCompletion||'—')}</td>
+       <td>${esc(v.statusOut||'—')}</td>
+       <td>${esc(v.receiver||'—')}</td>
+       <td style="min-width:180px;max-width:260px">${esc(v.noteOut||'—')}</td>
+       <td><span class="badge bg-slate-100 text-slate-700">${r.visits.length}</span></td>
+       <td>${statusBadge}</td>
+       <td class="whitespace-nowrap" onclick="event.stopPropagation()">
+         <button class="btn btn-sm btn-primary" onclick="openVehicleDetail('${esc(r.key)}', ${v.id})">Chi tiết</button>
+         <button class="btn btn-sm" onclick="editVisit(${v.id})">Sửa</button>
+       </td>
+     </tr>`;
+   }).join('')||'<tr><td colspan="22" class="text-center text-slate-400 py-8">Chưa có hồ sơ xe phù hợp</td></tr>'}
+   </tbody></table>`;
+}
+
+/* ================== BÁO CÁO ================== */
+let RP={from:mondayOf(todayISO()),to:addDays(mondayOf(todayISO()),6)};
+function calcKPI(){
+  const act=active();
+  const old=act.filter(v=>!isNewV(veh(v.key)));
+  return {total:act.length,old:old.length,nw:act.length-old.length,old11:old.filter(v=>age(v)===null||age(v)>=11).length};
+}
+function computeReport(from,to){
+  const T=todayISO(),act=active(),R={};
+  Object.assign(R,calcKPI());
+  const days=[];for(let d=from;d<=to&&days.length<62;d=addDays(d,1))days.push(d);
+  R.chart=days.map(d=>{
+    if(d>T)return {d,o:null,n:null};
+    let o=0,n=0;
+    S.visits.forEach(v=>{
+      const inOk=!isValidInDate(v.inDate) || v.inDate<=d;
+      const outOk=!v.done || (isValidInDate(v.outDate) && v.outDate>d);
+      if(inOk && outOk){isNewV(veh(v.key))?n++:o++;}
+    });
+    return {d,o,n};
+  });
+  const ins=S.visits.filter(v=>isValidInDate(v.inDate)&&v.inDate>=from&&v.inDate<=to);
+  const outs=S.visits.filter(v=>v.done&&isValidInDate(v.outDate)&&v.outDate>=from&&v.outDate<=to);
+  R.in=ins.length;R.out=outs.length;
+  R.inSt=countBy(ins,statIn);
+  R.outSt=countBy(outs,v=>v.statusOut||'Chưa ghi tình trạng');
+  R.g=[0,0,0,0];
+  act.forEach(v=>R.g[ageGroup(age(v))]++);
+  R.over30=act.filter(v=>age(v)>30).sort((a,b)=>age(b)-age(a));
+  R.missing=act.filter(v=>age(v)===null);
+  R.near=act.filter(v=>age(v)>=25&&age(v)<=30);
+  R.noPos=act.filter(v=>!v.pos);
+  R.stat=countBy(act,statIn);
+  R.model=countBy(act,v=>veh(v.key).model||'Dòng khác');
+  const pc={};act.forEach(v=>{if(v.pos){const d=posDay(v.pos);pc[d]=(pc[d]||0)+1;}});
+  R.pos=Array.from({length:S.settings.layout.days},(_,i)=>['Dãy '+(i+1),pc[i+1]||0]);
+  if(R.noPos.length)R.pos.push(['Chưa có vị trí',R.noPos.length]);
+  return R;
+}
+const PAL=['#c9871a','#3f8f3f','#6d4fd6','#1e7fa8','#d6451f','#0f8b8d','#a43b8c','#6b7a1c'];
+function listPlates(arr,max,withAge){
+  const s=arr.slice(0,max).map(v=>withAge?`${v.key} (${age(v)} ngày)`:v.key).join(', ');
+  return s+(arr.length>max?'…':'');
+}
+function renderReport(){
+  const R=computeReport(RP.from,RP.to);
+  const isWeek=toD(RP.from).getUTCDay()===1&&diff(RP.from,RP.to)===6;
+  const maxG=Math.max(R.g[1],R.g[2],R.g[3],1);
+  const maxBar=Math.max(1,...R.chart.map(c=>(c.o||0)+(c.n||0)));
+  const many=R.chart.length>14;
+  const bars=R.chart.map(c=>{
+    if(c.o===null)return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0"><div style="height:280px"></div><div style="font-size:12px;color:#94a3b8;margin-top:6px">${shortD(c.d)}</div></div>`;
+    const ho=c.o/maxBar*270,hn=c.n/maxBar*270;
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0">
+     <div style="height:280px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;width:100%">
+      ${many?'':`<div style="font-size:11px;font-weight:700;color:#334155;margin-bottom:2px">${c.o+c.n}</div>`}
+      <div style="width:${many?'70%':'46%'};max-width:44px;display:flex;flex-direction:column;justify-content:flex-end">
+        <div style="height:${hn}px;background:#5b8e4d;border-radius:4px 4px 0 0;min-height:${c.n?2:0}px"></div>
+        <div style="height:${ho}px;background:#2487a8;min-height:${c.o?2:0}px;${c.n?'':'border-radius:4px 4px 0 0'}"></div>
+      </div></div>
+     <div style="font-size:${many?9:12}px;color:#64748b;margin-top:6px;white-space:nowrap">${shortD(c.d)}</div></div>`;
+  }).join('');
+  const metric=(l,v,c)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eef2f6"><span style="color:#64748b;font-size:14px">${l}</span><span style="font-size:20px;font-weight:700;color:${c}">${v}</span></div>`;
+  let mx=metric('Tổng lượt xe vào',R.in,'#1E62D0')+metric('Tổng lượt xe ra',R.out,'#16a34a');
+  let ci=0;
+  R.inSt.forEach(([k,n])=>{mx+=metric('Vào · '+esc(k),n,PAL[ci++%PAL.length]);});
+  R.outSt.forEach(([k,n])=>{mx+=metric('Ra · '+esc(k),n,PAL[ci++%PAL.length]);});
+  const bar=(l,n,c)=>`<div style="display:flex;align-items:center;gap:14px;margin-top:10px"><div style="width:110px;color:#64748b;font-size:14px;flex:none">${l}</div><div style="flex:1;height:14px;background:#e9eef4;border-radius:99px;overflow:hidden"><div style="height:100%;width:${n/maxG*100}%;background:${c};border-radius:99px"></div></div><div style="width:40px;text-align:right;font-weight:600;color:#475569">${n}</div></div>`;
+  const alerts=[];
+  alerts.push([ '#c62839',R.over30.length?`<b>${R.over30.length} xe tồn trên 30 ngày</b> (tính từ ngày bắt đầu chu kỳ hiện tại). Lâu nhất: ${esc(R.over30.slice(0,3).map(v=>`${v.key} (${age(v)} ngày)`).join(', '))}.`:'0 xe có ngày nhập hợp lệ tồn trên 30 ngày.']);
+  if(R.missing.length)alerts.push(['#ee7d28',`<b>${R.missing.length} xe có ngày nhập = 0</b> (${esc(listPlates(R.missing,5))}) — vẫn tính vào tổng xe tồn bãi và xếp vào nhóm <b>&gt;31 ngày</b>.`]);
+  alerts.push(['#e8b923',R.near.length?`<b>${R.near.length} xe sắp quá 30 ngày</b> (25–30 ngày từ chu kỳ hiện tại): ${esc(listPlates(R.near,6))}.`:'0 xe sắp quá 30 ngày (25–30 ngày).']);
+  alerts.push(['#9ca3af',`<b>${R.noPos.length} xe</b> trong bãi chưa có vị trí.`]);
+  const kv=(arr)=>arr.length?arr.map(([k,n])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:14px"><span style="color:#64748b">${esc(k)}</span><span style="font-weight:600;color:#1f3a5f">${n}</span></div>`).join(''):'<div style="color:#94a3b8;font-size:14px">Không có dữ liệu</div>';
+  const noteKey=RP.from+'_'+RP.to,note=(S.notes&&S.notes[noteKey])||'';
+  const kpi=(l,v,c,bc)=>`<div style="background:#fff;border-radius:14px;border-top:5px solid ${bc};padding:16px 20px"><div style="font-size:13px;color:#64748b;text-transform:uppercase;letter-spacing:.02em">${l}</div><div style="font-size:46px;font-weight:700;color:${c};line-height:1.15;margin-top:12px">${v}</div></div>`;
+  const sec=(t)=>`font-size:19px;color:#1f3a5f;margin:0 0 6px;font-weight:500`;
+  $('#reportBox').innerHTML=`
+  <div class="card p-3 mb-4 flex flex-wrap gap-2 items-end">
+    <div><div class="text-xs text-slate-500 mb-1">Từ ngày</div><input type="date" id="rfrom" class="inp" value="${RP.from}"></div>
+    <div><div class="text-xs text-slate-500 mb-1">Đến ngày</div><input type="date" id="rto" class="inp" value="${RP.to}"></div>
+    <button class="btn" onclick="shiftWeek(-1)">‹ Tuần trước</button><button class="btn" onclick="shiftWeek(0)">Tuần này</button><button class="btn" onclick="shiftWeek(1)">Tuần sau ›</button>
+    <button class="btn btn-primary ml-auto" onclick="exportPNG()">🖼️ Xuất ảnh Báo cáo (PNG)</button>
+  </div>
+  <div class="overflow-x-auto"><div id="reportArea" style="background:#EEF3F7;font-family:Inter,sans-serif;min-width:0">
+    <div style="background:#13294B;color:#fff;padding:34px 40px">
+      <div style="font-size:34px;font-weight:600;letter-spacing:.01em" class="rp-title">BÁO CÁO TỔNG QUAN BÃI XE</div>
+      <div style="font-size:17px;color:#c7d3e6;margin-top:10px">${isWeek?'Tuần':'Khoảng ngày'}: ${fmt(RP.from)} - ${fmt(RP.to)}</div>
+    </div>
+    <div style="padding:22px 28px 26px;display:grid;gap:18px">
+      <div class="grid grid-cols-2 lg:grid-cols-4" style="gap:18px">
+        ${kpi('TỔNG XE TỒN BÃI',R.total,'#13294B','#13294B')}${kpi('XE CŨ CÓ BIỂN',R.old,'#1E62D0','#2487a8')}${kpi('XE MỚI CHƯA BIỂN',R.nw,'#4f7d44','#5b8e4d')}${kpi('XE CŨ TỒN TỪ 11 NGÀY',R.old11,'#c62839','#c62839')}
+      </div>
+      <div class="report-chart-row" style="display:grid;grid-template-columns:minmax(0,3fr) minmax(280px,2fr);gap:18px;align-items:stretch">
+        <div class="report-chart-card" style="background:#fff;border-radius:18px;padding:24px 26px;min-width:0;display:flex;flex-direction:column;min-height:470px;height:100%;box-sizing:border-box">
+          <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px"><div style="${sec()}">DIỄN BIẾN XE TỒN BÃI TRONG KỲ</div>
+          <div style="font-size:12px;color:#64748b;display:flex;gap:12px"><span><i style="display:inline-block;width:10px;height:10px;background:#2487a8;border-radius:3px"></i> Xe cũ</span><span><i style="display:inline-block;width:10px;height:10px;background:#5b8e4d;border-radius:3px"></i> Xe mới</span></div></div>
+          <div style="font-size:13px;color:#94a3b8;margin-bottom:14px">Số xe còn tại bãi cuối mỗi ngày · So sánh xe cũ và xe mới</div>
+          <div class="report-chart-plot" style="display:flex;gap:${many?2:8}px;align-items:stretch;border-bottom:1px solid #dbe3ec;padding-bottom:0;width:100%;min-width:0;flex:1;height:100%;min-height:360px">${bars}</div>
+        </div>
+        <div class="report-chart-card" style="background:#fff;border-radius:18px;padding:24px 26px;min-width:0;min-height:470px;height:100%;box-sizing:border-box">
+          <div style="${sec()}">CHỈ TIÊU XE TRONG KỲ</div>${mx}
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:18px;padding:24px 26px">
+        <div style="${sec()}">CẢNH BÁO XE TỒN BÃI THEO TUỔI TỒN (TÍNH TỪ CHU KỲ ĐẦU TIÊN)</div>
+        <div style="font-size:13px;color:#94a3b8;margin-bottom:6px">Nhóm 0–10 ngày: ${R.g[0]} xe</div>
+        ${bar('11–20 ngày',R.g[1],'#e8a317')}${bar('21–30 ngày',R.g[2],'#ee7d28')}${bar('Trên 31 ngày*',R.g[3],'#c62839')}
+      </div>
+      <div style="background:#fff;border-radius:18px;padding:22px 26px">
+        <div style="font-size:16px;color:#1f3a5f;font-weight:600;margin-bottom:12px">CHI TIẾT CẢNH BÁO</div>
+        ${alerts.map(a=>`<div style="display:flex;gap:12px;font-size:14.5px;color:#475569;margin-bottom:9px;line-height:1.5"><span class="dot" style="background:${a[0]}"></span><div>${a[1]}</div></div>`).join('')}
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3" style="gap:18px">
+        <div style="background:#fff;border-radius:18px;padding:22px 24px"><div style="font-size:15px;color:#1f3a5f;font-weight:600;margin-bottom:10px">TÌNH TRẠNG XE TRONG BÃI</div>${kv(R.stat)}</div>
+        <div style="background:#fff;border-radius:18px;padding:22px 24px"><div style="font-size:15px;color:#1f3a5f;font-weight:600;margin-bottom:10px">DÒNG XE TRONG BÃI</div>${kv(R.model)}</div>
+        <div style="background:#fff;border-radius:18px;padding:22px 24px"><div style="font-size:15px;color:#1f3a5f;font-weight:600;margin-bottom:10px">VỊ TRÍ XE TRONG BÃI</div>${kv(R.pos)}</div>
+      </div>
+      <div style="background:#fff;border-radius:18px;padding:24px 28px">
+        <div style="${sec()};margin-bottom:12px">DIỄN BIẾN ĐẶC BIỆT</div>
+        <div id="rnote" contenteditable="true" style="font-size:15px;line-height:1.6;color:${note?'#334155':'#94a3b8'};min-height:28px;white-space:pre-wrap">${note?esc(note):'Không có diễn biến đặc biệt được chọn cho kỳ này.'}</div>
+      </div>
+      <div style="text-align:center;font-size:12px;color:#94a3b8;padding-top:2px">*Tuổi tồn xe được tính liên tục từ ngày nhập đầu tiên của chu kỳ hiện tại; các lần ra/vào thông thường không làm reset tuổi tồn. Chỉ trạng thái xuất được cấu hình là giao khách mới kết thúc chu kỳ. Xe có ngày nhập = 0 (không có ngày nhập) vẫn được tính vào tồn bãi nếu chưa xuất và xếp vào nhóm &gt;31 ngày.</div>
+    </div>
+  </div></div>`;
+  const DEF='Không có diễn biến đặc biệt được chọn cho kỳ này.',nt=$('#rnote');
+  nt.addEventListener('focus',()=>{if(nt.textContent.trim()===DEF){nt.textContent='';nt.style.color='#334155';}});
+  nt.addEventListener('blur',()=>{const t=nt.innerText.trim();S.notes=S.notes||{};if(t&&t!==DEF)S.notes[noteKey]=t;else{delete S.notes[noteKey];nt.textContent=DEF;nt.style.color='#94a3b8';}idbPutState();});
+  $('#rfrom').onchange=e=>{if(e.target.value){RP.from=e.target.value;if(RP.to<RP.from)RP.to=RP.from;renderReport();}};
+  $('#rto').onchange=e=>{if(e.target.value){RP.to=e.target.value;if(RP.to<RP.from)RP.from=RP.to;renderReport();}};
+}
+function shiftWeek(d){
+  if(d===0)RP.from=mondayOf(todayISO());else RP.from=addDays(mondayOf(RP.from),7*d);
+  RP.to=addDays(RP.from,6);renderReport();
+}
+async function exportPNG(){
+  const el=$('#reportArea');
+  if(!el){toast('Không tìm thấy nội dung báo cáo. Hãy mở lại tab Báo cáo.');return;}
+  if(typeof html2canvas==='undefined'){
+    toast('Đang tải bộ xuất ảnh…');
+    try{await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';sc.onload=resolve;sc.onerror=()=>reject(new Error('Không tải được thư viện tạo ảnh. Kiểm tra Internet.'));document.head.appendChild(sc);});}
+    catch(e){toast(e.message);return;}
+  }
+  const btn=document.querySelector('button[onclick="exportPNG()"]');if(btn){btn.disabled=true;btn.textContent='Đang tạo ảnh…';}
+  toast('Đang tạo ảnh báo cáo…');
+  try{
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    const c=await html2canvas(el,{scale:Math.min(2,Math.max(1,window.devicePixelRatio||1)),backgroundColor:'#EEF3F7',useCORS:true,allowTaint:false,logging:false,windowWidth:1200,scrollX:0,scrollY:0,
+      onclone:doc=>{const e=doc.getElementById('reportArea');if(!e)throw new Error('Không sao chép được vùng báo cáo.');doc.body.style.cssText='margin:0;padding:0;height:auto;min-height:0;overflow:visible;background:#EEF3F7';doc.documentElement.style.cssText='height:auto;overflow:visible';e.style.width='1080px';e.style.maxWidth='none';e.style.minWidth='1080px';e.style.overflow='visible';}});
+    if(!c||!c.width||!c.height)throw new Error('Ảnh tạo ra không có kích thước hợp lệ.');
+    let blob;
+    if(typeof c.toBlob==='function') blob=await new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error('Trình duyệt không tạo được tệp PNG.')),'image/png'));
+    else {const data=c.toDataURL('image/png');const res=await fetch(data);blob=await res.blob();}
+    if(!blob||!blob.size)throw new Error('Tệp PNG rỗng.');
+    const filename=`bao-cao-bai-xe-34_${RP.from}_${RP.to}.png`;
+    const ok=await saveOrShareBlob(blob,filename);
+    if(ok)toast(`Đã tạo ảnh báo cáo (${fbFmtBytes(blob.size)}).`);
+  }catch(e){console.error('[Export PNG]',e);toast('Xuất ảnh chưa thành công: '+(e.message||e));}
+  finally{if(btn){btn.disabled=false;btn.textContent='🖼️ Xuất ảnh Báo cáo (PNG)';}}
+}
+
+/* ================== CÀI ĐẶT ================== */
+function renderSettings(){
+  const L=S.settings.layout;
+  const list=(kind,title,desc)=>`<div class="card p-4"><div class="font-bold">${title}</div><div class="text-xs text-slate-500 mb-3">${desc}</div>
+   <div class="space-y-2">${S.settings[kind].map((s,i)=>`<div class="flex gap-2"><input class="inp" value="${esc(s)}" data-act="ren" data-kind="${kind}" data-i="${i}"><button class="btn btn-red btn-sm" data-act="del" data-kind="${kind}" data-i="${i}">Xóa</button></div>`).join('')}</div>
+   <div class="flex gap-2 mt-3"><input id="add_${kind}" class="inp" placeholder="Thêm mới…" data-enter="${kind}"><button class="btn btn-primary" data-act="add" data-kind="${kind}">Thêm</button></div></div>`;
+  $('#settingsBox').innerHTML=`<div class="grid gap-4 lg:grid-cols-3">
+   ${list('statusIn','Tình trạng vào','Dùng khi nhập xe. Tình trạng mới tự hiện ở Báo cáo.')}
+   ${list('statusOut','Tình trạng ra','Dùng khi xuất xe. Tình trạng mới tự hiện ở Báo cáo.')}
+   ${list('models','Dòng xe','Danh mục dòng xe cho xe mới.')}
+  </div>
+  <div class="card p-4 mt-4">
+   <div class="font-bold">🚚 Trạng thái xuất kết thúc chu kỳ tuổi tồn</div>
+   <div class="text-xs text-slate-500 mb-3">Chỉ các trạng thái trong danh sách này mới được xem là đã giao khách và kết thúc chu kỳ tồn. Mặc định: Giao GSM, Chuyển kho Tây Ninh. Các lần xuất với trạng thái khác không reset tuổi tồn. Sửa/xóa danh mục không thay đổi lịch sử giao dịch đã lưu.</div>
+   <div class="space-y-2">${(S.settings.customerOutStatuses||[]).map((st,i)=>`<div class="flex gap-2"><input class="inp" value="${esc(st)}" data-act="customerRen" data-i="${i}"><button class="btn btn-red btn-sm" data-act="customerDel" data-i="${i}">Xóa</button></div>`).join('')||'<div class="text-sm text-slate-400">Chưa có trạng thái nào.</div>'}</div>
+   <div class="flex gap-2 mt-3"><input id="add_customerOutStatus" class="inp" placeholder="VD: Giao khách / Chuyển kho…"><button class="btn btn-primary" data-act="customerAdd">Thêm trạng thái</button></div>
+  </div>
+  <div class="card p-4 mt-4">
+   <div class="font-bold">📷 Gemini AI — nhận diện xe</div>
+   <div class="text-xs text-slate-500 mb-3">Key chỉ lưu trên thiết bị này, không đồng bộ Firebase và không nằm trong file sao lưu. <span id="setGeminiState" class="font-semibold">${getGeminiKey()?'✅ Đã có API key trên thiết bị này':'⚠️ Chưa nhập API key'}</span></div>
+   <div class="flex gap-2"><input id="setGeminiInp" type="password" class="inp" placeholder="Dán Gemini API key mới" autocomplete="off"><button type="button" class="btn btn-primary" onclick="saveGeminiKey('setGeminiInp')">Lưu</button></div>
+   <div class="flex gap-2 mt-2"><button type="button" class="btn btn-sm" onclick="testGeminiKey()">Kiểm tra kết nối</button><button type="button" class="btn btn-sm btn-red" onclick="removeGeminiKey()">Xóa key</button></div>
+  </div>
+  <div class="grid gap-4 lg:grid-cols-2 mt-4">
+   <div class="card p-4"><div class="font-bold">Vị trí bãi</div><div class="text-xs text-slate-500 mb-3">Sơ đồ: số dãy × tên cột × số hàng (hiện ${L.days*L.cols.length*L.rows} vị trí).</div>
+    <div class="grid grid-cols-2 gap-3"><div>${lab('Số dãy')}<input id="ly_days" type="number" min="1" max="12" class="inp" value="${L.days}"></div><div>${lab('Số hàng mỗi cột')}<input id="ly_rows" type="number" min="1" max="60" class="inp" value="${L.rows}"></div>
+    <div class="col-span-2">${lab('Tên các cột (cách nhau bằng dấu phẩy)')}<input id="ly_cols" class="inp" value="${esc(L.cols.join(', '))}"></div></div>
+    <button class="btn btn-primary mt-3" data-act="layout">Áp dụng sơ đồ</button></div>
+   <div class="card p-4"><div class="font-bold">Dữ liệu Offline (IndexedDB)</div><div class="text-xs text-slate-500 mb-3">Lưu cục bộ 100% trên thiết bị. Hỗ trợ sao lưu / khôi phục JSON & Excel (.xlsx).</div>
+    <div class="grid sm:grid-cols-2 gap-2">
+     <button class="btn" data-act="expJson">⬇️ Xuất JSON</button><button class="btn" data-act="impJson">⬆️ Nhập JSON</button>
+     <button class="btn" data-act="expXlsx">⬇️ Xuất Excel (.xlsx)</button><button class="btn" data-act="impXlsx">⬆️ Nhập Excel (.xlsx)</button>
+     <button class="btn" data-act="impOpsXlsx">🧩 Cập nhật CVDV / Giải pháp từ Excel tồn bãi</button>
+     <button class="btn" data-act="sample">🔄 Khôi phục dữ liệu mẫu</button><button class="btn btn-red" data-act="clear">🗑️ Xóa toàn bộ dữ liệu</button>
+    </div>
+    <div class="text-xs text-slate-500 mt-3">Tổng: ${Object.keys(S.vehicles).length} xe · ${S.visits.length} lượt lưu bãi · ${active().length} xe đang trong bãi.</div></div>
+  </div>`;
+}
+const colorDL=document.createElement('datalist');colorDL.id='colorList';colorDL.innerHTML=['Trắng','Đen','Xanh','Đỏ','Xám','Bạc','Cam','Vàng'].map(c=>`<option value="${c}">`).join('');
+function settingsAdd(kind){
+  const i=$('#add_'+kind),v=i.value.trim();if(!v)return;
+  if(S.settings[kind].includes(v)){toast('Đã tồn tại');return;}
+  S.settings[kind].push(v);save();toast('Đã thêm "'+v+'"');
+}
+$('#settingsBox').addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.act==='customerRen'){
+    const i=+t.dataset.i,old=(S.settings.customerOutStatuses||[])[i],nv=t.value.trim();
+    if(!nv||(nv!==old&&(S.settings.customerOutStatuses||[]).some((x,j)=>j!==i&&norm(x)===norm(nv)))){renderSettings();toast('Tên trạng thái không hợp lệ hoặc bị trùng');return;}
+    if(nv!==old){S.settings.customerOutStatuses[i]=nv;save();toast('Đã cập nhật cấu hình; lịch sử cũ được giữ nguyên.');}
+    return;
+  }
+  if(t.dataset.act!=='ren')return;
+  const kind=t.dataset.kind,i=+t.dataset.i,old=S.settings[kind][i],nv=t.value.trim();
+  if(!nv||(nv!==old&&S.settings[kind].includes(nv))){renderSettings();toast('Tên không hợp lệ hoặc bị trùng');return;}
+  if(nv===old)return;
+  S.settings[kind][i]=nv;
+  if(kind==='statusIn')S.visits.forEach(v=>{if(v.statusIn===old)v.statusIn=nv;});
+  if(kind==='statusOut'){S.visits.forEach(v=>{if(v.statusOut===old)v.statusOut=nv;});S.settings.customerOutStatuses=(S.settings.customerOutStatuses||[]).map(x=>x===old?nv:x);}
+  if(kind==='models')Object.values(S.vehicles).forEach(v=>{if(v.model===old)v.model=nv;});
+  save();toast('Đã đổi tên và cập nhật dữ liệu liên quan');
+});
+$('#settingsBox').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset.enter)settingsAdd(e.target.dataset.enter);});
+$('#settingsBox').addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b||b.tagName==='INPUT')return;
+  const a=b.dataset.act,kind=b.dataset.kind;
+  if(a==='customerAdd'){
+    const input=$('#add_customerOutStatus'),v=input.value.trim();if(!v)return;
+    S.settings.customerOutStatuses=S.settings.customerOutStatuses||[];
+    if(S.settings.customerOutStatuses.some(x=>norm(x)===norm(v))){toast('Trạng thái đã tồn tại');return;}
+    S.settings.customerOutStatuses.push(v);save();toast('Đã thêm trạng thái kết thúc chu kỳ');
+  }
+  else if(a==='customerDel'){
+    const i=+b.dataset.i,arr=S.settings.customerOutStatuses||[],name=arr[i];
+    if(name!==undefined&&confirm(`Xóa "${name}" khỏi cấu hình cho các lần xuất tiếp theo? Lịch sử giao dịch không bị thay đổi.`)){arr.splice(i,1);save();toast('Đã xóa trạng thái khỏi cấu hình');}
+  }
+  else if(a==='add')settingsAdd(kind);
+  else if(a==='del'){const i=+b.dataset.i,name=S.settings[kind][i];if(confirm(`Xóa "${name}" khỏi danh mục?`)){S.settings[kind].splice(i,1);save();}}
+  else if(a==='layout'){
+    const days=Math.max(1,Math.min(12,+$('#ly_days').value||5)),rows=Math.max(1,Math.min(60,+$('#ly_rows').value||20));
+    const cols=$('#ly_cols').value.split(',').map(s=>s.trim()).filter(Boolean);
+    if(!cols.length){toast('Cần ít nhất 1 cột');return;}
+    S.settings.layout={days,rows,cols};
+    const valid=new Set(allPositions());const bad=active().filter(v=>v.pos&&!valid.has(v.pos)).length;
+    save();toast(bad?`Đã áp dụng. ${bad} xe đang ở vị trí ngoài sơ đồ mới — hãy sửa vị trí.`:'Đã áp dụng sơ đồ mới');
+  }
+  else if(a==='expJson'){const backup=JSON.parse(JSON.stringify(S));saveOrShareBlob(new Blob([JSON.stringify(backup,null,1)],{type:'application/json'}),`bai-xe-34_${todayISO()}.json`).then(ok=>{if(ok)toast('Đã lưu bản sao lưu JSON vào điện thoại');});}
+  else if(a==='impJson')$('#fileJson').click();
+  else if(a==='expXlsx')exportXlsx();
+  else if(a==='impXlsx')$('#fileXlsx').click();
+  else if(a==='impOpsXlsx')$('#fileOpsXlsx').click();
+  else if(a==='sample'){if(confirm('Khôi phục dữ liệu mẫu? Dữ liệu hiện tại sẽ bị thay thế.')){S=sample();save();toast('Đã khôi phục dữ liệu mẫu');}}
+  else if(a==='clear'){if(confirm('Xóa TOÀN BỘ xe và giao dịch? Danh mục cài đặt được giữ lại.')){S.vehicles={};S.visits=[];S.notes={};save();toast('Đã xóa dữ liệu');}}
+});
+// Nhập bổ sung theo TÊN TIÊU ĐỀ, không phụ thuộc vị trí cột trong Excel.
+// Tiêu đề phải tương ứng với tên trường của hệ thống; chỉ chuẩn hóa dấu/case/khoảng trắng.
+$('#fileOpsXlsx').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{
+    const sheets=await readXlsxPure(f,{'Xe trong bãi':'Biển số / VIN'});
+    const rows=sheets['Xe trong bãi'];
+    if(!Array.isArray(rows)||!rows.length)throw new Error('Không tìm thấy dữ liệu trong sheet “Xe trong bãi”.');
+    const norm=x=>String(x??'').trim().replace(/\s+/g,' ');
+    const headerNames=Object.keys(rows[0]||{});
+    const required=[
+      {key:'id',label:'Biển số / VIN',aliases:['Biển số / VIN','Biển số/VIN']},
+      {key:'depot',label:'DEPOT',aliases:['DEPOT']},
+      {key:'cvdv',label:'CVDV PHỤ TRÁCH',aliases:['CVDV PHỤ TRÁCH']},
+      {key:'solution',label:'GIẢI PHÁP',aliases:['GIẢI PHÁP']},
+      {key:'expected',label:'NGÀY DỰ KIẾN HOÀN THÀNH',aliases:['NGÀY DỰ KIẾN HOÀN THÀNH']}
+    ];
+    const headerMap={};
+    for(const field of required){
+      const accepted=new Set(field.aliases.map(norm));
+      const matches=headerNames.filter(h=>accepted.has(norm(h)));
+      if(matches.length===0)throw new Error(`Thiếu tiêu đề cột “${field.label}”. Hãy đặt đúng tên tiêu đề theo hệ thống; thứ tự cột tùy ý.`);
+      if(matches.length>1)throw new Error(`Có nhiều cột cùng khớp tiêu đề “${field.label}” (${matches.join(', ')}). Hãy chỉ giữ một cột.`);
+      headerMap[field.key]=matches[0];
+    }
+    const get=(row,key)=>row?.[headerMap[key]]??'';
+    const sourceSeen=new Set(),updates=[],notFound=[],duplicates=[];
+    const keys=Object.keys(S.vehicles||{}),keyMap=new Map();
+    keys.forEach(k=>{const id=cleanId(k);if(id){if(!keyMap.has(id))keyMap.set(id,[]);keyMap.get(id).push(k);}});
+    let sourceRows=0,withCvdv=0,withSolution=0,withDate=0;
+    for(const r of rows){
+      const rawId=get(r,'id');
+      const id=cleanId(rawId);if(!id)continue;sourceRows++;
+      if(sourceSeen.has(id)){duplicates.push(String(rawId));continue;}sourceSeen.add(id);
+      const found=keyMap.get(id)||[];
+      if(found.length!==1){notFound.push(String(rawId));continue;}
+      const depot=String(get(r,'depot')??'').trim();
+      const cvdv=String(get(r,'cvdv')??'').trim();
+      const solution=String(get(r,'solution')??'').trim();
+      const expected=String(get(r,'expected')??'').trim();
+      if(cvdv)withCvdv++;if(solution)withSolution++;if(expected)withDate++;
+      if(!depot&&!cvdv&&!solution&&!expected)continue;
+      updates.push({key:found[0],depot,cvdv,solution,expected});
+    }
+    if(!updates.length)throw new Error(`Không có dữ liệu phù hợp để cập nhật. Đã đọc ${sourceRows} mã xe; kiểm tra dữ liệu và các tiêu đề cột.`);
+    const preview=`Đã nhận diện cột theo tiêu đề (không theo vị trí):\n• Mã xe: ${headerMap.id}\n• DEPOT: ${headerMap.depot}\n• CVDV PHỤ TRÁCH: ${headerMap.cvdv}\n• GIẢI PHÁP: ${headerMap.solution}\n• NGÀY DỰ KIẾN HOÀN THÀNH: ${headerMap.expected}\n\nĐã đọc ${sourceRows} mã xe. Có ${updates.length} xe khớp và có ít nhất một trường cần cập nhật.\nCVDV PHỤ TRÁCH: ${withCvdv}\nGiải pháp: ${withSolution}\nNgày dự kiến hoàn thành: ${withDate}\nKhông tìm thấy/không duy nhất: ${notFound.length}\nMã trùng trong file nguồn: ${duplicates.length}\n\nChỉ cập nhật trường có dữ liệu; ô trống hoặc dấu “-” không xóa dữ liệu đích.\nKhông thay đổi lịch sử, tình trạng, ngày nhập hoặc vị trí.\n\nXác nhận cập nhật?`;
+    if(!confirm(preview))return;
+    let changed=0,fieldChanges={depot:0,cvdv:0,solution:0,expected:0};
+    updates.forEach(u=>{
+      const v=S.vehicles[u.key];let c=false;
+      if(u.depot&&v.depot!==u.depot){v.depot=u.depot;c=true;fieldChanges.depot++;}
+      if(u.cvdv&&v.cvdv!==u.cvdv){v.cvdv=u.cvdv;c=true;fieldChanges.cvdv++;}
+      if(u.solution&&v.solution!==u.solution){v.solution=u.solution;c=true;fieldChanges.solution++;}
+      if(u.expected&&v.expectedCompletion!==u.expected){v.expectedCompletion=u.expected;c=true;fieldChanges.expected++;}
+      if(c)changed++;
+    });
+    if(!changed){toast('Dữ liệu đã giống nhau, không có thay đổi cần lưu.');return;}
+    await save();
+    toast(`Đã cập nhật ${changed} xe: DEPOT ${fieldChanges.depot}, CVDV ${fieldChanges.cvdv}, Giải pháp ${fieldChanges.solution}, Ngày dự kiến ${fieldChanges.expected}.`);
+  }catch(err){console.error('Excel header-based import:',err);toast('Không thể cập nhật Excel: '+(err.message||err));}
+};
+
+$('#fileJson').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{const d=JSON.parse(await f.text());if(!d||!Array.isArray(d.visits)||!d.vehicles||typeof d.vehicles!=='object'||!d.settings)throw new Error('File JSON không đúng cấu trúc sao lưu Bãi Xe 34.');
+    if(!confirm('Nhập dữ liệu sẽ thay thế toàn bộ dữ liệu hiện tại. Tiếp tục?'))return;
+    S=d;S.notes=S.notes||{};S.seq=S.seq||Math.max(0,...S.visits.map(v=>v.id||0));
+    S.settings=S.settings||DEF_SETTINGS();
+    if(S.settings.cloud) delete S.settings.cloud;
+    save();toast('Đã nhập JSON');}catch(err){toast('Lỗi nhập JSON: '+err.message);}
+};
+
+/* ================== XUẤT / NHẬP EXCEL THUẦN JS (APK READY) ================== */
+async function exportYardXlsx(){
+  const act=active().sort((a,b)=>(age(b)??9999)-(age(a)??9999));
+  const hdr=['STT','Biển số / VIN','Loại xe','Dòng xe','Màu sắc','Ngày bắt đầu chu kỳ','Ngày nhập gần nhất','Tuổi tồn (ngày)','Vị trí','Tình trạng','Người gửi','Ghi chú','DEPOT','CVDV PHỤ TRÁCH','GIẢI PHÁP','NGÀY DỰ KIẾN HOÀN THÀNH'];
+  const rows=[
+    [{v:'DANH SÁCH XE TỒN BÃI 34',s:2}],
+    ['Ngày xuất',fmt(todayISO()),'Tổng số xe tồn',{v:act.length,s:2}],
+    [],
+    hdr
+  ];
+  act.forEach((v,i)=>{
+    const x=veh(v.key);
+    const firstIn=cycleStartDateOf(v.key,v);
+    const a=age(v);
+    rows.push([
+      i+1,
+      v.key,
+      idTypeLabel(v.key),
+      x.model||'',
+      x.color||'',
+      isValidInDate(firstIn)?fmt(firstIn):'0',
+      isValidInDate(v.inDate)?fmt(v.inDate):'0',
+      a===null?'>31 ngày (0)':a,
+      posLabel(v.pos),
+      statIn(v),
+      v.party||'',
+      v.noteIn||'',
+      x.depot||'',x.cvdv||'',x.solution||'',x.expectedCompletion||''
+    ]);
+  });
+  const allRows=[['Biển số/VIN','Biển số','VIN','Dòng xe','Màu sắc','Ngày nhập','Vị trí','Mã vị trí','Người gửi','Tình trạng vào','Ghi chú nhập','Ngày xuất','Tình trạng ra','Người nhận','Ghi chú xuất']];
+  S.visits.slice().sort((a,b)=>a.id-b.id).forEach(v=>{
+    const x=veh(v.key);
+    allRows.push([v.key,x.plate||'',x.vin||'',x.model||'',x.color||'',isValidInDate(v.inDate)?v.inDate:'0',v.pos?posLabel(v.pos):'',v.pos||'',v.party||'',v.statusIn||'',v.noteIn||'',v.outDate||'',v.statusOut||'',v.receiver||'',v.noteOut||'']);
+  });
+  const blob=buildXlsx([
+    {name:'Xe trong bãi',rows,hdr:3,widths:[6,16,20,16,12,16,16,16,18,20,18,28]},
+    {name:'Lượt lưu bãi',rows:allRows,hdr:0,widths:[16,14,14,16,12,14,18,12,18,20,24,14,20,18,24]}
+  ]);
+  const ok=await saveOrShareBlob(blob,`TonBai_Xe34_${todayISO()}.xlsx`);
+  if(ok) toast(`Đã xuất ${act.length} xe tồn bãi ra Excel`);
+}
+
+async function exportXlsx(){
+  const allRows=[['Biển số/VIN','Biển số','VIN','Dòng xe','Màu sắc','Ngày nhập','Vị trí','Mã vị trí','Người gửi','Tình trạng vào','Ghi chú nhập','Ngày xuất','Tình trạng ra','Người nhận','Ghi chú xuất']];
+  S.visits.slice().sort((a,b)=>a.id-b.id).forEach(v=>{
+    const x=veh(v.key);
+    allRows.push([v.key,x.plate||'',x.vin||'',x.model||'',x.color||'',isValidInDate(v.inDate)?v.inDate:'0',v.pos?posLabel(v.pos):'',v.pos||'',v.party||'',v.statusIn||'',v.noteIn||'',v.outDate||'',v.statusOut||'',v.receiver||'',v.noteOut||'']);
+  });
+  const yardRows=[['STT','Biển số/VIN','Loại xe','Dòng xe','Màu sắc','Ngày bắt đầu chu kỳ','Ngày nhập gần nhất','Tuổi tồn','Vị trí','Tình trạng','Người gửi','Ghi chú','DEPOT','CVDV PHỤ TRÁCH','GIẢI PHÁP','NGÀY DỰ KIẾN HOÀN THÀNH']];
+  active().forEach((v,i)=>{
+    const x=veh(v.key);
+    const firstIn=cycleStartDateOf(v.key,v);
+    const a=age(v);
+    yardRows.push([i+1,v.key,idTypeLabel(v.key),x.model||'',x.color||'',isValidInDate(firstIn)?firstIn:'0',isValidInDate(v.inDate)?v.inDate:'0',a===null?'>31 ngày (0)':a,posLabel(v.pos),statIn(v),v.party||'',v.noteIn||'',x.depot||'',x.cvdv||'',x.solution||'',x.expectedCompletion||'']);
+  });
+  const blob=buildXlsx([
+    {name:'Xe trong bãi',rows:yardRows,hdr:0,widths:[6,16,20,16,12,16,16,14,18,20,18,28,18,22,32,20]},
+    {name:'Lượt lưu bãi',rows:allRows,hdr:0,widths:[16,14,14,16,12,14,18,12,18,20,24,14,20,18,24]}
+  ]);
+  const ok=await saveOrShareBlob(blob,`DuLieu_BaiXe34_${todayISO()}.xlsx`);
+  if(ok) toast('Đã xuất toàn bộ dữ liệu ra Excel');
+}
+
+function parseAnyDate(x){
+  if(x===''||x==null||String(x).trim()==='0')return null;
+  if(/^\d+(\.\d+)?$/.test(String(x).trim())&&+x>20000){const d=new Date(Math.round((+x-25569)*864e5));return `${d.getUTCFullYear()}-${p2(d.getUTCMonth()+1)}-${p2(d.getUTCDate())}`;}
+  const s=String(x).trim();let m;
+  if((m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)))return `${m[1]}-${p2(m[2])}-${p2(m[3])}`;
+  if((m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/)))return `${m[3]}-${p2(m[2])}-${p2(m[1])}`;
+  return null;
+}
+
+$('#fileXlsx').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{
+    const sheets=await readXlsxPure(f);
+    const yardRows=sheets['Xe trong bãi'],historyRows=sheets['Lượt lưu bãi'];
+    if(!Array.isArray(yardRows)||!yardRows.length)throw new Error('Thiếu sheet “Xe trong bãi” hoặc sheet không có dữ liệu.');
+    if(!Array.isArray(historyRows)||!historyRows.length)throw new Error('Thiếu sheet “Lượt lưu bãi” hoặc sheet không có dữ liệu.');
+
+    const normHeader=x=>String(x??'').trim().replace(/\s+/g,' ').toLocaleUpperCase('vi-VN');
+    const headerMap=(rows,sheet,required)=>{
+      const headers=Object.keys(rows[0]||{});
+      const map={};
+      for(const f of required){
+        const accepted=f.aliases.map(normHeader);
+        const found=headers.filter(h=>accepted.includes(normHeader(h)));
+        if(found.length!==1)throw new Error(found.length?`Sheet “${sheet}” có tiêu đề trùng cho trường “${f.label}”.`:`Sheet “${sheet}” thiếu tiêu đề “${f.label}”.`);
+        map[f.key]=found[0];
+      }
+      return map;
+    };
+    const yh=headerMap(yardRows,'Xe trong bãi',[
+      {key:'key',label:'Biển số/VIN',aliases:['Biển số/VIN','Biển số / VIN']},
+      {key:'type',label:'Loại xe',aliases:['Loại xe']},
+      {key:'model',label:'Dòng xe',aliases:['Dòng xe']},
+      {key:'color',label:'Màu sắc',aliases:['Màu sắc']},
+      {key:'cycleStart',label:'Ngày bắt đầu chu kỳ',aliases:['Ngày bắt đầu chu kỳ']},
+      {key:'lastIn',label:'Ngày nhập gần nhất',aliases:['Ngày nhập gần nhất']},
+      {key:'age',label:'Tuổi tồn',aliases:['Tuổi tồn','Tuổi tồn (ngày)']},
+      {key:'position',label:'Vị trí',aliases:['Vị trí']},
+      {key:'status',label:'Tình trạng',aliases:['Tình trạng']},
+      {key:'party',label:'Người gửi',aliases:['Người gửi']},
+      {key:'note',label:'Ghi chú',aliases:['Ghi chú']},
+      {key:'depot',label:'DEPOT',aliases:['DEPOT']},
+      {key:'cvdv',label:'CVDV PHỤ TRÁCH',aliases:['CVDV PHỤ TRÁCH']},
+      {key:'solution',label:'GIẢI PHÁP',aliases:['GIẢI PHÁP']},
+      {key:'expected',label:'NGÀY DỰ KIẾN HOÀN THÀNH',aliases:['NGÀY DỰ KIẾN HOÀN THÀNH']}
+    ]);
+    const hh=headerMap(historyRows,'Lượt lưu bãi',[
+      {key:'key',label:'Biển số/VIN',aliases:['Biển số/VIN','Biển số / VIN']},
+      {key:'plate',label:'Biển số',aliases:['Biển số']},
+      {key:'vin',label:'VIN',aliases:['VIN']},
+      {key:'model',label:'Dòng xe',aliases:['Dòng xe']},
+      {key:'color',label:'Màu sắc',aliases:['Màu sắc']},
+      {key:'inDate',label:'Ngày nhập',aliases:['Ngày nhập']},
+      {key:'position',label:'Vị trí',aliases:['Vị trí']},
+      {key:'positionCode',label:'Mã vị trí',aliases:['Mã vị trí']},
+      {key:'party',label:'Người gửi',aliases:['Người gửi']},
+      {key:'statusIn',label:'Tình trạng vào',aliases:['Tình trạng vào']},
+      {key:'noteIn',label:'Ghi chú nhập',aliases:['Ghi chú nhập']},
+      {key:'outDate',label:'Ngày xuất',aliases:['Ngày xuất']},
+      {key:'statusOut',label:'Tình trạng ra',aliases:['Tình trạng ra']},
+      {key:'receiver',label:'Người nhận',aliases:['Người nhận']},
+      {key:'noteOut',label:'Ghi chú xuất',aliases:['Ghi chú xuất']}
+    ]);
+    const val=(r,m,k)=>r?.[m[k]]??'';
+    const normKey=x=>cleanId(String(x??''));
+    const parsePosition=(code,label)=>{
+      let raw=String(code??'').trim();
+      if(!raw && label){
+        const m=String(label).match(/Dãy\s*(\d+)\s*[·|]\s*([A-Za-z0-9]+)\s*[·|]\s*(\d+)/i);
+        if(m)raw=`${m[1]}|${m[2]}|${m[3]}`;
+      }
+      const m=raw.match(/^(\d+)\|([^|]+)\|(\d+)$/);
+      if(!m)return '';
+      const day=+m[1],row=+m[3];
+      let col=m[2].trim().toUpperCase();
+      const aliases={'1T':'T','1TLD':'TLD','1PLD':'PLD','1P':'P'};
+      col=aliases[col]||col;
+      return day>=1&&day<=5&&row>=1&&row<=20&&['T','TLD','PLD','P'].includes(col)?`${day}|${col}|${row}`:'';
+    };
+    const vehicles={},yardSeen=new Set(),historySeen=new Set(),visits=[];
+    const yardStatusByKey={};
+    const errors=[];
+    for(const r of yardRows){
+      const raw=val(r,yh,'key'),key=normKey(raw);if(!key)continue;
+      if(yardSeen.has(key)){errors.push(`Trùng mã xe ở sheet Xe trong bãi: ${raw}`);continue;}
+      yardSeen.add(key);
+      yardStatusByKey[key]=String(val(r,yh,'status')??'').trim();
+      vehicles[key]={
+        key,
+        plate: normKey(val(r,yh,'key')) && (String(val(r,yh,'type')).toLowerCase().includes('vin') || /^\d{6}$/.test(key)) ? '' : key,
+        vin: (String(val(r,yh,'type')).toLowerCase().includes('vin') || /^\d{6}$/.test(key)) ? key : '',
+        model:String(val(r,yh,'model')??'').trim(),
+        color:String(val(r,yh,'color')??'').trim(),
+        depot:String(val(r,yh,'depot')??'').trim(),
+        cvdv:String(val(r,yh,'cvdv')??'').trim(),
+        solution:String(val(r,yh,'solution')??'').trim(),
+        expectedCompletion:String(val(r,yh,'expected')??'').trim(),
+        _backupCycleStart:parseAnyDate(val(r,yh,'cycleStart')),
+        _backupCycleStartProvided:true
+      };
+    }
+    let seq=0;
+    for(const r of historyRows){
+      const raw=val(r,hh,'key'),key=normKey(raw);if(!key)continue;
+      const plate=normKey(val(r,hh,'plate'))||(isPlate(key)?key:'');
+      const vin=normKey(val(r,hh,'vin'))||(!plate?key:'');
+      if(!vehicles[key])vehicles[key]={key,plate,vin,model:String(val(r,hh,'model')??'').trim(),color:String(val(r,hh,'color')??'').trim(),depot:'',cvdv:'',solution:'',expectedCompletion:''};
+      else{
+        if(!vehicles[key].plate&&plate)vehicles[key].plate=plate;
+        if(!vehicles[key].vin&&vin)vehicles[key].vin=vin;
+        if(!vehicles[key].model)vehicles[key].model=String(val(r,hh,'model')??'').trim();
+        if(!vehicles[key].color)vehicles[key].color=String(val(r,hh,'color')??'').trim();
+      }
+      const inDate=parseAnyDate(val(r,hh,'inDate'));
+      const outDate=parseAnyDate(val(r,hh,'outDate'));
+      const statusOut=String(val(r,hh,'statusOut')??'').trim();
+      const pos=parsePosition(val(r,hh,'positionCode'),val(r,hh,'position'));
+      visits.push({
+        id:++seq,key,inDate,pos,
+        party:String(val(r,hh,'party')??'').trim(),
+        statusIn:String(val(r,hh,'statusIn')??'').trim(),
+        noteIn:String(val(r,hh,'noteIn')??'').trim(),
+        done:!!(outDate||statusOut),outDate,statusOut,
+        receiver:String(val(r,hh,'receiver')??'').trim(),
+        noteOut:String(val(r,hh,'noteOut')??'').trim(),
+        created:Date.now()
+      });
+      historySeen.add(key);
+    }
+    if(errors.length)throw new Error(errors.slice(0,5).join('\n'));
+    // Sheet Xe trong bãi là nguồn chuẩn cho tình trạng tổng hợp hiện tại; không ghi đè bằng nhãn placeholder.
+    const latestActiveByKey=new Map();
+    visits.forEach(v=>{if(!v.done)latestActiveByKey.set(v.key,v);});
+    latestActiveByKey.forEach((v,key)=>{const st=yardStatusByKey[key];if(st&&norm(st)!==norm('Chưa ghi tình trạng'))v.statusIn=st;});
+    if(yardSeen.size!==187 || visits.length!==581) {
+      // Không ép cứng số dòng cho backup tương lai; chỉ ghi nhận trong bản xem trước.
+    }
+    if(!visits.length||!yardSeen.size)throw new Error('Không tìm thấy dữ liệu xe/lịch sử hợp lệ trong hai sheet.');
+    const activeVisits=visits.filter(v=>!v.done);
+    const activeKeys=new Set(activeVisits.map(v=>v.key));
+    const duplicateActive=activeVisits.length-activeKeys.size;
+    const yardWithoutHistory=[...yardSeen].filter(k=>!historySeen.has(k));
+    const activeWithoutYard=[...activeKeys].filter(k=>!yardSeen.has(k));
+    const yardNotActive=[...yardSeen].filter(k=>!activeKeys.has(k));
+    if(duplicateActive||yardWithoutHistory.length||activeWithoutYard.length||yardNotActive.length){
+      throw new Error(`Dữ liệu hai sheet không khớp, đã hủy nhập để tránh sai sót.\nXe tồn trong sheet: ${yardSeen.size}\nXe có lượt đang mở trong lịch sử: ${activeKeys.size}\nLượt đang mở bị trùng: ${duplicateActive}\nXe tồn không có lịch sử: ${yardWithoutHistory.length}\nXe lịch sử đang mở nhưng không có trong sheet tồn: ${activeWithoutYard.length}\nXe trong sheet tồn nhưng lịch sử không còn lượt mở: ${yardNotActive.length}`);
+    }
+    const invalidActivePos=activeVisits.filter(v=>v.pos&&!/^([1-5])\|(T|TLD|PLD|P)\|([1-9]|1\d|20)$/.test(v.pos)).length;
+    const missingActivePos=activeVisits.filter(v=>!v.pos).length;
+    const oldSettings=S.settings||DEF_SETTINGS();
+    const nextSettings={...oldSettings,layout:{...(oldSettings.layout||{}),days:5,rows:20,cols:['T','TLD','PLD','P']},
+      statusIn:[...(oldSettings.statusIn||DEF_SETTINGS().statusIn)],
+      statusOut:[...(oldSettings.statusOut||DEF_SETTINGS().statusOut)],
+      customerOutStatuses:[...(oldSettings.customerOutStatuses||DEF_SETTINGS().customerOutStatuses)],
+      models:[...(oldSettings.models||DEF_SETTINGS().models)]};
+    visits.forEach(v=>{
+      if(v.statusIn&&!nextSettings.statusIn.includes(v.statusIn))nextSettings.statusIn.push(v.statusIn);
+      if(v.statusOut&&!nextSettings.statusOut.includes(v.statusOut))nextSettings.statusOut.push(v.statusOut);
+    });
+    Object.values(vehicles).forEach(v=>{if(v.model&&!nextSettings.models.includes(v.model))nextSettings.models.push(v.model);});
+    const cycleOverrides=[];
+    activeVisits.forEach(v=>{
+      const vehicle=vehicles[v.key];
+      if(vehicle&&vehicle._backupCycleStartProvided){
+        vehicle.cycleStartOverride=vehicle._backupCycleStart;
+        vehicle.cycleStartOverrideSet=true;
+        vehicle.cycleStartOverrideVisitId=v.id;
+        cycleOverrides.push(v.key);
+      }
+    });
+    Object.values(vehicles).forEach(v=>{delete v._backupCycleStart;delete v._backupCycleStartProvided;});
+    const summary=`KHÔI PHỤC TOÀN BỘ TỪ FILE BACKUP\n\nSheet Xe trong bãi: ${yardRows.length} dòng dữ liệu.\nSheet Lượt lưu bãi: ${historyRows.length} dòng dữ liệu.\nHồ sơ xe duy nhất: ${Object.keys(vehicles).length}.\nLượt lưu bãi khôi phục: ${visits.length}.\nXe đang tồn theo lịch sử: ${activeKeys.size}.\nXe tồn không có vị trí: ${missingActivePos}.\nNgày bắt đầu chu kỳ được giữ theo sheet backup: ${cycleOverrides.length} xe.\n\nSơ đồ được đặt thành 5 dãy × 20 vị trí × 4 cột: T, TLD, PLD, P.\nDữ liệu hiện tại trên thiết bị sẽ bị thay thế. Firebase chỉ được đồng bộ theo trạng thái đăng nhập và quyền hiện tại.\n\nBạn có chắc chắn muốn khôi phục?`;
+    if(!confirm(summary))return;
+    S.vehicles=vehicles;S.visits=visits;S.seq=seq;S.settings=nextSettings;S.notes=S.notes||{};
+    await idbPutState();
+    queueFirebaseSync();
+    refresh();
+    toast(`Khôi phục thành công: ${Object.keys(vehicles).length} hồ sơ, ${visits.length} lượt.`);
+  }catch(err){console.error('Excel full restore:',err);toast('Không thể khôi phục Excel: '+(err.message||err));}
+};
+
+/* ================== CHỤP & NHẬN DIỆN XE BẰNG GEMINI AI ================== */
+// API key chỉ lưu trên thiết bị này (localStorage): không nằm trong mã nguồn, không vào S nên không đồng bộ/xuất file.
+const GEMINI_KEY_LS='erp_bai_xe_34_gemini_key';
+const GEMINI_BASE='https://generativelanguage.googleapis.com/v1beta/models';
+const GEMINI_MODELS=['gemini-3.8-flash','gemini-3.5-flash-lite'];
+let geminiKeyMem='';
+const getGeminiKey=()=>{try{return localStorage.getItem(GEMINI_KEY_LS)||geminiKeyMem;}catch(e){return geminiKeyMem;}};
+function setGeminiKey(k){
+  geminiKeyMem=k;
+  try{if(k)localStorage.setItem(GEMINI_KEY_LS,k);else localStorage.removeItem(GEMINI_KEY_LS);return true;}catch(e){return false;}
+}
+function saveGeminiKey(inputId){
+  const i=document.getElementById(inputId),k=(i?i.value:'').trim();
+  if(!k){toast('Hãy dán Gemini API key vào ô');return;}
+  if(/\s/.test(k)||!/^[\x21-\x7e]+$/.test(k)){toast('Key không hợp lệ (có khoảng trắng hoặc ký tự lạ)');return;}
+  const ok=setGeminiKey(k);i.value='';
+  updateGeminiKeyUI();
+  toast(ok?'✅ Đã lưu API key trên thiết bị này':'Trình duyệt không cho lưu — key chỉ dùng đến khi đóng trang');
+}
+function removeGeminiKey(){
+  if(!confirm('Xóa Gemini API key khỏi thiết bị này?'))return;
+  setGeminiKey('');updateGeminiKeyUI();toast('Đã xóa API key');
+}
+function updateGeminiKeyUI(){
+  const has=!!getGeminiKey();
+  const box=document.getElementById('scanKeyBox');if(box)box.classList.toggle('hidden',has);
+  const st=document.getElementById('setGeminiState');
+  if(st)st.textContent=has?'✅ Đã có API key trên thiết bị này':'⚠️ Chưa nhập API key';
+}
+function geminiError(status,msg){
+  if(status===400&&/api.?key/i.test(msg))return 'API key không hợp lệ. Hãy nhập lại key.';
+  if(status===401||status===403)return 'Gemini từ chối API key (sai, bị khóa hoặc chưa được cấp quyền). '+msg;
+  if(status===429)return 'Đã hết hạn mức Gemini. Đợi một lúc rồi thử lại.';
+  if(status===404)return 'Mô hình Gemini không còn khả dụng. '+msg;
+  if(status>=500)return 'Máy chủ Gemini đang bận. Hãy thử lại.';
+  return `Lỗi Gemini (HTTP ${status}). ${msg}`;
+}
+async function testGeminiKey(){
+  const key=getGeminiKey();
+  if(!key){toast('Chưa nhập API key');return;}
+  toast('Đang kiểm tra kết nối Gemini…');
+  try{
+    const r=await fetch(`${GEMINI_BASE}/${GEMINI_MODELS[0]}`,{headers:{'x-goog-api-key':key}});
+    if(r.ok){toast('✅ Kết nối Gemini thành công');return;}
+    const j=await r.json().catch(()=>({}));
+    toast(geminiError(r.status,j?.error?.message||''));
+  }catch(e){toast('Không kết nối được Gemini. Kiểm tra mạng.');}
+}
+
+async function geminiReadVehicle(base64,signal){
+  const key=getGeminiKey();
+  const models=(S.settings.models||[]).filter(m=>norm(m)!==norm('Dòng khác'));
+  const prompt=`Bạn là hệ thống nhận diện ô tô/xe máy tại một bãi giữ xe ở Việt Nam. Phân tích phương tiện chính (gần và rõ nhất) trong ảnh.
+- found: true nếu trong ảnh có phương tiện hoặc biển số.
+- plate: biển số đọc được, viết hoa, chỉ gồm chữ và số (VD: 50H12345). Biển 2 dòng thì đọc dòng trên rồi dòng dưới. Nếu bị che, mờ hoặc không chắc chắn đủ mọi ký tự thì trả "". Tuyệt đối không đoán.
+- model: dòng xe. Nếu khớp một mục trong danh mục ${JSON.stringify(models)} thì trả đúng nguyên văn mục đó; nếu không thì trả "Hãng Dòng" (VD: "Toyota Vios"). Không xác định được thì trả "".
+- color: màu sơn chủ đạo của xe, tiếng Việt ngắn gọn (Trắng, Đen, Xanh, Đỏ, Xám, Bạc, Cam, Vàng...). Không xác định được thì trả "".
+- confidence: độ tin cậy chung từ 0 đến 100.`;
+  const body=JSON.stringify({
+    contents:[{role:'user',parts:[{inlineData:{mimeType:'image/jpeg',data:base64}},{text:prompt}]}],
+    generationConfig:{
+      responseMimeType:'application/json',
+      responseSchema:{type:'OBJECT',properties:{found:{type:'BOOLEAN'},plate:{type:'STRING'},model:{type:'STRING'},color:{type:'STRING'},confidence:{type:'NUMBER'}},required:['found','plate','model','color','confidence']},
+      thinkingConfig:{thinkingLevel:'low'}
+    }
+  });
+  let lastErr;
+  for(const m of GEMINI_MODELS){
+    const r=await fetch(`${GEMINI_BASE}/${m}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body,signal});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok){
+      lastErr=new Error(geminiError(r.status,j?.error?.message||''));
+      if(r.status===404||r.status===429||r.status>=500)continue; // thử mô hình dự phòng
+      throw lastErr;
+    }
+    const text=(j?.candidates?.[0]?.content?.parts||[]).filter(p=>!p.thought).map(p=>p.text||'').join('').trim();
+    if(!text)throw new Error('AI không trả về kết quả. Hãy chụp lại ảnh khác.');
+    try{
+      const d=JSON.parse(text.replace(/^```(?:json)?\s*|\s*```$/g,''));
+      if(!d||typeof d!=='object')throw new Error();
+      return d;
+    }catch(e){throw new Error('AI trả về dữ liệu không đọc được. Hãy thử lại.');}
+  }
+  throw lastErr;
+}
+
+/* ---- Camera & giao diện quét ---- */
+const SCAN={stream:null,facing:'environment',camSeq:0,reqSeq:0,abort:null,image:'',matchKey:null,ai:null};
+const sg=id=>document.getElementById(id);
+function openScanPanel(){
+  closeModal();
+  const p=sg('scanPanel');p.classList.remove('hidden');p.classList.add('flex');
+  updateGeminiKeyUI();
+  resetScan();
+}
+function closeScanPanel(){
+  cancelScanRequest();stopCamera();
+  const p=sg('scanPanel');p.classList.add('hidden');p.classList.remove('flex');
+}
+function cancelScanRequest(){
+  SCAN.reqSeq++;
+  if(SCAN.abort){SCAN.abort.abort();SCAN.abort=null;}
+  sg('scanLoading').classList.add('hidden');
+}
+function resetScan(){
+  cancelScanRequest();
+  SCAN.image='';SCAN.ai=null;SCAN.matchKey=null;
+  sg('scanResult').classList.add('hidden');sg('scanResult').innerHTML='';
+  sg('scanPreview').classList.add('hidden');sg('scanPreview').removeAttribute('src');
+  setScanMsg('');
+  startCamera();
+}
+function setScanMsg(t,isError){
+  const m=sg('scanMsg');m.textContent=t;m.classList.toggle('hidden',!t);
+  m.className=`text-sm rounded-lg border p-2 mt-2 ${t?'':'hidden '}${isError?'text-red-700 bg-red-50 border-red-200':'text-amber-800 bg-amber-50 border-amber-200'}`;
+}
+function stopCamera(){
+  SCAN.camSeq++;
+  if(SCAN.stream){SCAN.stream.getTracks().forEach(t=>t.stop());SCAN.stream=null;}
+  sg('scanVideo').srcObject=null;
+}
+async function startCamera(){
+  stopCamera();
+  const seq=SCAN.camSeq,video=sg('scanVideo'),hint=sg('scanCamHint');
+  video.classList.remove('hidden');
+  sg('scanShootBtn').disabled=true;
+  hint.textContent='Đang mở camera…';hint.classList.remove('hidden');
+  try{
+    if(!navigator.mediaDevices?.getUserMedia)throw new Error('unsupported');
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:SCAN.facing},width:{ideal:1920},height:{ideal:1080}},audio:false});
+    if(seq!==SCAN.camSeq){stream.getTracks().forEach(t=>t.stop());return;} // đã đóng hoặc đổi camera
+    SCAN.stream=stream;video.srcObject=stream;
+    await video.play().catch(()=>{});
+    if(seq!==SCAN.camSeq)return;
+    hint.classList.add('hidden');sg('scanShootBtn').disabled=false;
+  }catch(e){
+    if(seq!==SCAN.camSeq)return;
+    video.classList.add('hidden');
+    hint.textContent='Không mở được camera trực tiếp. Hãy bấm “Chụp bằng máy ảnh” hoặc “Chọn ảnh”.';
+  }
+}
+function switchCamera(){
+  SCAN.facing=SCAN.facing==='environment'?'user':'environment';
+  resetScan();
+}
+function toJpeg(source,w,h){
+  const k=Math.min(1,1600/Math.max(w,h)),c=document.createElement('canvas');
+  c.width=Math.round(w*k);c.height=Math.round(h*k);
+  c.getContext('2d').drawImage(source,0,0,c.width,c.height);
+  return c.toDataURL('image/jpeg',0.85);
+}
+function captureAndScan(){
+  const v=sg('scanVideo');
+  if(!SCAN.stream||!v.videoWidth){toast('Camera chưa sẵn sàng');return;}
+  useScanImage(toJpeg(v,v.videoWidth,v.videoHeight));
+}
+function onScanFile(e){
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  const url=URL.createObjectURL(f),img=new Image(),seq=++SCAN.reqSeq;
+  img.onload=()=>{URL.revokeObjectURL(url);if(seq===SCAN.reqSeq)useScanImage(toJpeg(img,img.naturalWidth,img.naturalHeight));};
+  img.onerror=()=>{URL.revokeObjectURL(url);setScanMsg('Không đọc được ảnh này. Hãy chọn ảnh JPG hoặc PNG.',true);};
+  img.src=url;
+}
+function useScanImage(dataUrl){
+  cancelScanRequest();stopCamera();
+  SCAN.image=dataUrl;
+  sg('scanVideo').classList.add('hidden');sg('scanCamHint').classList.add('hidden');
+  const pv=sg('scanPreview');pv.src=dataUrl;pv.classList.remove('hidden');
+  sg('scanShootBtn').disabled=true;
+  analyzeScan();
+}
+async function analyzeScan(){
+  if(!SCAN.image)return;
+  cancelScanRequest();
+  sg('scanResult').classList.add('hidden');setScanMsg('');
+  if(!getGeminiKey()){updateGeminiKeyUI();showScanResult(null);setScanMsg('Nhập và lưu Gemini API key ở trên, rồi bấm “Nhận diện lại”. Bạn cũng có thể nhập tay.');return;}
+  const seq=SCAN.reqSeq,ctl=new AbortController();SCAN.abort=ctl;
+  const timer=setTimeout(()=>ctl.abort(),45000);
+  sg('scanLoading').classList.remove('hidden');
+  try{
+    const d=await geminiReadVehicle(SCAN.image.split(',')[1],ctl.signal);
+    if(seq!==SCAN.reqSeq)return;
+    let plate=cleanId(d.plate);
+    if(plate.length<4||plate.length>10)plate='';
+    const raw=String(d.model||'').trim();
+    const known=(S.settings.models||[]).find(m=>norm(m).replace(/\s/g,'')===norm(raw).replace(/\s/g,''));
+    const ai={plate,model:known||raw,color:String(d.color||'').trim(),confidence:Math.max(0,Math.min(100,Math.round(Number(d.confidence)||0)))};
+    showScanResult(ai);
+    if(d.found===false)setScanMsg('AI không thấy phương tiện trong ảnh. Hãy chụp lại.');
+    else if(!plate)setScanMsg('AI chưa đọc rõ biển số. Chụp lại gần hơn hoặc nhập tay.');
+  }catch(e){
+    if(seq!==SCAN.reqSeq)return;
+    showScanResult(null);
+    setScanMsg(e.name==='AbortError'?'Quá thời gian chờ AI. Kiểm tra mạng rồi bấm “Nhận diện lại”.':(e instanceof TypeError?'Không kết nối được Gemini. Kiểm tra mạng rồi thử lại.':e.message),true);
+  }finally{
+    clearTimeout(timer);
+    if(seq===SCAN.reqSeq){sg('scanLoading').classList.add('hidden');SCAN.abort=null;}
+  }
+}
+function showScanResult(ai){
+  SCAN.ai=ai;SCAN.matchKey=null;
+  const box=sg('scanResult'),lp=lastPrefs();
+  box.innerHTML=`
+    <div class="flex items-center justify-between gap-2"><b class="text-navy">Kết quả nhận diện</b>${ai?`<span class="badge ${ai.confidence>=80?'bg-green-100 text-green-700':'bg-amber-100 text-amber-800'}">AI tin cậy ${ai.confidence}%</span>`:'<span class="badge bg-slate-100 text-slate-600">Nhập tay</span>'}</div>
+    <div>${lab('Biển số / 6 số VIN')}<input id="sc_plate" class="inp font-bold text-lg" value="${esc(ai?.plate||'')}" placeholder="VD: 50H12345" autocomplete="off" autocapitalize="characters" spellcheck="false" oninput="renderScanMatch()"></div>
+    <div class="grid grid-cols-2 gap-2">
+      <div>${lab('Dòng xe')}<input id="sc_model" class="inp" list="sc_models" value="${esc(ai?.model||'')}" oninput="this.dataset.edited='1'"></div>
+      <div>${lab('Màu xe')}<input id="sc_color" class="inp" list="colorList" value="${esc(ai?.color||'')}" oninput="this.dataset.edited='1'"></div>
+    </div>
+    <datalist id="sc_models">${(S.settings.models||[]).map(m=>`<option value="${esc(m)}">`).join('')}</datalist>
+    <div id="sc_match"></div>
+    <div id="sc_inFields" class="grid grid-cols-2 gap-2">
+      <div>${lab('Tình trạng vào')}<select id="sc_status" class="inp"><option value="">— Để trống —</option>${(S.settings.statusIn||[]).map(s=>`<option ${s===lp.statusIn?'selected':''}>${esc(s)}</option>`).join('')}</select></div>
+      <div>${lab('Vị trí bãi')}<select id="sc_pos" class="inp">${posOptions('')}</select></div>
+      <div class="col-span-2">${lab('Tên/Bộ phận người gửi')}<input id="sc_party" class="inp" value="${esc(lp.party||'')}" placeholder="Không bắt buộc"></div>
+    </div>
+    <div id="sc_actions"></div>`;
+  box.classList.remove('hidden');
+  renderScanMatch();
+}
+// Đối chiếu biển số với hồ sơ xe; không tự gộp hai biển chỉ trùng 5 số cuối.
+function renderScanMatch(){
+  const input=sg('sc_plate');if(!input)return;
+  const key=cleanId(input.value),v=key?findVeh(key):null,a=v?activeOf(v.key):null;
+  const ai=SCAN.ai||{},model=sg('sc_model'),color=sg('sc_color');
+  const newMatch=v?v.key:null;
+  if(newMatch!==SCAN.matchKey){
+    SCAN.matchKey=newMatch;
+    if(!model.dataset.edited)model.value=v?.model||ai.model||'';
+    if(!color.dataset.edited)color.value=v?.color||ai.color||'';
+  }
+  let near=[];
+  if(!v&&key){
+    if(isShortPlate(key))near=findPartialSuffixVehs(key);
+    else if(isFullPlate(key))near=Object.values(S.vehicles).filter(x=>isShortPlate(x.key)&&key.endsWith(x.key));
+  }
+  const diffs=v?[['Dòng xe',v.model,ai.model],['Màu',v.color,ai.color]].filter(([,old,now])=>old&&now&&norm(old)!==norm(now)):[];
+  const diffHtml=diffs.length?`<div class="text-xs mt-1">⚠️ Khác hồ sơ: ${diffs.map(([l,old,now])=>`${l} hồ sơ <b>${esc(old)}</b>, AI thấy <b>${esc(now)}</b>`).join(' · ')}. Kiểm tra lại biển số.</div>`:'';
+  let h='';
+  if(a)h=`<div class="rounded-xl border-2 border-amber-400 bg-amber-50 p-2.5 text-sm text-amber-900"><b>XE ĐANG TRONG BÃI</b> · nhập ${fmt(a.inDate)} · ${esc(posLabel(a.pos))} · ${esc(statIn(a))}${diffHtml}</div>`;
+  else if(v)h=`<div class="rounded-xl border-2 border-green-400 bg-green-50 p-2.5 text-sm text-green-900"><b>Xe cũ</b> · đã lưu bãi ${visitsOf(v.key).length} lần, hiện không ở trong bãi${diffHtml}</div>`;
+  else if(key)h=`<div class="rounded-xl border-2 border-blue-300 bg-blue-50 p-2.5 text-sm text-blue-900"><b>Xe mới</b> · chưa có hồ sơ</div>`;
+  if(near.length)h+=`<div class="rounded-xl border border-amber-200 bg-amber-50 p-2.5 text-xs text-amber-900 mt-2"><b>Có hồ sơ trùng 5 số cuối:</b><div class="flex flex-wrap gap-1.5 mt-1">${near.map(m=>`<button type="button" class="btn btn-sm" data-k="${esc(m.key)}" onclick="pickScanMatch(this.dataset.k)">${esc(m.key)} (${activeOf(m.key)?'Đang trong bãi':'Chọn xe này'})</button>`).join('')}</div></div>`;
+  sg('sc_match').innerHTML=h;
+  sg('sc_inFields').classList.toggle('hidden',!!a);
+  sg('sc_actions').innerHTML=a
+    ?`<button type="button" class="btn w-full" style="background:#c2410c;border-color:#c2410c;color:#fff" onclick="scanExport()">📤 Xuất xe ${esc(v.key)}</button>`
+    :`<button type="button" class="btn btn-primary w-full" onclick="scanConfirmIn()">✓ Xác nhận nhập xe${key?'':' (tạo mã tạm)'}</button>`;
+}
+function pickScanMatch(k){sg('sc_plate').value=k;renderScanMatch();}
+function scanExport(){
+  const v=findVeh(cleanId(sg('sc_plate').value));
+  if(!v||!activeOf(v.key)){toast('Xe không còn trong bãi');renderScanMatch();return;}
+  closeScanPanel();quickExport(v.key);
+}
+function scanConfirmIn(){
+  const entered=cleanId(sg('sc_plate').value),key=entered||nextTempKey();
+  const model=sg('sc_model').value.trim(),color=sg('sc_color').value.trim();
+  const st=sg('sc_status').value,pos=sg('sc_pos').value,party=sg('sc_party').value.trim();
+  let v=findVeh(key);
+  if(v&&activeOf(v.key)){toast(`Xe ${v.key} đang trong bãi!`);renderScanMatch();return;}
+  if(pos&&active().some(x=>x.pos===pos)){toast('Vị trí này đã có xe, vui lòng chọn vị trí khác');sg('sc_pos').innerHTML=posOptions('');return;}
+  if(!v){
+    const vin=/^\d{6}$/.test(entered);
+    v=S.vehicles[key]={key,plate:entered&&!vin?key:'',vin:vin?key:'',model:'',color:''};
+  }
+  if(model){v.model=model;S.settings.models=S.settings.models||[];if(!S.settings.models.includes(model))S.settings.models.push(model);}
+  if(color)v.color=color;
+  S.visits.push({id:nextId(),key:v.key,inDate:todayISO(),pos,party,statusIn:st,noteIn:'',done:false,outDate:null,statusOut:'',receiver:'',noteOut:'',created:Date.now()});
+  savePrefs({party,statusIn:st});
+  closeScanPanel();
+  save();
+  toast(`✅ Đã nhập ${v.key} — lần ${visitsOf(v.key).length}`);
+}
+sg('scanFileCam').addEventListener('change',onScanFile);
+sg('scanFilePick').addEventListener('change',onScanFile);
+sg('scanPanel').addEventListener('click',e=>{if(e.target.id==='scanPanel')closeScanPanel();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!sg('scanPanel').classList.contains('hidden'))closeScanPanel();});
+// Tắt camera khi chuyển ứng dụng để tiết kiệm pin
+document.addEventListener('visibilitychange',()=>{
+  if(sg('scanPanel').classList.contains('hidden')||SCAN.image)return;
+  if(document.hidden)stopCamera();else startCamera();
+});
+
+/* ================== KHỞI ĐỘNG ================== */
+document.body.appendChild(colorDL);
+load().then(()=>{
+  bindGlobalSearch();
+  setTab('hist');
+  try{initFirebase();}catch(e){console.warn('Firebase initialization skipped:',e);}
+}).catch(e=>{
+  console.error(e);
+  toast('Lỗi khởi tạo IndexedDB: '+(e.message||e));
+});
+</script>
+</body>
+</html>
