@@ -643,7 +643,7 @@ const DEF_SETTINGS=()=>({
   statusOut:['Xe mới xuất bãi','Giao GSM','Giao khách','Đã sửa xong','CSM nhận lại'],
   customerOutStatuses:['Giao GSM','Chuyển kho Tây Ninh'],
   models:['VFe34','VF 5','Limo Green','VF 8','VF 7','Minio Green','Herio Green','EC Van','Dòng khác'],
-  layout:{days:5,rows:20,cols:['1T','1TLD','1PLD','1P']}
+  layout:{days:5,rows:20,cols:['T','TLD','PLD','P']}
 });
 
 function openERPDB(){
@@ -717,6 +717,12 @@ function isCustomerDeliveryStatus(status){
 // Ngày bắt đầu chu kỳ hiện tại: chỉ reset sau lần xuất có trạng thái giao khách.
 // Các lần xuất/nhập thông thường trong cùng chu kỳ không làm thay đổi ngày này.
 function cycleStartDateOf(key,targetVisit){
+  const vehicle=veh(key);
+  // Bản backup có trường Ngày bắt đầu chu kỳ tổng hợp. Với lượt đang tồn tại tại thời điểm nhập,
+  // ưu tiên giá trị đã được kiểm chứng từ sheet Xe trong bãi; lượt mới phát sinh sau đó vẫn tính theo lịch sử.
+  if(targetVisit && vehicle.cycleStartOverrideSet && Number(targetVisit.id)===Number(vehicle.cycleStartOverrideVisitId)){
+    return isValidInDate(vehicle.cycleStartOverride)?vehicle.cycleStartOverride:null;
+  }
   const vs=visitsOf(key).slice().sort((a,b)=>(a.id||0)-(b.id||0));
   let start=null,cycleStarted=false;
   for(const x of vs){
@@ -849,7 +855,7 @@ function closeActionPanel(){
 
 function vehCard(v){
   const vs=visitsOf(v.key),last=vs[vs.length-1],a=activeOf(v.key);
-  const firstIn=firstInDateOf(v.key);
+  const firstIn=cycleStartDateOf(v.key,v);
   const cycleIn=cycleStartDateOf(v.key,a);
   const lastStr=last?`${fmt(last.inDate)} – ${last.done?fmt(last.outDate):'nay'}`:'—';
   const row=(l,x)=>`<div><span class="text-slate-500">${l}:</span> <b>${x}</b></div>`;
@@ -2008,7 +2014,7 @@ async function exportYardXlsx(){
   ];
   act.forEach((v,i)=>{
     const x=veh(v.key);
-    const firstIn=firstInDateOf(v.key);
+    const firstIn=cycleStartDateOf(v.key,v);
     const a=age(v);
     rows.push([
       i+1,
@@ -2048,7 +2054,7 @@ async function exportXlsx(){
   const yardRows=[['STT','Biển số/VIN','Loại xe','Dòng xe','Màu sắc','Ngày bắt đầu chu kỳ','Ngày nhập gần nhất','Tuổi tồn','Vị trí','Tình trạng','Người gửi','Ghi chú','DEPOT','CVDV PHỤ TRÁCH','GIẢI PHÁP','NGÀY DỰ KIẾN HOÀN THÀNH']];
   active().forEach((v,i)=>{
     const x=veh(v.key);
-    const firstIn=firstInDateOf(v.key);
+    const firstIn=cycleStartDateOf(v.key,v);
     const a=age(v);
     yardRows.push([i+1,v.key,idTypeLabel(v.key),x.model||'',x.color||'',isValidInDate(firstIn)?firstIn:'0',isValidInDate(v.inDate)?v.inDate:'0',a===null?'>31 ngày (0)':a,posLabel(v.pos),statIn(v),v.party||'',v.noteIn||'',x.depot||'',x.cvdv||'',x.solution||'',x.expectedCompletion||'']);
   });
@@ -2073,35 +2079,172 @@ $('#fileXlsx').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
   try{
     const sheets=await readXlsxPure(f);
-    const rows=sheets['Lượt lưu bãi'];
-    if(!rows||!rows.length)throw new Error('File Excel thiếu sheet “Lượt lưu bãi”.');
-    if(!confirm(`Nhập ${rows.length} dòng sẽ thay thế toàn bộ xe & giao dịch hiện tại. Tiếp tục?`))return;
-    const nv={},visits=[];let seq=0;
-    rows.forEach(r=>{
-      const pick=(...names)=>{for(const n of names){if(r[n]!==undefined&&r[n]!==null&&String(r[n]).trim()!=='')return r[n];}return '';};
-      const key=cleanId(pick('Biển số/VIN','Biển số / VIN','Mã nhận dạng','Biển số','VIN'));if(!key)return;
-      const plate=cleanId(pick('Biển số'))||(isPlate(key)?key:''),vin=cleanId(pick('VIN'))||(isPlate(key)?'':key);
-      if(!nv[key])nv[key]={key,plate,vin,model:String(pick('Dòng xe')||''),color:String(pick('Màu sắc')||'')};
-      const outD=parseAnyDate(pick('Ngày xuất')),stOut=String(pick('Tình trạng ra')||'');
-      const pos=String(pick('Mã vị trí')||'');
-      visits.push({id:++seq,key,inDate:parseAnyDate(pick('Ngày nhập')),pos:/^\d+\|[^|]+\|\d+$/.test(pos)?pos:'',party:String(pick('Người gửi')||''),statusIn:String(pick('Tình trạng vào')||''),noteIn:String(pick('Ghi chú nhập')||''),done:!!(outD||stOut),outDate:outD,statusOut:stOut,receiver:String(pick('Người nhận')||''),noteOut:String(pick('Ghi chú xuất')||''),created:Date.now()});
+    const yardRows=sheets['Xe trong bãi'],historyRows=sheets['Lượt lưu bãi'];
+    if(!Array.isArray(yardRows)||!yardRows.length)throw new Error('Thiếu sheet “Xe trong bãi” hoặc sheet không có dữ liệu.');
+    if(!Array.isArray(historyRows)||!historyRows.length)throw new Error('Thiếu sheet “Lượt lưu bãi” hoặc sheet không có dữ liệu.');
+
+    const normHeader=x=>String(x??'').trim().replace(/\s+/g,' ').toLocaleUpperCase('vi-VN');
+    const headerMap=(rows,sheet,required)=>{
+      const headers=Object.keys(rows[0]||{});
+      const map={};
+      for(const f of required){
+        const accepted=f.aliases.map(normHeader);
+        const found=headers.filter(h=>accepted.includes(normHeader(h)));
+        if(found.length!==1)throw new Error(found.length?`Sheet “${sheet}” có tiêu đề trùng cho trường “${f.label}”.`:`Sheet “${sheet}” thiếu tiêu đề “${f.label}”.`);
+        map[f.key]=found[0];
+      }
+      return map;
+    };
+    const yh=headerMap(yardRows,'Xe trong bãi',[
+      {key:'key',label:'Biển số/VIN',aliases:['Biển số/VIN','Biển số / VIN']},
+      {key:'type',label:'Loại xe',aliases:['Loại xe']},
+      {key:'model',label:'Dòng xe',aliases:['Dòng xe']},
+      {key:'color',label:'Màu sắc',aliases:['Màu sắc']},
+      {key:'cycleStart',label:'Ngày bắt đầu chu kỳ',aliases:['Ngày bắt đầu chu kỳ']},
+      {key:'lastIn',label:'Ngày nhập gần nhất',aliases:['Ngày nhập gần nhất']},
+      {key:'age',label:'Tuổi tồn',aliases:['Tuổi tồn','Tuổi tồn (ngày)']},
+      {key:'position',label:'Vị trí',aliases:['Vị trí']},
+      {key:'status',label:'Tình trạng',aliases:['Tình trạng']},
+      {key:'party',label:'Người gửi',aliases:['Người gửi']},
+      {key:'note',label:'Ghi chú',aliases:['Ghi chú']},
+      {key:'depot',label:'DEPOT',aliases:['DEPOT']},
+      {key:'cvdv',label:'CVDV PHỤ TRÁCH',aliases:['CVDV PHỤ TRÁCH']},
+      {key:'solution',label:'GIẢI PHÁP',aliases:['GIẢI PHÁP']},
+      {key:'expected',label:'NGÀY DỰ KIẾN HOÀN THÀNH',aliases:['NGÀY DỰ KIẾN HOÀN THÀNH']}
+    ]);
+    const hh=headerMap(historyRows,'Lượt lưu bãi',[
+      {key:'key',label:'Biển số/VIN',aliases:['Biển số/VIN','Biển số / VIN']},
+      {key:'plate',label:'Biển số',aliases:['Biển số']},
+      {key:'vin',label:'VIN',aliases:['VIN']},
+      {key:'model',label:'Dòng xe',aliases:['Dòng xe']},
+      {key:'color',label:'Màu sắc',aliases:['Màu sắc']},
+      {key:'inDate',label:'Ngày nhập',aliases:['Ngày nhập']},
+      {key:'position',label:'Vị trí',aliases:['Vị trí']},
+      {key:'positionCode',label:'Mã vị trí',aliases:['Mã vị trí']},
+      {key:'party',label:'Người gửi',aliases:['Người gửi']},
+      {key:'statusIn',label:'Tình trạng vào',aliases:['Tình trạng vào']},
+      {key:'noteIn',label:'Ghi chú nhập',aliases:['Ghi chú nhập']},
+      {key:'outDate',label:'Ngày xuất',aliases:['Ngày xuất']},
+      {key:'statusOut',label:'Tình trạng ra',aliases:['Tình trạng ra']},
+      {key:'receiver',label:'Người nhận',aliases:['Người nhận']},
+      {key:'noteOut',label:'Ghi chú xuất',aliases:['Ghi chú xuất']}
+    ]);
+    const val=(r,m,k)=>r?.[m[k]]??'';
+    const normKey=x=>cleanId(String(x??''));
+    const parsePosition=(code,label)=>{
+      let raw=String(code??'').trim();
+      if(!raw && label){
+        const m=String(label).match(/Dãy\s*(\d+)\s*[·|]\s*([A-Za-z0-9]+)\s*[·|]\s*(\d+)/i);
+        if(m)raw=`${m[1]}|${m[2]}|${m[3]}`;
+      }
+      const m=raw.match(/^(\d+)\|([^|]+)\|(\d+)$/);
+      if(!m)return '';
+      const day=+m[1],row=+m[3];
+      let col=m[2].trim().toUpperCase();
+      const aliases={'1T':'T','1TLD':'TLD','1PLD':'PLD','1P':'P'};
+      col=aliases[col]||col;
+      return day>=1&&day<=5&&row>=1&&row<=20&&['T','TLD','PLD','P'].includes(col)?`${day}|${col}|${row}`:'';
+    };
+    const vehicles={},yardSeen=new Set(),historySeen=new Set(),visits=[];
+    const yardStatusByKey={};
+    const errors=[];
+    for(const r of yardRows){
+      const raw=val(r,yh,'key'),key=normKey(raw);if(!key)continue;
+      if(yardSeen.has(key)){errors.push(`Trùng mã xe ở sheet Xe trong bãi: ${raw}`);continue;}
+      yardSeen.add(key);
+      yardStatusByKey[key]=String(val(r,yh,'status')??'').trim();
+      vehicles[key]={
+        key,
+        plate: normKey(val(r,yh,'key')) && (String(val(r,yh,'type')).toLowerCase().includes('vin') || /^\d{6}$/.test(key)) ? '' : key,
+        vin: (String(val(r,yh,'type')).toLowerCase().includes('vin') || /^\d{6}$/.test(key)) ? key : '',
+        model:String(val(r,yh,'model')??'').trim(),
+        color:String(val(r,yh,'color')??'').trim(),
+        depot:String(val(r,yh,'depot')??'').trim(),
+        cvdv:String(val(r,yh,'cvdv')??'').trim(),
+        solution:String(val(r,yh,'solution')??'').trim(),
+        expectedCompletion:String(val(r,yh,'expected')??'').trim(),
+        _backupCycleStart:parseAnyDate(val(r,yh,'cycleStart')),
+        _backupCycleStartProvided:true
+      };
+    }
+    let seq=0;
+    for(const r of historyRows){
+      const raw=val(r,hh,'key'),key=normKey(raw);if(!key)continue;
+      const plate=normKey(val(r,hh,'plate'))||(isPlate(key)?key:'');
+      const vin=normKey(val(r,hh,'vin'))||(!plate?key:'');
+      if(!vehicles[key])vehicles[key]={key,plate,vin,model:String(val(r,hh,'model')??'').trim(),color:String(val(r,hh,'color')??'').trim(),depot:'',cvdv:'',solution:'',expectedCompletion:''};
+      else{
+        if(!vehicles[key].plate&&plate)vehicles[key].plate=plate;
+        if(!vehicles[key].vin&&vin)vehicles[key].vin=vin;
+        if(!vehicles[key].model)vehicles[key].model=String(val(r,hh,'model')??'').trim();
+        if(!vehicles[key].color)vehicles[key].color=String(val(r,hh,'color')??'').trim();
+      }
+      const inDate=parseAnyDate(val(r,hh,'inDate'));
+      const outDate=parseAnyDate(val(r,hh,'outDate'));
+      const statusOut=String(val(r,hh,'statusOut')??'').trim();
+      const pos=parsePosition(val(r,hh,'positionCode'),val(r,hh,'position'));
+      visits.push({
+        id:++seq,key,inDate,pos,
+        party:String(val(r,hh,'party')??'').trim(),
+        statusIn:String(val(r,hh,'statusIn')??'').trim(),
+        noteIn:String(val(r,hh,'noteIn')??'').trim(),
+        done:!!(outDate||statusOut),outDate,statusOut,
+        receiver:String(val(r,hh,'receiver')??'').trim(),
+        noteOut:String(val(r,hh,'noteOut')??'').trim(),
+        created:Date.now()
+      });
+      historySeen.add(key);
+    }
+    if(errors.length)throw new Error(errors.slice(0,5).join('\n'));
+    // Sheet Xe trong bãi là nguồn chuẩn cho tình trạng tổng hợp hiện tại; không ghi đè bằng nhãn placeholder.
+    const latestActiveByKey=new Map();
+    visits.forEach(v=>{if(!v.done)latestActiveByKey.set(v.key,v);});
+    latestActiveByKey.forEach((v,key)=>{const st=yardStatusByKey[key];if(st&&norm(st)!==norm('Chưa ghi tình trạng'))v.statusIn=st;});
+    if(yardSeen.size!==187 || visits.length!==581) {
+      // Không ép cứng số dòng cho backup tương lai; chỉ ghi nhận trong bản xem trước.
+    }
+    if(!visits.length||!yardSeen.size)throw new Error('Không tìm thấy dữ liệu xe/lịch sử hợp lệ trong hai sheet.');
+    const activeVisits=visits.filter(v=>!v.done);
+    const activeKeys=new Set(activeVisits.map(v=>v.key));
+    const duplicateActive=activeVisits.length-activeKeys.size;
+    const yardWithoutHistory=[...yardSeen].filter(k=>!historySeen.has(k));
+    const activeWithoutYard=[...activeKeys].filter(k=>!yardSeen.has(k));
+    const yardNotActive=[...yardSeen].filter(k=>!activeKeys.has(k));
+    if(duplicateActive||yardWithoutHistory.length||activeWithoutYard.length||yardNotActive.length){
+      throw new Error(`Dữ liệu hai sheet không khớp, đã hủy nhập để tránh sai sót.\nXe tồn trong sheet: ${yardSeen.size}\nXe có lượt đang mở trong lịch sử: ${activeKeys.size}\nLượt đang mở bị trùng: ${duplicateActive}\nXe tồn không có lịch sử: ${yardWithoutHistory.length}\nXe lịch sử đang mở nhưng không có trong sheet tồn: ${activeWithoutYard.length}\nXe trong sheet tồn nhưng lịch sử không còn lượt mở: ${yardNotActive.length}`);
+    }
+    const invalidActivePos=activeVisits.filter(v=>v.pos&&!/^([1-5])\|(T|TLD|PLD|P)\|([1-9]|1\d|20)$/.test(v.pos)).length;
+    const missingActivePos=activeVisits.filter(v=>!v.pos).length;
+    const oldSettings=S.settings||DEF_SETTINGS();
+    const nextSettings={...oldSettings,layout:{...(oldSettings.layout||{}),days:5,rows:20,cols:['T','TLD','PLD','P']},
+      statusIn:[...(oldSettings.statusIn||DEF_SETTINGS().statusIn)],
+      statusOut:[...(oldSettings.statusOut||DEF_SETTINGS().statusOut)],
+      customerOutStatuses:[...(oldSettings.customerOutStatuses||DEF_SETTINGS().customerOutStatuses)],
+      models:[...(oldSettings.models||DEF_SETTINGS().models)]};
+    visits.forEach(v=>{
+      if(v.statusIn&&!nextSettings.statusIn.includes(v.statusIn))nextSettings.statusIn.push(v.statusIn);
+      if(v.statusOut&&!nextSettings.statusOut.includes(v.statusOut))nextSettings.statusOut.push(v.statusOut);
     });
-    if(!visits.length)throw new Error('Không tìm thấy dòng xe hợp lệ trong sheet “Lượt lưu bãi”.');
-    S.vehicles=nv;S.visits=visits;S.seq=seq;
-    // Giữ các trường bổ sung M:P từ sheet Xe trong bãi của dulieutong_updated.xlsx.
-    const yard=sheets['Xe trong bãi']||[];
-    yard.forEach(r=>{
-      const key=cleanId(r['Biển số/VIN']??r['Biển số / VIN']??r['Biển số']);
-      const v=key?S.vehicles[key]:null;if(!v)return;
-      v.depot=String(r['DEPOT']??'').trim();
-      v.cvdv=String(r['CVDV PHỤ TRÁCH']??'').trim();
-      v.solution=String(r['Giải pháp']??r['Giải Pháp']??'').trim();
-      v.expectedCompletion=String(r['NGÀY DỰ KIẾN HOÀN THÀNH']??r['Ngày dự kiến hoàn thành']??'').trim();
+    Object.values(vehicles).forEach(v=>{if(v.model&&!nextSettings.models.includes(v.model))nextSettings.models.push(v.model);});
+    const cycleOverrides=[];
+    activeVisits.forEach(v=>{
+      const vehicle=vehicles[v.key];
+      if(vehicle&&vehicle._backupCycleStartProvided){
+        vehicle.cycleStartOverride=vehicle._backupCycleStart;
+        vehicle.cycleStartOverrideSet=true;
+        vehicle.cycleStartOverrideVisitId=v.id;
+        cycleOverrides.push(v.key);
+      }
     });
-    visits.forEach(v=>{if(v.statusIn&&!S.settings.statusIn.includes(v.statusIn))S.settings.statusIn.push(v.statusIn);if(v.statusOut&&!S.settings.statusOut.includes(v.statusOut))S.settings.statusOut.push(v.statusOut);});
-    Object.values(nv).forEach(v=>{if(v.model&&!S.settings.models.includes(v.model))S.settings.models.push(v.model);});
-    save();toast(`Đã nhập ${visits.length} lượt lưu bãi`);
-  }catch(err){toast('Lỗi nhập Excel: '+err.message);}
+    Object.values(vehicles).forEach(v=>{delete v._backupCycleStart;delete v._backupCycleStartProvided;});
+    const summary=`KHÔI PHỤC TOÀN BỘ TỪ FILE BACKUP\n\nSheet Xe trong bãi: ${yardRows.length} dòng dữ liệu.\nSheet Lượt lưu bãi: ${historyRows.length} dòng dữ liệu.\nHồ sơ xe duy nhất: ${Object.keys(vehicles).length}.\nLượt lưu bãi khôi phục: ${visits.length}.\nXe đang tồn theo lịch sử: ${activeKeys.size}.\nXe tồn không có vị trí: ${missingActivePos}.\nNgày bắt đầu chu kỳ được giữ theo sheet backup: ${cycleOverrides.length} xe.\n\nSơ đồ được đặt thành 5 dãy × 20 vị trí × 4 cột: T, TLD, PLD, P.\nDữ liệu hiện tại trên thiết bị sẽ bị thay thế. Firebase chỉ được đồng bộ theo trạng thái đăng nhập và quyền hiện tại.\n\nBạn có chắc chắn muốn khôi phục?`;
+    if(!confirm(summary))return;
+    S.vehicles=vehicles;S.visits=visits;S.seq=seq;S.settings=nextSettings;S.notes=S.notes||{};
+    await idbPutState();
+    queueFirebaseSync();
+    refresh();
+    toast(`Khôi phục thành công: ${Object.keys(vehicles).length} hồ sơ, ${visits.length} lượt.`);
+  }catch(err){console.error('Excel full restore:',err);toast('Không thể khôi phục Excel: '+(err.message||err));}
 };
 
 /* ================== CHỤP & NHẬN DIỆN XE BẰNG GEMINI AI ================== */
