@@ -1459,8 +1459,9 @@ function openVehicleDetail(key, focusVisitId){
     </div>
 
     <section class="mt-3 rounded-xl border border-indigo-100 bg-indigo-50/60 p-3 text-sm">
-      <div class="font-bold text-indigo-900 mb-2 flex items-center gap-2">
-        <span>📋</span> Thông tin Viewer (chỉ xem tại Admin)
+      <div class="font-bold text-indigo-900 mb-2 flex items-center justify-between gap-2">
+        <span>📋 Thông tin Viewer</span>
+        <button type="button" class="btn btn-sm btn-primary" onclick="editViewerInfo('${esc(v.key)}')">✏️ Chỉnh sửa</button>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
         <div><div class="text-xs text-slate-500">Depot</div><div class="font-semibold break-words">${esc(v.depot||'—')}</div></div>
@@ -1489,6 +1490,67 @@ function openVehicleDetail(key, focusVisitId){
       </div>
     </div>
   </div>`);
+}
+
+/* ================== SỬA / XÓA THÔNG TIN VIEWER ================== */
+function editViewerInfo(key){
+  const v=findVeh(key);
+  if(!v){toast('Không tìm thấy hồ sơ xe');return;}
+  showModal(`<div class="p-5">
+    <div class="flex items-center justify-between gap-2">
+      <h3 class="text-lg font-bold text-navy">Sửa thông tin Viewer · ${esc(v.key)}</h3>
+      <button type="button" class="text-xl" onclick="closeModal()">✕</button>
+    </div>
+    <p class="text-xs text-slate-500 mt-1">Cập nhật trực tiếp vào hồ sơ xe. Không cần xuất/nhập Excel hoặc JSON.</p>
+    <div class="grid gap-3 mt-4">
+      <div>${lab('Depot')}<input id="vi_depot" class="inp" value="${esc(v.depot||'')}" autocomplete="off"></div>
+      <div>${lab('CVDV PHỤ TRÁCH')}<input id="vi_cvdv" class="inp" value="${esc(v.cvdv||'')}" autocomplete="off"></div>
+      <div>${lab('GIẢI PHÁP')}<textarea id="vi_solution" rows="3" class="inp">${esc(v.solution||'')}</textarea></div>
+      <div>${lab('NGÀY DỰ KIẾN HOÀN THÀNH')}<input id="vi_expected" class="inp" value="${esc(v.expectedCompletion||'')}" placeholder="Nhập ngày hoặc nội dung ngày"></div>
+      <div>${lab('Ghi chú Viewer')}<textarea id="vi_note" rows="3" class="inp">${esc(v.viewer?.note||'')}</textarea></div>
+    </div>
+    <div class="flex flex-wrap gap-2 mt-4">
+      <button type="button" class="btn btn-primary flex-1" onclick="saveViewerInfo('${esc(v.key)}')">💾 Lưu thông tin</button>
+      <button type="button" class="btn btn-red" onclick="clearViewerInfo('${esc(v.key)}')">🗑️ Xóa thông tin</button>
+      <button type="button" class="btn" onclick="closeModal()">Hủy</button>
+    </div>
+  </div>`);
+}
+function saveViewerInfo(key){
+  const v=findVeh(key),g=id=>document.getElementById(id);
+  if(!v){toast('Không tìm thấy hồ sơ xe');return;}
+  const next={
+    depot:g('vi_depot').value.trim(),
+    cvdv:g('vi_cvdv').value.trim(),
+    solution:g('vi_solution').value.trim(),
+    expectedCompletion:g('vi_expected').value.trim(),
+    note:g('vi_note').value.trim()
+  };
+  v.depot=next.depot;
+  v.cvdv=next.cvdv;
+  v.solution=next.solution;
+  v.expectedCompletion=next.expectedCompletion;
+  v.viewer=v.viewer||{};
+  v.viewer.note=next.note;
+  save();
+  closeModal();
+  openVehicleDetail(key);
+  toast('Đã cập nhật thông tin Viewer');
+}
+function clearViewerInfo(key){
+  const v=findVeh(key);
+  if(!v){toast('Không tìm thấy hồ sơ xe');return;}
+  if(!confirm('Xóa toàn bộ 5 trường thông tin Viewer của xe '+key+'? Hồ sơ xe và lịch sử vào/ra bãi vẫn được giữ nguyên.'))return;
+  v.depot='';
+  v.cvdv='';
+  v.solution='';
+  v.expectedCompletion='';
+  v.viewer=v.viewer||{};
+  v.viewer.note='';
+  save();
+  closeModal();
+  openVehicleDetail(key);
+  toast('Đã xóa thông tin Viewer; hồ sơ xe và lịch sử được giữ nguyên');
 }
 
 function editVisit(id){
