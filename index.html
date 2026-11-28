@@ -277,6 +277,34 @@ const CLOUD_STATE_PATH = uid => `users/${uid}/erp_bai_xe_34/state`;
 const FB_USAGE_KEY='qlbx34_firebase_usage_v1';
 const FB_FREE_DOWNLOAD=10*1024**3; // Spark: 10 GB tải xuống/tháng
 const FB_FREE_STORAGE=1*1024**3;  // Spark: 1 GB dữ liệu lưu trữ
+
+const VIEWER_PUBLIC_PATH='viewer_public/vehicles';
+// Chỉ xuất bản 3 trường cần thiết cho Viewer; không gửi lịch sử hoặc dữ liệu nội bộ ERP.
+async function publishViewerPublicData(){
+  if(!firebaseUser||!firebaseDb||!cloudReady||cloudApplying||!S)return false;
+  const publicRows={};
+  for(const visit of active()){
+    const vehicle=veh(visit.key);
+    const rawKey=String(visit.key||vehicle.key||'').trim();
+    if(!rawKey)continue;
+    const safeKey=encodeURIComponent(rawKey).replace(/\./g,'%2E');
+    const displayId=String(vehicle.plate||vehicle.vin||vehicle.key||rawKey).trim();
+    publicRows[safeKey]={
+      plate:displayId,
+      model:String(vehicle.model||'').trim(),
+      position:posLabel(visit.pos)
+    };
+  }
+  try{
+    await firebaseDb.ref(VIEWER_PUBLIC_PATH).set(publicRows);
+    fbUsageRecord('up','Xuất bản dữ liệu Viewer tối giản',fbByteSize(publicRows));
+    return true;
+  }catch(err){
+    // Không làm gián đoạn lưu IndexedDB hay đồng bộ ERP nếu nhánh Viewer chưa được cấp quyền.
+    console.warn('[Viewer public] Chưa xuất bản được dữ liệu tra cứu:',firebaseErrorText(err));
+    return false;
+  }
+}
 function fbByteSize(value){
   try{return new TextEncoder().encode(typeof value==='string'?value:JSON.stringify(value)).length;}
   catch(e){return new Blob([typeof value==='string'?value:JSON.stringify(value)]).size;}
@@ -439,6 +467,7 @@ async function connectCloudState(){
   }
   cloudReady=true;
   cloudListener=ref;
+  await publishViewerPublicData();
   cloudListener.on('value',async snapshot=>{
     if(!cloudReady||cloudApplying||!snapshot.exists())return;
     const remote=snapshot.val();
@@ -451,6 +480,7 @@ async function connectCloudState(){
       refresh();
       cloudApplying=false;
       updateFirebaseUI('Đã nhận cập nhật từ thiết bị khác');
+      publishViewerPublicData();
     }
   },err=>{showFirebaseError(firebaseErrorText(err));updateFirebaseUI('Lỗi quyền Cloud');});
 }
@@ -462,6 +492,7 @@ function queueFirebaseSync(){
       const payload=JSON.parse(JSON.stringify(S));
       await firebaseDb.ref(CLOUD_STATE_PATH(firebaseUser.uid)).set(payload);
       fbUsageRecord('up','Ghi đồng bộ tự động',fbByteSize(payload));
+      await publishViewerPublicData();
       updateFirebaseUI('Đã đồng bộ Cloud');
     }catch(e){
       showFirebaseError(firebaseErrorText(e));
@@ -475,6 +506,7 @@ async function firebaseSyncNow(){
     await firebaseDb.ref(CLOUD_STATE_PATH(firebaseUser.uid)).set(S);
     fbUsageRecord('up','Ghi đồng bộ thủ công',fbByteSize(S));
     await connectCloudState();
+    await publishViewerPublicData();
     updateFirebaseUI('Đã đồng bộ Cloud');
     const d=document.getElementById('fbSyncDetail');if(d)d.textContent='Đồng bộ thành công lúc '+new Date().toLocaleString('vi-VN');
   }catch(e){showFirebaseError(firebaseErrorText(e));}
