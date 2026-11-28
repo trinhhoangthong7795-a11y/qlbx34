@@ -1,5 +1,6 @@
 package vn.qlbx.erp;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
