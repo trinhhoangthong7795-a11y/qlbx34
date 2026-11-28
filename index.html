@@ -506,7 +506,6 @@ async function firebaseSyncNow(){
     await firebaseDb.ref(CLOUD_STATE_PATH(firebaseUser.uid)).set(S);
     fbUsageRecord('up','Ghi đồng bộ thủ công',fbByteSize(S));
     await connectCloudState();
-    await publishViewerPublicData();
     updateFirebaseUI('Đã đồng bộ Cloud');
     const d=document.getElementById('fbSyncDetail');if(d)d.textContent='Đồng bộ thành công lúc '+new Date().toLocaleString('vi-VN');
   }catch(e){showFirebaseError(firebaseErrorText(e));}
