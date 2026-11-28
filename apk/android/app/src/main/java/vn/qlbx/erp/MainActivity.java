@@ -13,6 +13,7 @@ import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.PermissionRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -25,6 +26,8 @@ import java.io.OutputStream;
 
 public class MainActivity extends Activity {
     private static final int PICK_FILE = 4107;
+    private static final int CAMERA_PERMISSION = 4108;
+    private PermissionRequest pendingCameraRequest;
     private WebView webView;
     private ValueCallback<Uri[]> fileCallback;
 
@@ -61,9 +64,33 @@ public class MainActivity extends Activity {
         });
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
+            public void onPermissionRequest(PermissionRequest request) {
+                runOnUiThread(() -> {
+                    boolean localOrigin = request.getOrigin() != null &&
+                        request.getOrigin().toString().contains("android_asset");
+                    boolean wantsCamera = false;
+                    for (String resource : request.getResources()) {
+                        if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(resource)) wantsCamera = true;
+                    }
+                    if (!localOrigin || !wantsCamera) {
+                        request.deny();
+                        return;
+                    }
+                    if (checkSelfPermission(Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        request.grant(new String[]{PermissionRequest.RESOURCE_VIDEO_CAPTURE});
+                    } else {
+                        if (pendingCameraRequest != null) pendingCameraRequest.deny();
+                        pendingCameraRequest = request;
+                        requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION);
+                    }
+                });
+            }
+
+            @Override
             public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback,
                     FileChooserParams params) {
                 if (fileCallback != null) fileCallback.onReceiveValue(null);
+        if (pendingCameraRequest != null) pendingCameraRequest.deny();
                 fileCallback = callback;
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -145,6 +172,22 @@ public class MainActivity extends Activity {
             }
             fileCallback.onReceiveValue(result);
             fileCallback = null;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION && pendingCameraRequest != null) {
+            if (grantResults.length > 0 &&
+                grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                pendingCameraRequest.grant(new String[]{PermissionRequest.RESOURCE_VIDEO_CAPTURE});
+                Toast.makeText(this, "Đã cấp quyền camera cho QLBX34", Toast.LENGTH_SHORT).show();
+            } else {
+                pendingCameraRequest.deny();
+                Toast.makeText(this, "Bạn chưa cấp quyền camera", Toast.LENGTH_SHORT).show();
+            }
+            pendingCameraRequest = null;
         }
     }
 
