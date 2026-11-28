@@ -3,6 +3,7 @@ package vn.qlbx.erp;
 import android.Manifest;
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.ClipData;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -19,6 +20,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebResourceRequest;
+import androidx.webkit.WebViewAssetLoader;
+import androidx.webkit.WebViewClientCompat;
 import android.widget.Toast;
 
 import java.io.File;
@@ -28,6 +31,9 @@ import java.io.OutputStream;
 public class MainActivity extends Activity {
     private static final int PICK_FILE = 4107;
     private static final int CAMERA_PERMISSION = 4108;
+    private static final int CAPTURE_IMAGE = 4109;
+    private Uri pendingCaptureUri;
+    private WebViewAssetLoader assetLoader;
     private PermissionRequest pendingCameraRequest;
     private WebView webView;
     private ValueCallback<Uri[]> fileCallback;
@@ -47,14 +53,20 @@ public class MainActivity extends Activity {
         settings.setAllowContentAccess(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
         webView.addJavascriptInterface(new AndroidFileBridge(), "AndroidFile");
-        webView.setWebViewClient(new WebViewClient() {
+        assetLoader = new WebViewAssetLoader.Builder()
+            .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+            .build();
+        webView.setWebViewClient(new WebViewClientCompat() {
+            @Override
+            public android.webkit.WebResourceResponse shouldInterceptRequest(
+                    WebView view, WebResourceRequest request) {
+                return assetLoader.shouldInterceptRequest(request.getUrl());
+            }
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
-                // Chỉ chạy giao diện cục bộ trong WebView (nơi có AndroidFile bridge).
-                // Link ngoài mở bằng trình duyệt, không được cấp quyền gọi bridge.
-                if ("file".equals(uri.getScheme()) &&
-                    "android_asset".equals(uri.getHost())) return false;
+                if ("appassets.androidplatform.net".equals(uri.getHost())) return false;
                 if ("https".equals(uri.getScheme()) || "http".equals(uri.getScheme())) {
                     try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); }
                     catch (Exception ignored) { }
@@ -68,7 +80,7 @@ public class MainActivity extends Activity {
             public void onPermissionRequest(PermissionRequest request) {
                 runOnUiThread(() -> {
                     boolean localOrigin = request.getOrigin() != null &&
-                        request.getOrigin().toString().contains("android_asset");
+                        "https://appassets.androidplatform.net".equals(request.getOrigin().toString());
                     boolean wantsCamera = false;
                     for (String resource : request.getResources()) {
                         if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(resource)) wantsCamera = true;
@@ -91,8 +103,42 @@ public class MainActivity extends Activity {
             public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback,
                     FileChooserParams params) {
                 if (fileCallback != null) fileCallback.onReceiveValue(null);
-        if (pendingCameraRequest != null) pendingCameraRequest.deny();
                 fileCallback = callback;
+
+                // Inputs có capture="environment" phải mở ứng dụng Camera,
+                // không chuyển nhầm sang trình chọn tệp.
+                boolean wantsImage = false;
+                for (String type : params.getAcceptTypes()) {
+                    if (type != null && (type.equals("*/*") || type.startsWith("image/"))) wantsImage = true;
+                }
+                if (params.isCaptureEnabled() && wantsImage) {
+                    try {
+                        ContentValues values = new ContentValues();
+                        values.put(MediaStore.Images.Media.DISPLAY_NAME, "QLBX34_SCAN_" + System.currentTimeMillis() + ".jpg");
+                        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            values.put(MediaStore.Images.Media.RELATIVE_PATH,
+                                Environment.DIRECTORY_PICTURES + "/QLBX34");
+                        }
+                        pendingCaptureUri = getContentResolver().insert(
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                        if (pendingCaptureUri == null) throw new IllegalStateException("Không tạo được file ảnh");
+                        Intent camera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        camera.putExtra(MediaStore.EXTRA_OUTPUT, pendingCaptureUri);
+                        camera.setClipData(ClipData.newRawUri("QLBX34 camera", pendingCaptureUri));
+                        camera.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        startActivityForResult(camera, CAPTURE_IMAGE);
+                        return true;
+                    } catch (Exception e) {
+                        if (pendingCaptureUri != null) getContentResolver().delete(pendingCaptureUri, null, null);
+                        pendingCaptureUri = null;
+                        fileCallback = null;
+                        callback.onReceiveValue(null);
+                        Toast.makeText(MainActivity.this, "Không mở được camera: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        return false;
+                    }
+                }
+
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 intent.setType("*/*");
@@ -113,7 +159,7 @@ public class MainActivity extends Activity {
                 }
             }
         });
-        webView.loadUrl("file:///android_asset/index.html");
+        webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
     }
 
     private class AndroidFileBridge {
@@ -166,6 +212,17 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CAPTURE_IMAGE && fileCallback != null) {
+            Uri[] result = null;
+            if (resultCode == RESULT_OK && pendingCaptureUri != null) {
+                result = new Uri[]{pendingCaptureUri};
+            } else if (pendingCaptureUri != null) {
+                getContentResolver().delete(pendingCaptureUri, null, null);
+            }
+            fileCallback.onReceiveValue(result);
+            fileCallback = null;
+            pendingCaptureUri = null;
+        }
         if (requestCode == PICK_FILE && fileCallback != null) {
             Uri[] result = null;
             if (resultCode == RESULT_OK && data != null && data.getData() != null) {
@@ -201,6 +258,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (fileCallback != null) fileCallback.onReceiveValue(null);
+        if (pendingCameraRequest != null) pendingCameraRequest.deny();
+        if (pendingCaptureUri != null) getContentResolver().delete(pendingCaptureUri, null, null);
         if (webView != null) webView.destroy();
         super.onDestroy();
     }
